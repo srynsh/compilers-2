@@ -15,23 +15,53 @@
 \usepackage{pdfsync}  
 \usepackage{fancyhdr}
 \usepackage{enumitem}
+\usepackage{multirow}
+\usepackage[T1]{fontenc}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
 \pagestyle{fancy}
 
-\title{"Language Name"}
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{ArtC++}
 \author{
   Archit Ganvir \\
-  \texttt{cs21btech11005}
+  \texttt{CS21BTECH11005}
   \and
   Kushagra Gupta \\
-  \texttt{cs21btech11033}
+  \texttt{CS21BTECH11033}
   \and
   Rahul Ramachandran\\
-  \texttt{cs21btech11049}
+  \texttt{CS21BTECH11049}
   \and
   Suryaansh Jain\\
-  \texttt{cs21btech11057}
+  \texttt{CS21BTECH11057}
 }
-%\date{}
+\date{}
 
 \begin{document}
 \maketitle
@@ -39,22 +69,463 @@
 
 \section{Introduction}
 
+% Our motivation for designing this language is to provide an easy-to-use language for image manipulation for all the geeky programmers who find camera applications difficult to use. \\
+% % In today's age of social media and content creation, there is a high demand for software that can manipulate digital images and videos. This type of software is aimed towards content creation, marketing and advertising, entertainment, image and video compression, etc..\\
+% % Inspired by this demand, we have come up with a basic language to manipulate digital images, and also create videos using these images. \\
+% We have provided a lot of functionalities such as drawing basic shapes, applying filters to images, compressing images, adding images, composing images into a video played on the terminal, etc.. \\
+% We have selected C++ as our target language, and have avoided the use of image manipulation libraries. We aim to provide high-level functions and have also used concepts of object oriented programming to provide a simple and intuitive interface. \\
+ArtC++ is a unique image manipulation language that aims to make image-editing fun and easy. It borrows inspiration from several languages and libraries like C/C++, Java, Python, NumPy and Pillow. While it uses types, it supports several inbuilt functions, and behaves similarly to functional programming languages. 
+In addition to this, ArtC++ supports several unique features, like printing images to the terminal. The language can also support basic video manipulation, and can play frames of the video in the terminal.
+
+ArtC++ is compiled to C++, ensuring that the code is fast and efficient.
+
 \section{Lexical Specifications}
+  \subsection{Keywords}
+
+  \begin{tabular}{ |p{3cm}|p{3cm}|p{3cm}|p{3cm}|p{3cm}| }
+    \hline
+    img & grey\_img & num & real & and\\
+    \hline
+    or & spiral & presuming & otherwise & break \\
+    \hline
+    continue & return & def & void & \\
+    \hline
+   \end{tabular}
+
+  \subsection{Identifiers}
+  
+    As in several other languages, identifiers begin with a letter or underscore, and are followed by a sequence of letters, underscores or digits. Identifiers are case-sensitive. For example :-
+   \begin{lstlisting}[language=Python]
+    abcdef
+    _23n32_
+    343491h # Invalid identifier
+    *()_  # Invalid identifier\end{lstlisting}
+
+
+  \subsection{Comments}
+
+  Single-line comments start with a $\#$ symbol. For example :-
+
+  \begin{lstlisting}[]
+    # This is a single-line comment\end{lstlisting}
+
+  Multi-line comments are enclosed by $\#*$ and $*\#$. For example :-
+
+  \begin{lstlisting}
+    #* This
+    is a
+    multi-line comment *#\end{lstlisting}
+
+    \subsection{Whitespace}
+
+    As in C++, whitespaces (including tabs and spaces) is ignored. It is however recommended to include them to improve readability. 
+    The newline character is however used to define statements, like in Python. Curly braces \{\} are used to define scope. 
+
 
 \section{Datatypes}
+\begin{tabular}{ |p{3cm}||p{10cm}|  }
+  \hline
+  Data Type & Description\\
+  \hline
+  \multicolumn{2}{|c|}{Primitive} \\
+  \hline
+  img & multicolor image \\
+  grey\_img & greyscale image \\
+  num & integer\\
+  real & float\\
+  \hline
+  \multicolumn{2}{|c|}{Derived} \\
+  \hline
+  img[] & video, an array of images with a fps\\
+  grey\_img[] & greyscale video, an array of grey\_images with a fps\\
+  num[] & array of integers\\
+  real[] & array of real numbers\\
+  \hline
+ \end{tabular}
+
+
 
 \section{Operators}
+\begin{tabular}{ |p{3cm}|p{5cm}|p{7cm}|  }
+  \hline
+  Operator & Example & Description\\
+  \hline
+  \multicolumn{3}{|c|}{Binary Arithmetic} \\
+  \hline
+  \texttt{+} & \texttt{a + b} & Here, \texttt{a} and \texttt{b} are either numbers (or reals), or have to be of the same image datatype (RGB or Grayscale). The image shapes have to broadcastable. If a value exceeds 255, it is clipped back to 255. In addition to this, \texttt{a} and \texttt{b} can be videos (of the same datatype). If this is done, the frames are concatenated.\\ \hline
+  \texttt{-} & \texttt{a - b} & The operands are the same as for \texttt{+}. If a pixel value goes below 0, it is clipped back to 0.\\ \hline
+  \texttt{*} & \texttt{a * b} & The operands and behaviour are similar to \texttt{+} \\ \hline
+  \texttt{@} & \texttt{a @ b} & \texttt{@} is used for convolutions. \texttt{a} is an image or a greyscale image. \texttt{b} can be a image array of size 3 (this outputs an RGB image) or a single image (this outputs a greyscale image). The number of channels in the right operand should equal the channels in the left operand. \\
+  \texttt{\^} & \texttt{a \^ b} & \texttt{\^} is used for XORing two images. \\ \hline 
+  \hline
+  \multicolumn{3}{|c|}{Unary Arithmetic} \\
+  \hline
+  \texttt{\~} & \texttt{a\~} & \texttt{a} is an image or a video. This will invert the colors of the image or the video. \\ \hline
+  \texttt{-{}-} & \texttt{a-{}-} & \texttt{a} is a number or a real. The post-decrement operator will decrease the value of \texttt{a}. \\ \hline
+  \texttt{++} & \texttt{a++} & \texttt{a} is a number or a real. The post-increment operator will increase the value of \texttt{a}. \\ \hline
+  \multicolumn{3}{|c|}{Relational and Logical} \\
+  \hline
+  >, >= & a > b, a >= b &  The greater-than and greater-than or equal-to operate on numbers (or reals), and are defined as in other programming languages \\  \hline
+  <, <= & a < b, a <= b & The less-than and less-than or equal-to operators also operate on numbers or reals\\ \hline
+  \texttt{and} & $P_1$ \texttt{and} $P_2$ & Here, $P_1$ and $P_2$ are predicates, and equate to true or false.\\ \hline
+  \texttt{or} &  $P_1$ \texttt{or} $P_2$ & The \texttt{or} operator also operates on two predicates.\\ \hline
+  ! & !$P_1$ & \texttt{!} flips the truth value of the predicate it operates on \\ \hline
+  !=, == & $P_1$ == $P_2$, $P_1$ != $P_2$ & == and != are the standard equality and not-equality operators.\\
+  \hline
+ \end{tabular}
+
+
+
 
 \section{Statements}
+    All statements in ArtC++ end with a newline ('$\backslash$n') character. This keeps the code clean, and ensures that every statement is on a separate line.
     \subsection{Declarations}
+      \begin{itemize}
+        
+        \item Numbers:
+            \begin{itemize}
+              \item \texttt{num num\_name = value} 
+              \begin{itemize}
+                \item Here, \texttt{value} is a 32 bit integer. 
+              \end{itemize}
+              \item \texttt{real real\_name = value} 
+              \begin{itemize}
+                \item Here, \texttt{value} is a 32 bit floating point value.
+              \end{itemize}
+              \item \texttt{num[] array\_name = []} 
+              \begin{itemize}
+                \item Declaring an array results in \texttt{array\_name} being associated with an empty list. The list can be populated with \texttt{nums} using operators and methods like \texttt{.append()} (see below).
+              \end{itemize}
+              \item \texttt{real[] array\_name = []} 
+              \begin{itemize}
+                \item Declaring an array results in \texttt{array\_name} being associated with an empty list. The list can be populated with \texttt{reals} using operators and methods like \texttt{.append()} (see below).
+              \end{itemize}
+            \end{itemize}
+
+
+        \item RGB Images: 
+            \begin{itemize}
+              \item \texttt{img img\_name<h, w>}
+              \begin{itemize}
+                \item Here, \texttt{h} is the height of the image and \texttt{w} is the width of the image.
+                \item Declaring an image automatically allocates memory for the image, which is stored as a 3D array (height, width, $3$). Each element is initialized to 0 (the image is initially black).
+              \end{itemize}
+              \item \texttt{img img\_name<h, w, hex\_code>}
+              \begin{itemize}
+                \item This declaration is similar to the previous one, except for the hex-code. The format of the hex-code is \texttt{'\#RRGGBB'}, where \texttt{RR}, \texttt{GG}, and \texttt{BB} are hexadecimal numbers representing the red, green, and blue components of the color respectively.
+              \end{itemize}
+              \item \texttt{img img\_name<'./img.bmp'>}
+              \begin{itemize}
+                \item Here, \texttt{'./img.bmp'} is the path to the image file.
+                \item Declaring an image automatically allocates memory for the image, which is stored as a 3D array (height, width, $3$). The corresponding RGB values of the image are stored.
+              \end{itemize}
+            \end{itemize}
+
+
+        \item Grayscale Images: \texttt{grey\_img img\_name<h, w>}
+            Grayscale images are stored as 2D arrays (height, width). The declaration is similar to RGB images.
+            \begin{itemize}
+              \item \texttt{grey\_img img\_name<h, w>}
+              \item \texttt{grey\_img img\_name<'./img.bmp'>}
+            \end{itemize}
+
+
+        \item RGB Videos (Image Arrays): \texttt{img[] vid\_name<h, w, f>} or \texttt{img[] vid\_name<h, w>}
+            \begin{itemize}
+              \item Here, \texttt{h} is the height of each frame, \texttt{w} is the width of each frame, and \texttt{f} is the frame rate in frames per second (fps). It is optional to specify the frame rate, and the default value is $30$.
+              \item Declaring a video results in \texttt{vid\_name} being associated with an empty list. The list can be populated with images using operators and methods like \texttt{.append()} (see below).
+            \end{itemize}
+
+        \item Grayscale Videos (Grayscale Image Arrays): \texttt{grey\_img[] vid\_name<h, w, f>} or \texttt{grey\_img[] vid\_name<h, w>}
+            \begin{itemize}
+              \item This is identical to the declaration of RGB videos, except that each frame is stored as a 2D array (height, width). As before, each element is initialized to 0.
+            \end{itemize}
+            
+      \end{itemize}
     \subsection{Expressions}
+    \begin{lstlisting}[language=Python]
+      # a,b,c are images
+      a = b + c
+      b = (a + c)/2
+      a = a @ b * !c
+  
+      # a,b are real numbers
+      a = !a or a and b
+      b = a++
+      a = a >= b
+      \end{lstlisting}
     \subsection{Loops}
 
-\section{Functions}
+    We have implemented only one type of spiral that incorporates both \texttt{for} and \texttt{while} loops. The syntax is as follows :-
+    \subsubsection*{Type 1}
 
+    
+      \begin{lstlisting}[language=Python]
+      # Similar to for loops in C++
+      spiral (initialization expression; condition expression; update expression)
+      {
+          <body of the loop>
+      }
+      
+      # Example
+      spiral (num i = 0; i < 10; i++)
+      {
+          <body of the loop>
+      }\end{lstlisting}
+
+      \subsubsection*{Type 2}
+
+      
+      \begin{lstlisting}[language=Python]
+      spiral (predicate) 
+      {
+          statements
+      }
+
+      # Example
+      spiral (i < 10)
+      {
+          statements
+      }\end{lstlisting}  
+
+    \subsection{Conditionals}
+
+    Conditional statements will follow the following syntax :-
+    \begin{lstlisting}[language=Python]
+    presuming (expression)
+    {
+        statements
+    }
+    otherwise presuming (expression)
+    {
+        statements
+    }
+    otherwise
+    {
+        statements
+    }\end{lstlisting}
+
+    The elif and else parts of the conditional statement are optional.
+
+\section{Programming Constructs}
+    \subsection{Functions}
+          \subsubsection{Image Manipulation}
+          
+
+          \begin{tabular}{ |p{4cm}|p{5cm}|p{7cm}|  }
+            \hline
+            \textbf{Method} & \textbf{Example} & \textbf{Description}\\ 
+            \hline
+            \texttt{blur()} & \texttt{a.blur()} & Adds blur to the image (or blurs every frame of the video) \\ \hline
+            \texttt{noise()} & \texttt{a.noise()} & Adds random gaussian noise to the image (or adds noise to every frame of the video) \\ \hline
+            \texttt{grey()} & \texttt{a.grey()} & Converts the image to greyscale and changes the shape (or convert the video to greyscale) \\ \hline
+            \texttt{vflip()}, \texttt{hflip()} & \texttt{a.vflip()} or \texttt{a.hflip()}& Flips the image vertically or horizontally (or every frame of the video) \\ \hline
+            \texttt{get()}, \texttt{set()} & \texttt{a.get(x, y, c)} or \texttt{a.set(x, y, color\_hex)} & Gets the pixel value at (x, y, c) or sets the pixel value at (x, y) to the specified color \\ \hline
+           \end{tabular}
+
+          \subsubsection{Displaying Images and Videos}
+            \begin{tabular}{ |p{4cm}|p{5cm}|p{7cm}|  }
+                \hline
+                \textbf{Method} & \textbf{Example} & \textbf{Description}\\ 
+                \hline
+                \texttt{paint()} & \texttt{a.paint()} & Displays the image \texttt{a} in the terminal \\ \hline
+                \texttt{frame()} & \texttt{a.frame('img.bmp')} & Saves the image \texttt{a} to the specified path (only .bmp) \\ \hline
+                \texttt{play()} & \texttt{a.play()} & Plays the video \texttt{a} in the terminal (resolution might be lowered)\\ \hline
+             \end{tabular}
+
+
+          \subsubsection{Other Methods}
+
+          \begin{tabular}{ |p{4cm}|p{5cm}|p{7cm}|  }
+            \hline
+            \textbf{Method} & \textbf{Example} & \textbf{Description}\\ 
+            \hline
+            \texttt{len()} & \texttt{a.len()} & Returns the number of frames in video \texttt{a} \\ \hline
+            \texttt{append()} & \texttt{a.append(b)} & Appends image \texttt{b} or video \texttt{b} to the video \texttt{a}. The types should match-up \\ \hline
+            \texttt{height()} & \texttt{a.height()} & Returns the height of an image or the images in video \texttt{a} \\ \hline
+            \texttt{width()} & \texttt{a.height()} & Returns the width of an image or the images in video \texttt{a} \\ \hline
+         \end{tabular}
+             
+
+
+          \subsubsection{Drawing on Images}
+             \texttt{draw()} is a method that can be used to draw shapes on images. It supports the following shapes :-
+             \begin{lstlisting}[language=Python]
+  # Draws circle with center (x_c, y_c) and radius r on image 'a'
+  a.draw('circle', x_c, y_c, r, color_hex)
+
+  # Draws a line from (x1, y1) to (x2, y2) on image 'a'
+  a.draw('line', x1, y1, x2, y2, color_hex)
+
+  # Draws a rectangle with center (x_c, y_c) and dimensions h and w
+  a.draw('rectangle', x_center, y_center, h, w, color_hex)
+
+  # Draws a triangle with vertices (x1, y1), (x2, y2), (x3, y3)
+  a.draw('triangle', x1, y1, x2, y2, x3, y3, color_hex)
+
+  # Draws an ellipse with center (x_c, y_c) and radii a and b
+  a.draw('ellipse', x_center, y_center, a, b, color_hex)\end{lstlisting}
+
+                
+          \subsubsection{User-defined Functions}
+          The programmer must define a \texttt{def main()->void} function.
+          All user defined functions must have a \texttt{return} statement in them. They must also only return an object of the declared return type.
+            \begin{lstlisting}[language=Python]
+  def func_name (arguments)->return_type
+  {
+      statements
+  }\end{lstlisting}
+
+
+    \subsection{Slicing}
+  We allow the slicing of videos. This returns a new video with the specified frames. The syntax is as follows :-
+  \begin{lstlisting}[language=Python]
+  a = b[1:10] # This returns a video with frames 1 to 9 of b
+  a = b[1:10:2] # This returns a video with frames 1, 3, 5, 7, 9 of b
+  a = b[1:] # This returns a video with frames 1 to the end of b
+  \end{lstlisting}
 
 
 
 \bibliographystyle{abbrv}
+
+\section{Sample Programs}
+
+\begin{lstlisting}[language=Python]
+  
+  def bar (img p, img q, img r)->img {
+    img s
+    int a = 2
+    real b= 7.8
+
+    if (a + b > 10) {
+      s = p * (q + r)
+    } elif (a + b == 10) {
+      s = q * (p + r)
+    } else {
+      s = r * (p + q)
+    }
+      
+    return s
+  }
+
+  def func(img i1, img i2, img i3)->img {
+    int i
+
+    loop (i = 0; i < 10; i++) {
+      i1 = i1 + i2 * i3
+    }
+
+    return i1
+  }
+  
+  def main()->void {
+      img i1.load('./i1.bmp')
+      img i2.load('./i2.bmp')
+      img i3.load('./i3.bmp')
+  
+      i3 = func(bar(i1, i2, i3), i1, i2)
+  
+      i2.paint('rectangle', 50, 40, 50, 40, ff0000)
+      i2.paint('triangle', 0, 0, 5, 5, 3, 4, 00ffff)
+  
+      i1.pai
+  
+      i3.frame('./i_mod.bmp')
+  
+      i3.paint()
+      return
+  }
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+  def bar (img p, img q, img r)->img {
+    img s
+    int a = 2
+    real b= 7.8
+
+    if (a + b > 10) {
+      s = p * (q + r)
+    } elif (a + b == 10) {
+      s = q * (p + r)
+    } else {
+      s = r * (p + q)
+    }
+      
+    return s
+  }
+
+  def func(img i1, img i2, img i3)->img {
+    int i
+
+    loop (i = 0; i < 10; i++) {
+      i1 = i1 + i2 * i3
+    }
+
+    return i1
+  }
+  
+  def foo(img a, img b, img c)->img {
+   
+   img res = a*b + c // This is doing conv(a, b) and then overlaying c
+   return res
+  }
+     def foo1(img a, img )->img {
+      return b*a.blur(5)
+  }
+  
+  def main()->void {
+      img i1.load('./i1.bmp')
+      img i2.load('./i2.bmp')
+      img i3.load('./i3.bmp')
+  
+      i3 = foo1(foo(i1, i2, i3), i1)
+  
+      i2.paint('circle', 50, 40, 20)
+      i2.paint('line', 0, 0, 2, 3)
+  
+      i2.paint()
+      i2.frame('./i2_mod.bmp')
+  
+      i3.frame('./i_res.bmp')
+  
+      i3.paint()
+      return
+  }
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+  def bar(im)
+  def foo(img a, img[] b, img c)->img {
+      img res = a@b + c # This is doing conv(a, b) and then overlaying c
+      return res
+  }
+  
+  def foo1(img a, img b)->img {
+      return b*a.blur(5)
+  }
+  
+  def main()->void {
+      img i1 = load(./i1.bmp)
+      img i2 = load(./i2.bmp)
+      img i3 = load(./i3.bmp)
+  
+      i3 = foo1(foo(i1, i2, i3), i1)
+  
+      i3 = i3.boundary() # Another built in filter that gives us the image boundary.
+    
+      i2.draw('circle', 50, 40, 20)
+      i2.draw('line', 0, 0, 2, 3)
+  
+      i2.print()
+      i2.save(./i2_mod.bmp)
+  
+      i3.save(./i_res.bmp)
+  
+      i3.paint()
+      return
+  }
+\end{lstlisting}
+
 % \bibliography{references}  % need to put bibtex references in references.bib 
 \end{document}
