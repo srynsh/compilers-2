@@ -1,5 +1,4 @@
 #include <bits/stdc++.h>
-#include <cstdio>
 
 using namespace std;
 
@@ -26,8 +25,8 @@ void draw_circle(int cx, int cy, int radius, int colour) {
 }
 
 int main() {
-    w = 6000;
-    h = 6000;
+    w = 600;
+    h = 600;
 
     int cx = 300, cy=300; int r = 50;
 
@@ -60,7 +59,7 @@ int main() {
 
     float epsilon = 0.01;
 
-    draw_circle(3000, 3000, 500, 0xff0000);
+    draw_circle(300, 300, 50, 0xff0000);
 
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
