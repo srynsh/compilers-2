@@ -8,3 +8,4 @@
 **/*.synctex.gz
 **/*.synctex.gz\(busy\)
 **/*.vscode
+**/*output.txt
