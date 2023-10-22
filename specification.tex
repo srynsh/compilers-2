@@ -18,6 +18,7 @@
 \usepackage{multirow}
 \usepackage[T1]{fontenc}
 \usepackage{listings}
+\usepackage{lmodern}
 \usepackage{xcolor}
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
@@ -74,7 +75,7 @@
 % % Inspired by this demand, we have come up with a basic language to manipulate digital images, and also create videos using these images. \\
 % We have provided a lot of functionalities such as drawing basic shapes, applying filters to images, compressing images, adding images, composing images into a video played on the terminal, etc.. \\
 % We have selected C++ as our target language, and have avoided the use of image manipulation libraries. We aim to provide high-level functions and have also used concepts of object oriented programming to provide a simple and intuitive interface. \\
-ArtC++ is a unique image manipulation language that aims to make image-editing fun and easy. It borrows inspiration from several languages and libraries like C/C++, Java, Python, NumPy and Pillow. While it uses types, it supports several inbuilt functions, and behaves similarly to functional programming languages. 
+ArtC++ is a unique image manipulation language that aims to make image editing fun and easy. It borrows inspiration from several languages and libraries like C/C++, Java, Python, NumPy, and Pillow. While it uses types, it supports several inbuilt functions, and behaves similarly to functional programming languages. 
 In addition to this, ArtC++ supports several unique features, like printing images to the terminal. The language can also support basic video manipulation, and can play frames of the video in the terminal.
 
 ArtC++ is compiled to C++, ensuring that the code is fast and efficient.
@@ -84,11 +85,13 @@ ArtC++ is compiled to C++, ensuring that the code is fast and efficient.
 
   \begin{tabular}{ |p{3cm}|p{3cm}|p{3cm}|p{3cm}|p{3cm}| }
     \hline
-    img & grey\_img & num & real & and\\
+    img & gray\_img & num & real & and\\
     \hline
-    or & spiral & presuming & otherwise & break \\
+    or & spool & presuming & otherwise & break \\
     \hline
-    continue & return & def & void & \\
+    continue & return & ink & void & bool\\
+    \hline
+    true & false & & &\\
     \hline
    \end{tabular}
 
@@ -122,24 +125,26 @@ ArtC++ is compiled to C++, ensuring that the code is fast and efficient.
     The newline character is however used to define statements, like in Python. Curly braces \{\} are used to define scope. 
 
 
+
 \section{Datatypes}
-\begin{tabular}{ |p{3cm}||p{10cm}|  }
+\begin{tabular}{ |p{3cm}|p{10cm}|  }
   \hline
   Data Type & Description\\
   \hline
   \multicolumn{2}{|c|}{Primitive} \\
   \hline
-  img & multicolor image \\
-  grey\_img & greyscale image \\
-  num & integer\\
-  real & float\\
+  \texttt{img} & multicolor image \\
+  \texttt{gray\_img} & grayscale image \\
+  \texttt{num} & \texttt{integer}\\
+  \texttt{real} & \texttt{float}\\
+  \texttt{bool} & \texttt{bool}\\
   \hline
   \multicolumn{2}{|c|}{Derived} \\
   \hline
-  img[] & video, an array of images with a fps\\
-  grey\_img[] & greyscale video, an array of grey\_images with a fps\\
-  num[] & array of integers\\
-  real[] & array of real numbers\\
+  \texttt{vid} & video, an array of images with a fps\\
+  \texttt{gray\_vid} & grayscale video, an array of gray\_images with a fps\\
+  \texttt{num[]} & array of integers\\
+  \texttt{real[]} & array of real numbers\\
   \hline
  \end{tabular}
 
@@ -152,15 +157,15 @@ ArtC++ is compiled to C++, ensuring that the code is fast and efficient.
   \hline
   \multicolumn{3}{|c|}{Binary Arithmetic} \\
   \hline
-  \texttt{+} & \texttt{a + b} & Here, \texttt{a} and \texttt{b} are either numbers (or reals), or have to be of the same image datatype (RGB or Grayscale). The image shapes have to broadcastable. If a value exceeds 255, it is clipped back to 255. In addition to this, \texttt{a} and \texttt{b} can be videos (of the same datatype). If this is done, the frames are concatenated.\\ \hline
+  \texttt{+} & \texttt{a + b} & Here, \texttt{a} and \texttt{b} are either numbers (or reals), or have to be of the same image datatype (RGB or Grayscale). The image shapes have to broadcastable. If a value exceeds 255, it is clipped back to 255. In addition to this, \texttt{a} and \texttt{b} can be videos (of the same datatype and fps). If this is done, the frames are concatenated.\\ \hline
   \texttt{-} & \texttt{a - b} & The operands are the same as for \texttt{+}. If a pixel value goes below 0, it is clipped back to 0.\\ \hline
   \texttt{*} & \texttt{a * b} & The operands and behaviour are similar to \texttt{+} \\ \hline
-  \texttt{@} & \texttt{a @ b} & \texttt{@} is used for convolutions. \texttt{a} is an image or a greyscale image. \texttt{b} can be a image array of size 3 (this outputs an RGB image) or a single image (this outputs a greyscale image). The number of channels in the right operand should equal the channels in the left operand. \\
-  \texttt{\^} & \texttt{a \^ b} & \texttt{\^} is used for XORing two images. \\ \hline 
+  \texttt{@} & \texttt{a @ b} & \texttt{@} is used for convolutions. \texttt{a} is an image or a grayscale image. \texttt{b} can be a image array of size 3 (this outputs an RGB image) or a single image (this outputs a grayscale image). The number of channels (color dimensions) in the right operand should equal the channels in the left operand. \\ \hline
+  \texttt{\^} & \texttt{a \^\ b} & \texttt{\^} is used for XORing two images. \\ \hline 
   \hline
   \multicolumn{3}{|c|}{Unary Arithmetic} \\
   \hline
-  \texttt{\~} & \texttt{a\~} & \texttt{a} is an image or a video. This will invert the colors of the image or the video. \\ \hline
+  \texttt{\textasciitilde} & \texttt{\textasciitilde a} & \texttt{a} is an image or a video. This will invert the colors of the image or the video. \\ \hline
   \texttt{-{}-} & \texttt{a-{}-} & \texttt{a} is a number or a real. The post-decrement operator will decrease the value of \texttt{a}. \\ \hline
   \texttt{++} & \texttt{a++} & \texttt{a} is a number or a real. The post-increment operator will increase the value of \texttt{a}. \\ \hline
   \multicolumn{3}{|c|}{Relational and Logical} \\
@@ -212,113 +217,134 @@ ArtC++ is compiled to C++, ensuring that the code is fast and efficient.
               \end{itemize}
               \item \texttt{img img\_name<h, w, hex\_code>}
               \begin{itemize}
-                \item This declaration is similar to the previous one, except for the hex-code. The format of the hex-code is \texttt{'\#RRGGBB'}, where \texttt{RR}, \texttt{GG}, and \texttt{BB} are hexadecimal numbers representing the red, green, and blue components of the color respectively.
+                \item This declaration is similar to the previous one, except for the hex-code. The format of the hex-code is \texttt{'0xRRGGBB'}, where \texttt{RR}, \texttt{GG}, and \texttt{BB} are hexadecimal numbers representing the red, green, and blue components of the color respectively. Every pixel in the image is initialized to this color.
               \end{itemize}
               \item \texttt{img img\_name<'./img.bmp'>}
               \begin{itemize}
-                \item Here, \texttt{'./img.bmp'} is the path to the image file.
+                \item Here, \texttt{'./img.bmp'} is the path to the image file. (Only '.bmp' files are supported)
                 \item Declaring an image automatically allocates memory for the image, which is stored as a 3D array (height, width, $3$). The corresponding RGB values of the image are stored.
+              \end{itemize}
+              \item \texttt{img img\_name = expr}
+              \begin{itemize}
+                \item This combines a declaration and an initialization. \texttt{expr} is an expression that evaluates to an image, and is assigned to \texttt{img\_name}.
               \end{itemize}
             \end{itemize}
 
 
-        \item Grayscale Images: \texttt{grey\_img img\_name<h, w>}
+        \item Grayscale Images: \texttt{gray\_img img\_name<h, w>}
             Grayscale images are stored as 2D arrays (height, width). The declaration is similar to RGB images.
             \begin{itemize}
-              \item \texttt{grey\_img img\_name<h, w>}
-              \item \texttt{grey\_img img\_name<'./img.bmp'>}
+              \item \texttt{gray\_img img\_name<h, w>}
+              \item \texttt{gray\_img img\_name<h, w, c>} where \texttt{c} is a value from 0 to 255.
+              \item \texttt{gray\_img img\_name<'./img.bmp'>}
+              \item \texttt{gray\_img img\_name = expr}
             \end{itemize}
 
 
-        \item RGB Videos (Image Arrays): \texttt{img[] vid\_name<h, w, f>} or \texttt{img[] vid\_name<h, w>}
+        \item RGB Videos (Image Arrays): \texttt{vid vid\_name<h, w, f>} or \texttt{vid vid\_name<h, w>}
             \begin{itemize}
               \item Here, \texttt{h} is the height of each frame, \texttt{w} is the width of each frame, and \texttt{f} is the frame rate in frames per second (fps). It is optional to specify the frame rate, and the default value is $30$.
               \item Declaring a video results in \texttt{vid\_name} being associated with an empty list. The list can be populated with images using operators and methods like \texttt{.append()} (see below).
             \end{itemize}
 
-        \item Grayscale Videos (Grayscale Image Arrays): \texttt{grey\_img[] vid\_name<h, w, f>} or \texttt{grey\_img[] vid\_name<h, w>}
+        \item Grayscale Videos (Grayscale Image Arrays): \texttt{gray\_vid vid\_name<h, w, f>} or \texttt{gray\_vid vid\_name<h, w>}
             \begin{itemize}
               \item This is identical to the declaration of RGB videos, except that each frame is stored as a 2D array (height, width). As before, each element is initialized to 0.
             \end{itemize}
             
       \end{itemize}
-    \subsection{Expressions}
-    \begin{lstlisting}[language=Python]
-      # a,b,c are images
-      a = b + c
-      b = (a + c)/2
-      a = a @ b * !c
-  
-      # a,b are real numbers
-      a = !a or a and b
-      b = a++
-      a = a >= b
-      \end{lstlisting}
-    \subsection{Loops}
 
-    We have implemented only one type of spiral that incorporates both \texttt{for} and \texttt{while} loops. The syntax is as follows :-
+
+    \subsection{Expressions}
+    
+    Expressions (The \texttt{RHS} of a statement) must always evaluate to a type that is castable to the \texttt{LHS}. \texttt{real} and \texttt{num} are castable to each other and are castable to \texttt{bool} but \texttt{bool} cannot to typecasted to \texttt{num} or \texttt{real}. (\texttt{gray\_img} and \texttt{img}), (\texttt{gray\_vid} and \texttt{vid}) are also castable to each other. When an \texttt{img} is casted to a \texttt{gray\_img}, it is converted to grayscale. Conversely, when a \texttt{gray\_img} is casted to an \texttt{img}, the single color dimension is replicated. Examples of valid expressions are:
+    
+    \begin{lstlisting}[language=Python]
+  # a,b,c are images/gray_images
+  a = b + c
+  b = (a + c)/2
+  a = a @ b * ~c #* if one operand of @ is gray and the other is RGB, casting to RGB takes place *#
+
+  a = a or a and b # a, b are real numbers
+  b = a++
+  a[2] = b[5] - i*i  #* a and b are arrays of nums/reals and i is a num/real. This also works with videos *#
+  a.append(b[5])  # a and b are arrays of nums/reals
+  a = a >= b # a gets the value 1 or 0\end{lstlisting}
+
+    Some invalid expressions are:
+
+  \begin{lstlisting}[language=Python]
+  a = b + c # a is a vid but b is an img
+  a = a @ b * ~c # b has 2 frames
+
+  b = a++ # a is a bool
+  a[2] = b[5] - i*i  # b is a vid and a in a num/real array
+  a.append(b[5])  # a is an img\end{lstlisting}
+  
+    \subsection{Loops : spool}
+
+    We have implemented only one type of loop that incorporates both \texttt{for} and \texttt{while} loops, using the keyword \texttt{spool}. The syntax is as follows:-
     \subsubsection*{Type 1}
 
     
       \begin{lstlisting}[language=Python]
-      # Similar to for loops in C++
-      spiral (initialization expression; condition expression; update expression)
-      {
-          <body of the loop>
-      }
-      
-      # Example
-      spiral (num i = 0; i < 10; i++)
-      {
-          <body of the loop>
-      }\end{lstlisting}
+  # Similar to for loops in C++
+  spool (initialization expression; condition expression; update expression)
+  {
+      <body of the loop>
+  }
+  
+  # Example
+  spool (num i = 0; i < 10; i++)
+  {
+      <body of the loop>
+  }\end{lstlisting}
 
       \subsubsection*{Type 2}
 
       
       \begin{lstlisting}[language=Python]
-      spiral (predicate) 
-      {
-          statements
-      }
+  spool (predicate) 
+  {
+      statements
+  }
 
-      # Example
-      spiral (i < 10)
-      {
-          statements
-      }\end{lstlisting}  
+  # Example
+  spool (i < 10)
+  {
+      statements
+  }\end{lstlisting}  
 
     \subsection{Conditionals}
 
-    Conditional statements will follow the following syntax :-
+    Conditional statements will follow the following syntax:-
     \begin{lstlisting}[language=Python]
-    presuming (expression)
-    {
-        statements
-    }
-    otherwise presuming (expression)
-    {
-        statements
-    }
-    otherwise
-    {
-        statements
-    }\end{lstlisting}
+  presuming (expression)
+  {
+      statements
+  } 
+  otherwise presuming (expression)
+  {
+      statements
+  }
+  otherwise
+  {
+      statements
+  }\end{lstlisting}
 
-    The elif and else parts of the conditional statement are optional.
+    The "presuming otherwise" and "otherwise" parts of the conditional statement are optional.
 
 \section{Programming Constructs}
     \subsection{Functions}
           \subsubsection{Image Manipulation}
           
-
           \begin{tabular}{ |p{4cm}|p{5cm}|p{7cm}|  }
             \hline
             \textbf{Method} & \textbf{Example} & \textbf{Description}\\ 
             \hline
             \texttt{blur()} & \texttt{a.blur()} & Adds blur to the image (or blurs every frame of the video) \\ \hline
             \texttt{noise()} & \texttt{a.noise()} & Adds random gaussian noise to the image (or adds noise to every frame of the video) \\ \hline
-            \texttt{grey()} & \texttt{a.grey()} & Converts the image to greyscale and changes the shape (or convert the video to greyscale) \\ \hline
+            \texttt{gray()} & \texttt{a.gray()} & Converts the image to grayscale and changes the shape (or convert the video to grayscale. Only works on RGB images or videos) \\ \hline
             \texttt{vflip()}, \texttt{hflip()} & \texttt{a.vflip()} or \texttt{a.hflip()}& Flips the image vertically or horizontally (or every frame of the video) \\ \hline
             \texttt{get()}, \texttt{set()} & \texttt{a.get(x, y, c)} or \texttt{a.set(x, y, color\_hex)} & Gets the pixel value at (x, y, c) or sets the pixel value at (x, y) to the specified color \\ \hline
            \end{tabular}
@@ -343,7 +369,7 @@ ArtC++ is compiled to C++, ensuring that the code is fast and efficient.
             \texttt{len()} & \texttt{a.len()} & Returns the number of frames in video \texttt{a} \\ \hline
             \texttt{append()} & \texttt{a.append(b)} & Appends image \texttt{b} or video \texttt{b} to the video \texttt{a}. The types should match-up \\ \hline
             \texttt{height()} & \texttt{a.height()} & Returns the height of an image or the images in video \texttt{a} \\ \hline
-            \texttt{width()} & \texttt{a.height()} & Returns the width of an image or the images in video \texttt{a} \\ \hline
+            \texttt{width()} & \texttt{a.width()} & Returns the width of an image or the images in video \texttt{a} \\ \hline
          \end{tabular}
              
 
@@ -351,178 +377,132 @@ ArtC++ is compiled to C++, ensuring that the code is fast and efficient.
           \subsubsection{Drawing on Images}
              \texttt{draw()} is a method that can be used to draw shapes on images. It supports the following shapes :-
              \begin{lstlisting}[language=Python]
-  # Draws circle with center (x_c, y_c) and radius r on image 'a'
+  # Draws circle with center (x\_c, y\_c) and radius r on image 'a'
   a.draw('circle', x_c, y_c, r, color_hex)
 
   # Draws a line from (x1, y1) to (x2, y2) on image 'a'
   a.draw('line', x1, y1, x2, y2, color_hex)
 
-  # Draws a rectangle with center (x_c, y_c) and dimensions h and w
+  # Draws a rectangle with center (x\_c, y\_c) and dimensions h and w
   a.draw('rectangle', x_center, y_center, h, w, color_hex)
 
   # Draws a triangle with vertices (x1, y1), (x2, y2), (x3, y3)
   a.draw('triangle', x1, y1, x2, y2, x3, y3, color_hex)
 
-  # Draws an ellipse with center (x_c, y_c) and radii a and b
+  # Draws an ellipse with center (x\_c, y\_c) and radii a and b
   a.draw('ellipse', x_center, y_center, a, b, color_hex)\end{lstlisting}
 
-                
+  % TODO: Explain what arguments can be   
           \subsubsection{User-defined Functions}
-          The programmer must define a \texttt{def main()->void} function.
+          The programmer must define a \texttt{ink main()->void} function.
           All user defined functions must have a \texttt{return} statement in them. They must also only return an object of the declared return type.
             \begin{lstlisting}[language=Python]
-  def func_name (arguments)->return_type
+  ink func_name (parameters)->return_type
   {
       statements
   }\end{lstlisting}
-
+Functions are provided with a comma separated list of parameters, just like in C/C++
+  \begin{lstlisting}[language=Python]
+  ink func_name (img i1, num a1, vid v1)->return_type
+  {
+      statements
+  }
+  \end{lstlisting}
 
     \subsection{Slicing}
   We allow the slicing of videos. This returns a new video with the specified frames. The syntax is as follows :-
   \begin{lstlisting}[language=Python]
   a = b[1:10] # This returns a video with frames 1 to 9 of b
   a = b[1:10:2] # This returns a video with frames 1, 3, 5, 7, 9 of b
-  a = b[1:] # This returns a video with frames 1 to the end of b
-  \end{lstlisting}
+  a = b[1:] # This returns a video with frames 1 to the end of b\end{lstlisting}
 
 
 
 \bibliographystyle{abbrv}
 
+
+% TODO: Change sample programs
 \section{Sample Programs}
+
+\subsection*{Example 1}
 
 \begin{lstlisting}[language=Python]
   
-  def bar (img p, img q, img r)->img {
-    img s
-    int a = 2
-    real b= 7.8
+  ink bar (img p, img q, img r)->img {
+    num h = p.height()
+    num w = p.width()
+    img s <h, w>
+    num a = 2
+    real b = 7.8
 
-    if (a + b > 10) {
+    presuming (a + b > 10) {
       s = p * (q + r)
-    } elif (a + b == 10) {
+    } otherwise presuming (a + b == 10) {
       s = q * (p + r)
-    } else {
+    } otherwise {
       s = r * (p + q)
     }
       
     return s
   }
 
-  def func(img i1, img i2, img i3)->img {
-    int i
+  ink func(img i1, img i2, img i3)->img {
+    num i
 
-    loop (i = 0; i < 10; i++) {
+    spool (i = 0; i < 10; i++) {
       i1 = i1 + i2 * i3
     }
 
     return i1
   }
   
-  def main()->void {
+  ink main()->void {
       img i1.load('./i1.bmp')
       img i2.load('./i2.bmp')
       img i3.load('./i3.bmp')
+
+      i2.draw('rectangle', 50, 40, 50, 40, 0xff0000)
+      i2.draw('triangle', 0, 0, 5, 5, 3, 4, 0x00ffff)
   
       i3 = func(bar(i1, i2, i3), i1, i2)
-  
-      i2.paint('rectangle', 50, 40, 50, 40, ff0000)
-      i2.paint('triangle', 0, 0, 5, 5, 3, 4, 00ffff)
-  
-      i1.pai
   
       i3.frame('./i_mod.bmp')
   
       i3.paint()
       return
-  }
+}
 \end{lstlisting}
 
+
+\subsection*{Example 2}
+
+
 \begin{lstlisting}[language=Python]
-  def bar (img p, img q, img r)->img {
-    img s
-    int a = 2
-    real b= 7.8
-
-    if (a + b > 10) {
-      s = p * (q + r)
-    } elif (a + b == 10) {
-      s = q * (p + r)
-    } else {
-      s = r * (p + q)
-    }
-      
-    return s
-  }
-
-  def func(img i1, img i2, img i3)->img {
-    int i
-
-    loop (i = 0; i < 10; i++) {
-      i1 = i1 + i2 * i3
-    }
-
-    return i1
-  }
-  
-  def foo(img a, img b, img c)->img {
-   
-   img res = a*b + c // This is doing conv(a, b) and then overlaying c
+  ink foo(img a, img b, img c)->img { 
+   img res = a*b + c 
    return res
   }
-     def foo1(img a, img )->img {
-      return b*a.blur(5)
+  
+  ink foo1(img a, img b)->img {
+      return b*a.blur()
   }
   
-  def main()->void {
+  ink main()->void {
       img i1.load('./i1.bmp')
       img i2.load('./i2.bmp')
       img i3.load('./i3.bmp')
   
       i3 = foo1(foo(i1, i2, i3), i1)
   
-      i2.paint('circle', 50, 40, 20)
-      i2.paint('line', 0, 0, 2, 3)
+      i2.draw('circle', 50, 40, 20)
+      i2.draw('line', 0, 0, 2, 3)
   
-      i2.paint()
+      i2.paint() # displays i2 in the terminal
       i2.frame('./i2_mod.bmp')
   
       i3.frame('./i_res.bmp')
   
-      i3.paint()
-      return
-  }
-\end{lstlisting}
-
-\begin{lstlisting}[language=Python]
-  def bar(im)
-  def foo(img a, img[] b, img c)->img {
-      img res = a@b + c # This is doing conv(a, b) and then overlaying c
-      return res
-  }
-  
-  def foo1(img a, img b)->img {
-      return b*a.blur(5)
-  }
-  
-  def main()->void {
-      img i1 = load(./i1.bmp)
-      img i2 = load(./i2.bmp)
-      img i3 = load(./i3.bmp)
-  
-      i3 = foo1(foo(i1, i2, i3), i1)
-  
-      i3 = i3.boundary() # Another built in filter that gives us the image boundary.
-    
-      i2.draw('circle', 50, 40, 20)
-      i2.draw('line', 0, 0, 2, 3)
-  
-      i2.print()
-      i2.save(./i2_mod.bmp)
-  
-      i3.save(./i_res.bmp)
-  
-      i3.paint()
+      i3.paint() # displays i3 in the terminal
       return
   }
 \end{lstlisting}
