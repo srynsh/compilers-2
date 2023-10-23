@@ -14,30 +14,30 @@ class image {
         int **blue;
 
     public:
-        image(int h, int w, int color) {
-            assert(w > 0 && h > 0);
-            assert(w < 1000 && h < 1000);
+        image(int w, int h, int color) {
+            assert(h > 0 && w > 0);
+            assert(h < 1000 && w < 1000);
             assert(color >= 0x000000 && color <= 0xFFFFFF);
 
             int red_c = ((color >> 16) & 0xFF);  // Extract the RR byte
             int green_c = ((color >> 8) & 0xFF);   // Extract the GG byte
             int blue_c = ((color) & 0xFF);
 
-            this->h = w;
-            this->w = h;
+            this->h = h;
+            this->w = w;
 
-            red = (int **)malloc(w * sizeof(int *));
-            green = (int **)malloc(w * sizeof(int *));
-            blue = (int **)malloc(w * sizeof(int *));
+            red = (int **)malloc(h * sizeof(int *));
+            green = (int **)malloc(h * sizeof(int *));
+            blue = (int **)malloc(h * sizeof(int *));
 
-            for (int i=0; i<w; i++) {
-                red[i] = (int *)malloc(h * sizeof(int));
-                green[i] = (int *)malloc(h * sizeof(int));
-                blue[i] = (int *)malloc(h * sizeof(int));
+            for (int i=0; i<h; i++) {
+                red[i] = (int *)malloc(w * sizeof(int));
+                green[i] = (int *)malloc(w * sizeof(int));
+                blue[i] = (int *)malloc(w * sizeof(int));
             }
 
-            for(int i=0; i<w; i++) {
-                for(int j=0; j<h; j++) {
+            for(int i=0; i<h; i++) {
+                for(int j=0; j<w; j++) {
                     red[i][j] = red_c;
                     green[i][j] = green_c;
                     blue[i][j] = blue_c;
@@ -168,19 +168,6 @@ class image {
                 int cy = params[2];
                 bool fill = params[3];
 
-                for (int i=0; i<h; i++) {
-                    for (int j=0; j<w; j++) {
-                        int x = i;
-                        int y = j;
-
-                        if ((x-cx)*(x-cx) + (y-cy)*(y-cy) <= r*r) {
-                            red[i][j] = 0;
-                            green[i][j] = 0;
-                            blue[i][j] = 0;
-                        }
-                    }
-                }
-
                 // TODO: draw circle, we will think of doing some efficient way later
             } else if (shape == "line") {
                 int start_x = params[0];
@@ -200,14 +187,6 @@ class image {
             }
         }
 
-        int get_height() {
-            return h;
-        }
-
-        int get_width() {
-            return w;
-        }
-
         ~image() {
             for (int i=0; i<h; i++) {
                 free(red[i]);
@@ -223,21 +202,8 @@ class image {
 
 int main() {
     image img(100, 100, 0x000000);
-    // img.frame("test.bmp");
-    // img.load("./img.bmp");
-    // int h = img.get_height();
-    // int w = img.get_width();
-
-    // vector<int> v;
-    // v.push_back(10);
-    // v.push_back(h/2);
-    // v.push_back(w/5);
-    // img.draw("circle", v);
-
-    // img.frame("test2.bmp");
-
-    img.load("./test2.bmp");
-    img.frame("test3.bmp");
-
+    img.frame("test.bmp");
+    img.load("./img.bmp");
+    img.frame("test2.bmp");
     return 0;
 }
