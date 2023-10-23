@@ -23,8 +23,8 @@ class image {
             int green_c = ((color >> 8) & 0xFF);   // Extract the GG byte
             int blue_c = ((color) & 0xFF);
 
-            this->h = w;
-            this->w = h;
+            this->w = w;
+            this->h = h;
 
             red = (int **)malloc(w * sizeof(int *));
             green = (int **)malloc(w * sizeof(int *));
@@ -56,7 +56,7 @@ class image {
             fread(info, sizeof(unsigned char), 54, f); // read the 54-byte header
 
             if (!init) {    
-                for (int i=0; i<h; i++) {
+                for (int i=0; i<w; i++) {
                     free(red[i]);
                     free(green[i]);
                     free(blue[i]);
@@ -67,43 +67,46 @@ class image {
                 free(blue); 
             }    
 
-            h = *(int*)&info[18];
-            w = *(int*)&info[22];
+            w = *(int*)&info[18];
+            h = *(int*)&info[22];
+
+            cout << "w: " << w << endl;
+            cout << "h: " << h << endl;
 
             try {
-                assert(h > 0 && w > 0);
+                assert(w > 0 && h > 0);
             } catch (const std::exception& e) {
                 cout << "Error: Incorrect file format or corrupted file" << e.what() << endl;
                 return;
             }
 
             try {
-                assert(h < 1000 && w < 1000);
+                assert(w < 1000 && h < 1000);
             } catch (const std::exception& e) {
                 cout << "Error: Image size too large" << e.what() << endl;
                 return;
             }
 
-            int size = 3 * h * w;
+            int size = 3 * w * h;
             unsigned char* data = new unsigned char[size]; // allocate 3 bytes per pixel
             fread(data, sizeof(unsigned char), size, f); // read the rest of the data at once
             fclose(f);
 
-            red = (int **)malloc(h * sizeof(int *));
-            green = (int **)malloc(h * sizeof(int *));
-            blue = (int **)malloc(h * sizeof(int *));
+            red = (int **)malloc(w * sizeof(int *));
+            green = (int **)malloc(w * sizeof(int *));
+            blue = (int **)malloc(w * sizeof(int *));
 
-            for (int i=0; i<h; i++) {
-                red[i] = (int *)malloc(w * sizeof(int));
-                green[i] = (int *)malloc(w * sizeof(int));
-                blue[i] = (int *)malloc(w * sizeof(int));
+            for (int i=0; i<w; i++) {
+                red[i] = (int *)malloc(h * sizeof(int));
+                green[i] = (int *)malloc(h * sizeof(int));
+                blue[i] = (int *)malloc(h * sizeof(int));
             }
 
-            for(int i=0; i<h; i++) {
-                for(int j=0; j<w; j++) {
-                    red[i][j] = data[(i+j*h)*3+2];
-                    green[i][j] = data[(i+j*h)*3+1];
-                    blue[i][j] = data[(i+j*h)*3+0];
+            for(int i=0; i<w; i++) {
+                for(int j=0; j<h; j++) {
+                    red[i][j] = data[(i+j*w)*3+2];
+                    green[i][j] = data[(i+j*w)*3+1];
+                    blue[i][j] = data[(i+j*w)*3+0];
                 }
             }
 
@@ -112,17 +115,17 @@ class image {
 
         void frame(string filename) {
             FILE *f;
-            int filesize = 54 + 3*h*w;  //w is your image width, h is image height, both int
+            int filesize = 54 + 3*w*h;  //w is your image width, h is image height, both int
             unsigned char *canvas = NULL;
-            canvas = (unsigned char *)malloc(3*h*w);
-            memset(canvas,0,3*h*w);
+            canvas = (unsigned char *)malloc(3*w*h);
+            memset(canvas,0,3*w*h);
 
-            for(int i=0; i<h; i++) {
-                for(int j=0; j<w; j++) {
-                    int x=i; int y=(w-1)-j;
-                    canvas[(x+y*h)*3+2] = (unsigned char)(red[i][j]);
-                    canvas[(x+y*h)*3+1] = (unsigned char)(green[i][j]);
-                    canvas[(x+y*h)*3+0] = (unsigned char)(blue[i][j]);
+            for(int i=0; i<w; i++) {
+                for(int j=0; j<h; j++) {
+                    int x=i; int y=(h-1)-j;
+                    canvas[(x+y*w)*3+2] = (unsigned char)(red[i][j]);
+                    canvas[(x+y*w)*3+1] = (unsigned char)(green[i][j]);
+                    canvas[(x+y*w)*3+0] = (unsigned char)(blue[i][j]);
                 }
             }
 
@@ -135,22 +138,22 @@ class image {
             bmpfileheader[ 4] = (unsigned char)(filesize>>16);
             bmpfileheader[ 5] = (unsigned char)(filesize>>24);
 
-            bmpinfoheader[ 4] = (unsigned char)(       h    );
-            bmpinfoheader[ 5] = (unsigned char)(       h>> 8);
-            bmpinfoheader[ 6] = (unsigned char)(       h>>16);
-            bmpinfoheader[ 7] = (unsigned char)(       h>>24);
-            bmpinfoheader[ 8] = (unsigned char)(       w    );
-            bmpinfoheader[ 9] = (unsigned char)(       w>> 8);
-            bmpinfoheader[10] = (unsigned char)(       w>>16);
-            bmpinfoheader[11] = (unsigned char)(       w>>24);
+            bmpinfoheader[ 4] = (unsigned char)(       w    );
+            bmpinfoheader[ 5] = (unsigned char)(       w>> 8);
+            bmpinfoheader[ 6] = (unsigned char)(       w>>16);
+            bmpinfoheader[ 7] = (unsigned char)(       w>>24);
+            bmpinfoheader[ 8] = (unsigned char)(       h    );
+            bmpinfoheader[ 9] = (unsigned char)(       h>> 8);
+            bmpinfoheader[10] = (unsigned char)(       h>>16);
+            bmpinfoheader[11] = (unsigned char)(       h>>24);
 
             f = fopen(filename.c_str(), "wb");
             fwrite(bmpfileheader, 1, 14, f);
             fwrite(bmpinfoheader, 1, 40, f);
 
-            for(int i=0; i<w; i++) {
-                fwrite(canvas+(h*(w-i-1)*3),3,h,f);
-                fwrite(bmppad,1,(4-(h*3)%4)%4,f);
+            for(int i=0; i<h; i++) {
+                fwrite(canvas+(w*(h-i-1)*3),3,w,f);
+                fwrite(bmppad,1,(4-(w*3)%4)%4,f);
             }
 
             free(canvas);
@@ -168,15 +171,13 @@ class image {
                 int cy = params[2];
                 bool fill = params[3];
 
-                for (int i=0; i<h; i++) {
-                    for (int j=0; j<w; j++) {
-                        int x = i;
-                        int y = j;
-
+                for (int y=0; y<h; y++) {
+                    for (int x=0; x<w; x++) {
+                        
                         if ((x-cx)*(x-cx) + (y-cy)*(y-cy) <= r*r) {
-                            red[i][j] = 0;
-                            green[i][j] = 0;
-                            blue[i][j] = 0;
+                            red[x][y] = 0;
+                            green[x][y] = 0;
+                            blue[x][y] = 0;
                         }
                     }
                 }
@@ -209,7 +210,7 @@ class image {
         }
 
         ~image() {
-            for (int i=0; i<h; i++) {
+            for (int i=0; i<w; i++) {
                 free(red[i]);
                 free(green[i]);
                 free(blue[i]);
@@ -222,19 +223,22 @@ class image {
 };
 
 int main() {
-    image img(100, 100, 0x000000);
-    // img.frame("test.bmp");
-    // img.load("./img.bmp");
-    // int h = img.get_height();
-    // int w = img.get_width();
+    image img(200, 100, 0xffffff);
+    img.frame("test.bmp");
+    int h = img.get_height();
+    int w = img.get_width();
 
-    // vector<int> v;
-    // v.push_back(10);
-    // v.push_back(h/2);
-    // v.push_back(w/5);
-    // img.draw("circle", v);
+    vector<int> v;
+    v.push_back(10);
+    v.push_back(w/5);
+    v.push_back(h/2);
 
-    // img.frame("test2.bmp");
+    cout << "h: " << h << endl;
+    cout << "w: " << w << endl;
+
+    img.draw("circle", v);
+
+    img.frame("test2.bmp");
 
     img.load("./test2.bmp");
     img.frame("test3.bmp");
