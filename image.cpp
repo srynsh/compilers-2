@@ -66,7 +66,7 @@ class image {
                 free(green);
                 free(blue); 
             }    
-
+            cout << *(long*)&info[18]<<endl;
             w = *(int*)&info[18];
             h = *(int*)&info[22];
 
@@ -81,7 +81,7 @@ class image {
             }
 
             try {
-                assert(w < 1000 && h < 1000);
+                assert(w < 1400 && h < 1400);
             } catch (const std::exception& e) {
                 cout << "Error: Image size too large" << e.what() << endl;
                 return;
@@ -224,23 +224,23 @@ class image {
 
 int main() {
     image img(200, 100, 0xffffff);
-    img.frame("test.bmp");
-    int h = img.get_height();
-    int w = img.get_width();
+    // img.frame("test.bmp");
+    // int h = img.get_height();
+    // int w = img.get_width();
 
-    vector<int> v;
-    v.push_back(10);
-    v.push_back(w/5);
-    v.push_back(h/2);
+    // vector<int> v;
+    // v.push_back(10);
+    // v.push_back(w/5);
+    // v.push_back(h/2);
 
-    cout << "h: " << h << endl;
-    cout << "w: " << w << endl;
+    // cout << "h: " << h << endl;
+    // cout << "w: " << w << endl;
 
-    img.draw("circle", v);
+    // img.draw("circle", v);
 
-    img.frame("test2.bmp");
+    // img.frame("test2.bmp");
 
-    img.load("./test2.bmp");
+    img.load("./greenland_grid_velo.bmp");
     img.frame("test3.bmp");
 
     return 0;
