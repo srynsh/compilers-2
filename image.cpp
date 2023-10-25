@@ -12,6 +12,7 @@ class gray_image;
 gray_image conv(gray_image &img, vector<vector<float>> kernel, int stride, float padding);
 gray_image to_gray_image(vector<vector<float>> vec);
 
+#define MAX_SIZE 2000
 
 class image {
     private:
@@ -25,7 +26,7 @@ class image {
     public:
         image(int h, int w, int color) {
             assert(w > 0 && h > 0);
-            assert(w < 1000 && h < 1000);
+            assert(w < MAX_SIZE && h < MAX_SIZE);
             assert(color >= 0x000000 && color <= 0xFFFFFF);
 
             int red_c = ((color >> 16) & 0xFF);  // Extract the RR byte
@@ -75,7 +76,7 @@ class image {
                 free(green);
                 free(blue); 
             }    
-            cout << *(long*)&info[18]<<endl;
+
             w = *(int*)&info[18];
             h = *(int*)&info[22];
 
@@ -90,7 +91,7 @@ class image {
             }
 
             try {
-                assert(w < 1400 && h < 1400);
+                assert(w < MAX_SIZE && h < MAX_SIZE);
             } catch (const std::exception& e) {
                 cout << "Error: Image size too large" << e.what() << endl;
                 return;
@@ -255,7 +256,7 @@ class gray_image {
             */
 
             assert(w > 0 && h > 0);
-            assert(w < 1000 && h < 1000);
+            assert(w < MAX_SIZE && h < MAX_SIZE);
             assert(color >= 0x000000 && color <= 0xFFFFFF);
 
             int gray_c = color;
@@ -384,7 +385,7 @@ class gray_image {
             }
 
             try {
-                assert(w < 1000 && h < 1000);
+                assert(w < MAX_SIZE && h < MAX_SIZE);
             } catch (const std::exception& e) {
                 cout << "Error: Image size too large" << e.what() << endl;
                 return;
@@ -955,7 +956,6 @@ gray_image to_gray_image(vector<vector<float>> vec) {
 
 // Check filters and functions
 int main() {
-    gray_image img("./input.bmp");
     gray_image img("./in.bmp");
     gray_image new_img = img.blur(5);
     gray_image new_img2 = img.sharpen(20);
