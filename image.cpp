@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 #include "kernel.h"
+#include "load_bmp.h"
 
 /* To run: g++ --std=c++11 -o image kernel.cpp image.cpp */
 
@@ -9,8 +10,8 @@ using namespace std;
 class gray_image;
 
 // Forward declaration of non-member functions
-gray_image conv(gray_image &img, vector<vector<float>> kernel, int stride, float padding);
-gray_image to_gray_image(vector<vector<float>> vec);
+gray_image conv(gray_image &img, vector< vector<float> > kernel, int stride, float padding);
+gray_image to_gray_image(vector< vector<float> > vec);
 
 #define MAX_SIZE 2000
 
@@ -19,9 +20,9 @@ class image {
         int h;
         int w;
 
-        int **red;
-        int **green;
-        int **blue;
+        uint8_t **red;
+        uint8_t **green;
+        uint8_t **blue;
 
     public:
         image(int h, int w, int color) {
@@ -36,14 +37,14 @@ class image {
             this->w = w;
             this->h = h;
 
-            red = (int **)malloc(w * sizeof(int *));
-            green = (int **)malloc(w * sizeof(int *));
-            blue = (int **)malloc(w * sizeof(int *));
+            red = (uint8_t **)malloc(w * sizeof(int *));
+            green = (uint8_t **)malloc(w * sizeof(int *));
+            blue = (uint8_t **)malloc(w * sizeof(int *));
 
             for (int i=0; i<w; i++) {
-                red[i] = (int *)malloc(h * sizeof(int));
-                green[i] = (int *)malloc(h * sizeof(int));
-                blue[i] = (int *)malloc(h * sizeof(int));
+                red[i] = (uint8_t *)malloc(h * sizeof(int));
+                green[i] = (uint8_t *)malloc(h * sizeof(int));
+                blue[i] = (uint8_t *)malloc(h * sizeof(int));
             }
 
             for(int i=0; i<w; i++) {
@@ -102,14 +103,14 @@ class image {
             fread(data, sizeof(unsigned char), size, f); // read the rest of the data at once
             fclose(f);
 
-            red = (int **)malloc(w * sizeof(int *));
-            green = (int **)malloc(w * sizeof(int *));
-            blue = (int **)malloc(w * sizeof(int *));
+            red = (uint8_t **)malloc(w * sizeof(int *));
+            green = (uint8_t **)malloc(w * sizeof(int *));
+            blue = (uint8_t **)malloc(w * sizeof(int *));
 
             for (int i=0; i<w; i++) {
-                red[i] = (int *)malloc(h * sizeof(int));
-                green[i] = (int *)malloc(h * sizeof(int));
-                blue[i] = (int *)malloc(h * sizeof(int));
+                red[i] = (uint8_t *)malloc(h * sizeof(int));
+                green[i] = (uint8_t *)malloc(h * sizeof(int));
+                blue[i] = (uint8_t *)malloc(h * sizeof(int));
             }
 
             for(int i=0; i<w; i++) {
@@ -859,7 +860,7 @@ class gray_image {
 
 // Convolution function
 // Convolves a gray scale image with a given kernel
-gray_image conv(gray_image &img, vector<vector<float>> kernel, int stride, float padding) {
+gray_image conv(gray_image &img, vector< vector<float> > kernel, int stride, float padding) {
     /*
         params:
             img: gray scale image
@@ -909,7 +910,7 @@ gray_image conv(gray_image &img, vector<vector<float>> kernel, int stride, float
 }
 
 // Converts 2D vector of floats to gray-scale image
-gray_image to_gray_image(vector<vector<float>> vec) {
+gray_image to_gray_image(vector< vector<float> > vec) {
     /*
         params:
             vec: 2D vector of floats (of dimension (width x height))

@@ -130,26 +130,3 @@ void WriteOutBmp24(char* FileBuffer, const char* NameOfFileToCreate, int BufferS
 
     write.write(FileBuffer, BufferSize);
 }
-
-
-int main() {
-    char* FileBuffer; int BufferSize;
-
-    string Picture = "blackbuck.bmp";
-    if (!FillAndAllocate(FileBuffer, Picture.c_str(), rows, cols, BufferSize)) {
-        cout << "File read error" << endl; 
-        return 1;
-    }
-
-    cout << "Rows: " << rows << " Cols: " << cols << endl;
-
-    RGB_Allocate(reds);
-    RGB_Allocate(greens);
-    RGB_Allocate(blues);
-    GetPixlesFromBMP24( reds,  greens, blues,BufferSize, rows, cols, FileBuffer);
-
-    string WriteOutFile = "OutputPicture.bmp";
-    WriteOutBmp24(FileBuffer,  WriteOutFile.c_str(), BufferSize);
-    
-    return 0;
-}
