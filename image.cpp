@@ -870,22 +870,113 @@ gray_image conv(gray_image &img, vector<vector<float>> kernel, int stride, float
     int h = img.get_height();
     int w = img.get_width();
 
-    vector<int> v;
-    v.push_back(10);
-    v.push_back(w/5);
-    v.push_back(h/2);
+    int k_h = kernel.size();
+    int k_w = kernel[0].size();
 
-    cout << "h: " << h << endl;
-    cout << "w: " << w << endl;
+    int new_h = (h - k_h + 2*padding)/stride + 1;
+    int new_w = (w - k_w + 2*padding)/stride + 1;
 
-    img.draw("circle", v);
+    gray_image new_img(new_h, new_w, 0);
 
-    img.frame("test2.bmp");
+    for (int i=0; i<new_w; i++) {
+        for (int j=0; j<new_h; j++) {
+            float sum = 0;
+            for (int m=0; m<k_w; m++) {
+                for (int n=0; n<k_h; n++) {
+                    int x = i*stride + m - padding;
+                    int y = j*stride + n - padding;
 
-    img.load("./test2.bmp");
-    img.frame("test3.bmp");
+                    // x and y when m and n are 0 -> where bottom left corner of kernel is placed
+                    if (x >= 0 && x < w && y >= 0 && y < h) {
+                        sum += img.get_pixel(x, y) * kernel[k_h - n - 1][m];
+                        // sum += kernel[k][l]*img.get_pixel(i*stride + l, j*stride + (k_h - k - 1));
+                    }
+                }
+            }
 
-    return 0;
+            if (sum < 0) {
+                sum = 0; // clip to 0 if value is negative
+            } else if (sum > 255) {
+                sum = 255; // clip to 255 if value exceeds 255
+            }
+
+            new_img.set_pixel(i, j, (int)sum);
+        }
+    }
+
+    return new_img;
 }
 
+// Converts 2D vector of floats to gray-scale image
+gray_image to_gray_image(vector<vector<float>> vec) {
+    /*
+        params:
+            vec: 2D vector of floats (of dimension (width x height))
+    */
 
+    int w = vec.size();
+    int h = vec[0].size();
+
+    gray_image img(h, w, 0);
+
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+            if(vec[i][j] < 0) {
+                vec[i][j] = 0; // clip to 0 if value is negative
+            } else if (vec[i][j] > 255) {
+                vec[i][j] = 255; // clip to 255 if value exceeds 255
+            }
+            img.set_pixel(i, j, (int)vec[i][j]);
+        }
+    }
+
+    return img;
+}
+
+// int main() {
+//     // image img(200, 100, 0xffffff);
+//     // img.frame("test.bmp");
+//     // int h = img.get_height();
+//     // int w = img.get_width();
+//     // vector<int> v;
+//     // v.push_back(10);
+//     // v.push_back(w/5);
+//     // v.push_back(h/2);
+//     // cout << "h: " << h << endl;
+//     // cout << "w: " << w << endl;
+//     // img.draw("circle", v);
+//     // img.frame("test2.bmp");
+//     // img.load("./test2.bmp");
+//     // img.frame("test3.bmp");
+//     gray_image img("./input.bmp");
+//     img.frame("./output.bmp");
+//     return 0;
+// }
+
+// Check filters and functions
+int main() {
+    gray_image img("./input.bmp");
+    gray_image img("./in.bmp");
+    gray_image new_img = img.blur(5);
+    gray_image new_img2 = img.sharpen(20);
+    gray_image new_img3 = img.sobel();
+    gray_image new_img4 = img.hflip();
+    gray_image new_img5 = img.vflip();
+    gray_image new_img6 = img.T();
+    gray_image new_img7 = img.pixelate(5);
+    gray_image new_img8 = img.invert();
+    gray_image new_img9 = img.noise(15);
+    gray_image new_img10 = img.bnw();
+    img.frame("./outputs/output_orig.bmp");
+    new_img.frame("./outputs/output_blur.bmp");
+    new_img2.frame("./outputs/output_sharpen.bmp");
+    new_img3.frame("./outputs/output_sobel.bmp");
+    new_img4.frame("./outputs/output_hflip.bmp");
+    new_img5.frame("./outputs/output_vflip.bmp");
+    new_img6.frame("./outputs/output_transpose.bmp");
+    new_img7.frame("./outputs/output_pixelate.bmp");
+    new_img8.frame("./outputs/output_invert.bmp");
+    new_img9.frame("./outputs/output_noise.bmp");
+    new_img10.frame("./outputs/output_bnw.bmp");
+    return 0;
+}
