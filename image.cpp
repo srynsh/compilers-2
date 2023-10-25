@@ -1,4 +1,7 @@
 #include <bits/stdc++.h>
+#include "kernel.h"
+
+/* To run: g++ --std=c++11 -o image kernel.cpp image.cpp */
 
 using namespace std;
 
@@ -7,6 +10,7 @@ class gray_image;
 
 // Forward declaration of non-member functions
 gray_image conv(gray_image &img, vector<vector<float>> kernel, int stride, float padding);
+gray_image to_gray_image(vector<vector<float>> vec);
 
 
 class image {
@@ -631,6 +635,19 @@ class gray_image {
 
         /* Different Filters and Functions */
 
+        // Converts a gray-scale image to 2D vector
+        vector<vector<float>> to_vector() {
+            vector<vector<float>> vec(w, vector<float>(h));
+
+            for (int i=0; i<w; i++) {
+                for (int j=0; j<h; j++) {
+                    vec[i][j] = gray[i][j];
+                }
+            }
+
+            return vec;
+        }
+
         // Blurs the image by simple averaging of neighbouring pixel values
         // The larger the kernel size, the more the blur
         gray_image blur(int k) {
@@ -685,7 +702,10 @@ class gray_image {
             gray_image new_img_y = conv(*this, kernel_y, 1, 1);
 
             gray_image new_img = new_img_x + new_img_y;
-            // gray_image new_img = (new_img_x*new_img_x + new_img_y*new_img_y).sqrt(); // Can't see edges as well
+            // vector<vector<float>> vec_x, vec_y; // Need to do this to prevent clipping
+            // vec_x = new_img_x.to_vector(); vec_y = new_img_y.to_vector();
+            // gray_image new_img = to_gray_image(vec_sqrt(vec_x*vec_x + vec_y*vec_y)); 
+
 
             return new_img;
         }
@@ -888,6 +908,31 @@ gray_image conv(gray_image &img, vector<vector<float>> kernel, int stride, float
     return new_img;
 }
 
+// Converts 2D vector of floats to gray-scale image
+gray_image to_gray_image(vector<vector<float>> vec) {
+    /*
+        params:
+            vec: 2D vector of floats (of dimension (width x height))
+    */
+
+    int w = vec.size();
+    int h = vec[0].size();
+
+    gray_image img(h, w, 0);
+
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+            if(vec[i][j] < 0) {
+                vec[i][j] = 0; // clip to 0 if value is negative
+            } else if (vec[i][j] > 255) {
+                vec[i][j] = 255; // clip to 255 if value exceeds 255
+            }
+            img.set_pixel(i, j, (int)vec[i][j]);
+        }
+    }
+
+    return img;
+}
 
 
 // int main() {
@@ -919,7 +964,7 @@ gray_image conv(gray_image &img, vector<vector<float>> kernel, int stride, float
 
 // Check filters and functions
 int main() {
-    gray_image img("./input.bmp");
+    gray_image img("./in.bmp");
     gray_image new_img = img.blur(5);
     gray_image new_img2 = img.sharpen(20);
     gray_image new_img3 = img.sobel();
