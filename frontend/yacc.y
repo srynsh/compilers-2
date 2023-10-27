@@ -19,8 +19,10 @@
 
 %%
 
-program : program function {printf("rule1\n");}
-        | function {printf("rule2\n");}
+program : program function new_lines
+        | function new_lines
+        | function
+        | program function
         ;
         
 /*
@@ -49,6 +51,8 @@ new_lines : new_lines NEWLINE
 
 function : INK ID '(' arg_list ')' ARROW RET_TYPE func_body
         | INK ID '(' ')' ARROW RET_TYPE func_body
+        | INK ID '(' arg_list ')' ARROW RET_TYPE new_lines func_body
+        | INK ID '(' ')' ARROW RET_TYPE new_lines func_body
         ;
 
 RET_TYPE : datatype
@@ -213,7 +217,7 @@ void yyerror(char* s){
 }
 
 int main(int argc, char* argv[]){
-
+/* 
     extern FILE* ftoken, *fparser;
     int n = strlen(argv[1]);
     char* name = (char*)malloc(sizeof(char)*(n+50));
@@ -222,7 +226,7 @@ int main(int argc, char* argv[]){
     /* strcpy(tname, "seq_tokens_");
     strcpy(pname, "parser_") */
 
-    sprintf(name, "%s.clike", argv[1]);
+    /* sprintf(name, "%s.clike", argv[1]);
     sprintf(tname, "seq_tokens_%s.txt", argv[1]);
     sprintf(pname, "parser_%s.parsed", argv[1]);
 
@@ -234,7 +238,13 @@ int main(int argc, char* argv[]){
     yyin = fopen(name, "r");
     yyout = fparser;
 
-    yyparse(); 
+    yyparse();  */
 
+    ftoken = fopen("token.txt", "w");
+    fparser = fopen("parsed.txt", "w");
+    fprintf(ftoken, "Name: Suryaansh Jain\nID: CS21BTECH11057\n");
+    yyparse();
+    fclose(ftoken);
+    fclose(fparser);
     return 0;
 }

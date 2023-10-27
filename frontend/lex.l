@@ -27,6 +27,7 @@ blanks [ \t]+
 if "$"|"$$"
 comments "#"|"#*"|"*#"
 punctuators [\{\}\[\]\(\)';,]
+operators "="|"+"|"-"|"*"|"/"|"^"|"~"|"++"|"--"
 
 
 %%
@@ -39,6 +40,14 @@ punctuators [\{\}\[\]\(\)';,]
     if (!block_comment) {
         fprintf(fparser,"%s", yytext);
         return NEWLINE;
+    }
+}
+
+{operators} {
+    if (!inline_comment && !block_comment) {
+        fprintf(fparser,"%s", yytext);
+        fprintf(ftoken,"operator: %s\n", yytext);
+        return *yytext;
     }
 }
 
@@ -141,7 +150,7 @@ punctuators [\{\}\[\]\(\)';,]
 }
 
 {comments} {
-    fprintf(fparser,"%s", yytext);
+    // fprintf(fparser,"%s", yytext);
     if (!inline_comment && !block_comment) {
         if (strcmp(yytext,"#*")==0) block_comment = 1;
         else if (strcmp(yytext,"#")==0) inline_comment = 1;

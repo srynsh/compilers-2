@@ -11,3 +11,6 @@
 **/*output.txt
 **/*.dSYM
 **/*.tab.*
+**/*.output.*
+**/a.out
+**/.DS_Store
