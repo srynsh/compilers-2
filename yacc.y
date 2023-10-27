@@ -18,6 +18,77 @@
 
 
 %%
+
+program : program function {printf("rule1\n");}
+        | function {printf("rule2\n");}
+        ;
+        
+/*
+ink main() -> void 
+{ 
+    
+}
+
+or 
+
+ink main() -> void {
+
+}
+
+(id = id} is invalid)
+*/
+
+
+func_body : '{' stmt_list '}'
+        | '{' new_lines stmt_list '}'
+        ;
+
+new_lines : new_lines NEWLINE
+        | NEWLINE
+        ;   
+
+function : INK ID '(' arg_list ')' ARROW RET_TYPE func_body
+        | INK ID '(' ')' ARROW RET_TYPE func_body
+        ;
+
+RET_TYPE : datatype
+        | VOID
+        ;
+        
+arg_list : arg_list ',' arg
+        | arg
+        ;
+
+arg : datatype ID
+    ;
+
+datatype : IMG
+        | GRAY_IMG
+        | VID
+        | GRAY_VID
+        | NUM
+        | REAL
+        | BOOL
+        ;
+
+stmt_list : stmt
+        | stmt_list stmt 
+        ;
+
+stmt : ID '=' ID new_lines {printf("boo yeah\n");}
+    ;
+
+
+
+
+
+
+
+
+
+
+
+
 // program : program subprogram /* A program is a list of functions and classes; it can also be empty! */
 //                 | /* empty */ 
 //                 ;
@@ -140,6 +211,7 @@ void yyerror(char* s){
         fprintf(fparser, " : invalid statement");
         exit(1);
 }
+
 int main(int argc, char* argv[]){
 
     extern FILE* ftoken, *fparser;
@@ -149,6 +221,7 @@ int main(int argc, char* argv[]){
     char* pname = (char*)malloc(sizeof(char)*(n+50));
     /* strcpy(tname, "seq_tokens_");
     strcpy(pname, "parser_") */
+
     sprintf(name, "%s.clike", argv[1]);
     sprintf(tname, "seq_tokens_%s.txt", argv[1]);
     sprintf(pname, "parser_%s.parsed", argv[1]);
@@ -156,9 +229,11 @@ int main(int argc, char* argv[]){
     ftoken = fopen(tname, "w");
     fparser = fopen(pname, "w");
 
+
     fprintf(ftoken, "Name: Rahul Ramachandran\nID: CS21BTECH11049\n"); // First two lines of token file
     yyin = fopen(name, "r");
     yyout = fparser;
+
     yyparse(); 
 
     return 0;

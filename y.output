@@ -1,0 +1,447 @@
+   0  $accept : program $end
+
+   1  program : program function
+   2          | function
+
+   3  func_body : '{' stmt_list '}'
+   4            | '{' new_lines stmt_list '}'
+
+   5  new_lines : new_lines NEWLINE
+   6            | NEWLINE
+
+   7  function : INK ID '(' arg_list ')' ARROW RET_TYPE func_body
+   8           | INK ID '(' ')' ARROW RET_TYPE func_body
+
+   9  RET_TYPE : datatype
+  10           | VOID
+
+  11  arg_list : arg_list ',' arg
+  12           | arg
+
+  13  arg : datatype ID
+
+  14  datatype : IMG
+  15           | GRAY_IMG
+  16           | VID
+  17           | GRAY_VID
+  18           | NUM
+  19           | REAL
+  20           | BOOL
+
+  21  stmt_list : stmt
+  22            | stmt_list stmt
+
+  23  stmt : ID '=' ID new_lines
+
+state 0
+	$accept : . program $end  (0)
+
+	INK  shift 1
+	.  error
+
+	program  goto 2
+	function  goto 3
+
+
+state 1
+	function : INK . ID '(' arg_list ')' ARROW RET_TYPE func_body  (7)
+	function : INK . ID '(' ')' ARROW RET_TYPE func_body  (8)
+
+	ID  shift 4
+	.  error
+
+
+state 2
+	$accept : program . $end  (0)
+	program : program . function  (1)
+
+	$end  accept
+	INK  shift 1
+	.  error
+
+	function  goto 5
+
+
+state 3
+	program : function .  (2)
+
+	.  reduce 2
+
+
+state 4
+	function : INK ID . '(' arg_list ')' ARROW RET_TYPE func_body  (7)
+	function : INK ID . '(' ')' ARROW RET_TYPE func_body  (8)
+
+	'('  shift 6
+	.  error
+
+
+state 5
+	program : program function .  (1)
+
+	.  reduce 1
+
+
+state 6
+	function : INK ID '(' . arg_list ')' ARROW RET_TYPE func_body  (7)
+	function : INK ID '(' . ')' ARROW RET_TYPE func_body  (8)
+
+	IMG  shift 7
+	GRAY_IMG  shift 8
+	VID  shift 9
+	GRAY_VID  shift 10
+	NUM  shift 11
+	REAL  shift 12
+	BOOL  shift 13
+	')'  shift 14
+	.  error
+
+	arg_list  goto 15
+	datatype  goto 16
+	arg  goto 17
+
+
+state 7
+	datatype : IMG .  (14)
+
+	.  reduce 14
+
+
+state 8
+	datatype : GRAY_IMG .  (15)
+
+	.  reduce 15
+
+
+state 9
+	datatype : VID .  (16)
+
+	.  reduce 16
+
+
+state 10
+	datatype : GRAY_VID .  (17)
+
+	.  reduce 17
+
+
+state 11
+	datatype : NUM .  (18)
+
+	.  reduce 18
+
+
+state 12
+	datatype : REAL .  (19)
+
+	.  reduce 19
+
+
+state 13
+	datatype : BOOL .  (20)
+
+	.  reduce 20
+
+
+state 14
+	function : INK ID '(' ')' . ARROW RET_TYPE func_body  (8)
+
+	ARROW  shift 18
+	.  error
+
+
+state 15
+	function : INK ID '(' arg_list . ')' ARROW RET_TYPE func_body  (7)
+	arg_list : arg_list . ',' arg  (11)
+
+	')'  shift 19
+	','  shift 20
+	.  error
+
+
+state 16
+	arg : datatype . ID  (13)
+
+	ID  shift 21
+	.  error
+
+
+state 17
+	arg_list : arg .  (12)
+
+	.  reduce 12
+
+
+state 18
+	function : INK ID '(' ')' ARROW . RET_TYPE func_body  (8)
+
+	IMG  shift 7
+	GRAY_IMG  shift 8
+	VID  shift 9
+	GRAY_VID  shift 10
+	NUM  shift 11
+	REAL  shift 12
+	VOID  shift 22
+	BOOL  shift 13
+	.  error
+
+	RET_TYPE  goto 23
+	datatype  goto 24
+
+
+state 19
+	function : INK ID '(' arg_list ')' . ARROW RET_TYPE func_body  (7)
+
+	ARROW  shift 25
+	.  error
+
+
+state 20
+	arg_list : arg_list ',' . arg  (11)
+
+	IMG  shift 7
+	GRAY_IMG  shift 8
+	VID  shift 9
+	GRAY_VID  shift 10
+	NUM  shift 11
+	REAL  shift 12
+	BOOL  shift 13
+	.  error
+
+	datatype  goto 16
+	arg  goto 26
+
+
+state 21
+	arg : datatype ID .  (13)
+
+	.  reduce 13
+
+
+state 22
+	RET_TYPE : VOID .  (10)
+
+	.  reduce 10
+
+
+state 23
+	function : INK ID '(' ')' ARROW RET_TYPE . func_body  (8)
+
+	'{'  shift 27
+	.  error
+
+	func_body  goto 28
+
+
+state 24
+	RET_TYPE : datatype .  (9)
+
+	.  reduce 9
+
+
+state 25
+	function : INK ID '(' arg_list ')' ARROW . RET_TYPE func_body  (7)
+
+	IMG  shift 7
+	GRAY_IMG  shift 8
+	VID  shift 9
+	GRAY_VID  shift 10
+	NUM  shift 11
+	REAL  shift 12
+	VOID  shift 22
+	BOOL  shift 13
+	.  error
+
+	RET_TYPE  goto 29
+	datatype  goto 24
+
+
+state 26
+	arg_list : arg_list ',' arg .  (11)
+
+	.  reduce 11
+
+
+state 27
+	func_body : '{' . stmt_list '}'  (3)
+	func_body : '{' . new_lines stmt_list '}'  (4)
+
+	NEWLINE  shift 30
+	ID  shift 31
+	.  error
+
+	stmt_list  goto 32
+	new_lines  goto 33
+	stmt  goto 34
+
+
+state 28
+	function : INK ID '(' ')' ARROW RET_TYPE func_body .  (8)
+
+	.  reduce 8
+
+
+state 29
+	function : INK ID '(' arg_list ')' ARROW RET_TYPE . func_body  (7)
+
+	'{'  shift 27
+	.  error
+
+	func_body  goto 35
+
+
+state 30
+	new_lines : NEWLINE .  (6)
+
+	.  reduce 6
+
+
+state 31
+	stmt : ID . '=' ID new_lines  (23)
+
+	'='  shift 36
+	.  error
+
+
+state 32
+	func_body : '{' stmt_list . '}'  (3)
+	stmt_list : stmt_list . stmt  (22)
+
+	ID  shift 31
+	'}'  shift 37
+	.  error
+
+	stmt  goto 38
+
+
+state 33
+	func_body : '{' new_lines . stmt_list '}'  (4)
+	new_lines : new_lines . NEWLINE  (5)
+
+	NEWLINE  shift 39
+	ID  shift 31
+	.  error
+
+	stmt_list  goto 40
+	stmt  goto 34
+
+
+state 34
+	stmt_list : stmt .  (21)
+
+	.  reduce 21
+
+
+state 35
+	function : INK ID '(' arg_list ')' ARROW RET_TYPE func_body .  (7)
+
+	.  reduce 7
+
+
+state 36
+	stmt : ID '=' . ID new_lines  (23)
+
+	ID  shift 41
+	.  error
+
+
+state 37
+	func_body : '{' stmt_list '}' .  (3)
+
+	.  reduce 3
+
+
+state 38
+	stmt_list : stmt_list stmt .  (22)
+
+	.  reduce 22
+
+
+state 39
+	new_lines : new_lines NEWLINE .  (5)
+
+	.  reduce 5
+
+
+state 40
+	func_body : '{' new_lines stmt_list . '}'  (4)
+	stmt_list : stmt_list . stmt  (22)
+
+	ID  shift 31
+	'}'  shift 42
+	.  error
+
+	stmt  goto 38
+
+
+state 41
+	stmt : ID '=' ID . new_lines  (23)
+
+	NEWLINE  shift 30
+	.  error
+
+	new_lines  goto 43
+
+
+state 42
+	func_body : '{' new_lines stmt_list '}' .  (4)
+
+	.  reduce 4
+
+
+state 43
+	new_lines : new_lines . NEWLINE  (5)
+	stmt : ID '=' ID new_lines .  (23)
+
+	NEWLINE  shift 39
+	ID  reduce 23
+	'}'  reduce 23
+
+
+31 terminals, 11 nonterminals
+24 grammar rules, 44 states
+
+grammar parser grammar
+symbol# value# symbol
+     0      0  $end
+     1    256  error
+     2    257  IF
+     3    258  ELSE_IF
+     4    259  RETURN
+     5    260  CONTINUE
+     6    261  BREAK
+     7    262  LOOP
+     8    263  INK
+     9    264  ARROW
+    10    265  DOT_OP
+    11    266  LOG_OP
+    12    267  REL_OP
+    13    268  NEG_OP
+    14    269  IMG
+    15    270  GRAY_IMG
+    16    271  VID
+    17    272  GRAY_VID
+    18    273  NUM
+    19    274  REAL
+    20    275  VOID
+    21    276  BOOL
+    22    277  BOOLCONST
+    23    278  NEWLINE
+    24    279  ID
+    25    123  '{'
+    26    125  '}'
+    27     40  '('
+    28     41  ')'
+    29     44  ','
+    30     61  '='
+    31    280  $accept
+    32    281  program
+    33    282  function
+    34    283  func_body
+    35    284  stmt_list
+    36    285  new_lines
+    37    286  arg_list
+    38    287  RET_TYPE
+    39    288  datatype
+    40    289  arg
+    41    290  stmt

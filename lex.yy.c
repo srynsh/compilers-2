@@ -1,5 +1,5 @@
 
-#line 3 "lex.yy.c"
+#line 2 "lex.yy.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -362,15 +362,15 @@ struct yy_trans_info
 	};
 static const flex_int16_t yy_accept[84] =
     {   0,
-        0,    0,   15,   14,    2,    1,    5,    3,   11,   13,
-       14,   14,    4,    7,    7,    6,   14,    6,   12,   12,
-       12,   12,   12,   12,   12,   12,   12,   12,   12,   12,
-       12,    2,    6,    3,   11,    7,    0,    7,    9,   12,
-       12,   12,   12,   12,   12,   12,   12,   12,   12,    5,
-       12,   12,   12,   12,   12,    8,   12,   12,   12,   12,
-       12,   10,   12,   12,   12,   12,   12,   12,   12,   12,
-       12,   12,   12,   12,   12,   12,   12,   12,   12,   12,
-       12,   12,    0
+        0,    0,   15,   14,    2,    1,    4,   12,   10,   13,
+       14,   14,    3,    6,    6,    5,   14,    5,   11,   11,
+       11,   11,   11,   11,   11,   11,   11,   11,   11,   11,
+       11,    2,    5,   12,   10,    6,    8,    0,    6,   11,
+       11,   11,   11,   11,   11,   11,   11,   11,   11,    4,
+       11,   11,   11,   11,   11,    7,   11,   11,   11,   11,
+       11,    9,   11,   11,   11,   11,   11,   11,   11,   11,
+       11,   11,   11,   11,   11,   11,   11,   11,   11,   11,
+       11,   11,    0
     } ;
 
 static const YY_CHAR yy_ec[256] =
@@ -416,13 +416,13 @@ static const YY_CHAR yy_meta[38] =
 static const flex_int16_t yy_base[85] =
     {   0,
         0,    0,  120,  121,  117,  121,  104,  109,  110,  121,
-      110,  102,  121,  103,   28,   98,   27,   97,    0,   81,
-       13,   79,   90,   75,   18,   71,   73,   82,   72,   70,
-       19,   99,  121,  121,  121,   40,   42,   45,  121,    0,
+      110,   26,  121,  104,   32,   99,   98,   97,    0,   81,
+       15,   79,   90,   75,   11,   71,   73,   82,   72,   70,
+       21,   99,  121,  121,  121,   38,  121,   41,   44,    0,
        79,   69,   76,   68,   69,   77,   70,   67,   64,    0,
-       30,   61,   55,   68,   63,   47,   60,   68,   51,   51,
+       39,   61,   55,   68,   63,   47,   60,   68,   51,   51,
        46,    0,   55,   46,   50,   57,   57,   51,   51,   53,
-       57,   41,   45,   41,   35,   40,   33,   39,   41,   43,
+       57,   40,   43,   40,   35,   39,   32,   38,   40,   42,
        39,   41,  121,   59
     } ;
 
@@ -444,16 +444,16 @@ static const flex_int16_t yy_nxt[159] =
         4,    5,    6,    7,    8,    9,   10,   11,   12,   13,
        14,   15,   16,   17,   18,   19,   19,   20,   21,   22,
        19,   19,   23,   24,   25,   19,   19,   19,   26,   27,
-       19,   28,   29,   30,   19,   31,   19,   37,   38,   38,
-       33,   39,   42,   54,   43,   47,   48,   63,   55,   37,
-       38,   38,   56,   56,   37,   38,   38,   56,   56,   78,
-       40,   62,   62,   64,   62,   82,   81,   80,   62,   77,
-       79,   62,   76,   75,   62,   74,   62,   62,   62,   73,
+       19,   28,   29,   30,   19,   31,   19,   36,   47,   48,
+       37,   38,   39,   39,   42,   54,   43,   38,   39,   39,
+       55,   56,   56,   38,   39,   39,   63,   56,   56,   78,
+       40,   62,   62,   62,   82,   81,   80,   62,   77,   62,
+       79,   76,   64,   75,   62,   74,   62,   62,   62,   73,
        72,   62,   71,   70,   69,   68,   62,   67,   62,   66,
        65,   62,   62,   62,   61,   60,   59,   58,   57,   50,
 
        32,   53,   52,   51,   50,   49,   46,   45,   44,   41,
-       33,   33,   37,   36,   34,   35,   34,   33,   32,   83,
+       33,   33,   33,   38,   34,   35,   34,   33,   32,   83,
         3,   83,   83,   83,   83,   83,   83,   83,   83,   83,
        83,   83,   83,   83,   83,   83,   83,   83,   83,   83,
        83,   83,   83,   83,   83,   83,   83,   83,   83,   83,
@@ -465,16 +465,16 @@ static const flex_int16_t yy_chk[159] =
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    1,    1,    1,   15,   15,   15,
-       17,   17,   21,   31,   21,   25,   25,   51,   31,   36,
-       36,   36,   37,   37,   38,   38,   38,   56,   56,   75,
-       84,   82,   81,   51,   80,   79,   78,   77,   76,   74,
-       75,   73,   72,   71,   70,   69,   68,   67,   66,   65,
+        1,    1,    1,    1,    1,    1,    1,   12,   25,   25,
+       12,   15,   15,   15,   21,   31,   21,   36,   36,   36,
+       31,   38,   38,   39,   39,   39,   51,   56,   56,   75,
+       84,   82,   81,   80,   79,   78,   77,   76,   74,   73,
+       75,   72,   51,   71,   70,   69,   68,   67,   66,   65,
        64,   63,   61,   60,   59,   58,   57,   55,   54,   53,
        52,   49,   48,   47,   46,   45,   44,   43,   42,   41,
 
        32,   30,   29,   28,   27,   26,   24,   23,   22,   20,
-       18,   16,   14,   12,   11,    9,    8,    7,    5,    3,
+       18,   17,   16,   14,   11,    9,    8,    7,    5,    3,
        83,   83,   83,   83,   83,   83,   83,   83,   83,   83,
        83,   83,   83,   83,   83,   83,   83,   83,   83,   83,
        83,   83,   83,   83,   83,   83,   83,   83,   83,   83,
@@ -499,11 +499,18 @@ char *yytext;
 /* Definitions */
 #line 4 "lex.l"
 #include "y.tab.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdbool.h>
 extern FILE* ftoken; // Output file for tokens
-extern FILE* fparsed; // Output file for parser
+extern FILE* fparser; // Output file for parser
 extern int lineno;
-#line 506 "lex.yy.c"
-#line 507 "lex.yy.c"
+
+int inline_comment = 0;
+int block_comment = 0;
+#line 512 "lex.yy.c"
+#line 513 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -720,10 +727,10 @@ YY_DECL
 		}
 
 	{
-#line 25 "lex.l"
+#line 32 "lex.l"
 
 
-#line 727 "lex.yy.c"
+#line 733 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -783,142 +790,174 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 27 "lex.l"
+#line 34 "lex.l"
 {
-    return NEWLINE;
+    if (inline_comment) {
+        inline_comment = 0;
+    }
+
+    if (!block_comment) {
+        fprintf(fparser,"%s", yytext);
+        return NEWLINE;
+    }
 }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 31 "lex.l"
+#line 45 "lex.l"
 {
-    fprintf(fparsed, "%s", yytext);
+    fprintf(fparser, "%s", yytext);
 }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 35 "lex.l"
+#line 49 "lex.l"
 {
-    fprintf(fparsed, "%s", yytext);
+    if (!inline_comment && !block_comment) {
+        fprintf(fparser,"%s", yytext);
+        fprintf(ftoken,"access_operator: %s\n", yytext);
+        return DOT_OP;
+    }
 }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 39 "lex.l"
+#line 57 "lex.l"
 {
-    fprintf(fparsed,"%s", yytext);
-    fprintf(ftoken,"access_operator: %s\n", yytext);
-    return DOT_OP;
+    if (!inline_comment && !block_comment) {
+        fprintf(fparser,"%s", yytext);
+        fprintf(ftoken,"logical_operator: %s\n", yytext);
+        if (strcmp(yytext,"!")==0) return NEG_OP;
+        return LOG_OP;
+    }
 }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 45 "lex.l"
+#line 66 "lex.l"
 {
-    fprintf(fparsed,"%s", yytext);
-    fprintf(ftoken,"logical_operator: %s\n", yytext);
-    if (strcmp(yytext,"!")==0) return NEG_OP;
-    return LOG_OP;
+    if (!inline_comment && !block_comment) {
+        fprintf(fparser,"%s", yytext);
+        fprintf(ftoken,"relational_operator: %s\n", yytext);
+        if (strcmp(yytext, "<")==0) return *yytext;
+        else if (strcmp(yytext, ">")==0) return *yytext;
+        return REL_OP;
+    }
 }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 52 "lex.l"
+#line 76 "lex.l"
 {
-    fprintf(fparsed,"%s", yytext);
-    fprintf(ftoken,"relational_operator: %s\n", yytext);
-    if (strcmp(yytext, "<")==0) return *yytext;
-    else if (strcmp(yytext, ">")==0) return *yytext;
-    return REL_OP;
+    if (!inline_comment && !block_comment) {
+        fprintf(fparser,"%s", yytext);
+        fprintf(ftoken,"constant: %s\n", yytext);
+        return NUM;
+    }
 }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 62 "lex.l"
+#line 84 "lex.l"
 {
-    fprintf(fparsed,"%s", yytext);
-    fprintf(ftoken,"constant: %s\n", yytext);
-    yylval = strtol(yytext, NULL, 10);
-    return NUM;
+    if (!inline_comment && !block_comment) {
+        fprintf(fparser,"%s", yytext);
+        fprintf(ftoken,"constant: %s\n", yytext);
+        return REAL;
+    }
 }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 69 "lex.l"
+#line 92 "lex.l"
 {
-    fprintf(fparsed,"%s", yytext);
-    fprintf(ftoken,"constant: %s\n", yytext);
-    yylval = strtol(yytext, NULL, 10);
-    return REAL;
+    if (!inline_comment && !block_comment) {
+        fprintf(fparser,"%s", yytext);
+        fprintf(ftoken,"operator: %s\n", yytext);
+        return ARROW;
+    }
 }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 76 "lex.l"
+#line 100 "lex.l"
 {
-    fprintf(fparsed,"%s", yytext);
-    fprintf(ftoken,"operator: %s\n", yytext);
-    return ARROW;
+    if (!inline_comment && !block_comment) {
+        fprintf(fparser,"%s", yytext);
+        fprintf(ftoken,"keyword: %s\n", yytext);
+
+        if (strcmp(yytext,"img")==0) return IMG;
+        else if (strcmp(yytext,"gray_img")==0) return GRAY_IMG;
+        else if (strcmp(yytext,"vid")==0) return VID;
+        else if (strcmp(yytext,"gray_vid")==0) return GRAY_VID;
+        else if (strcmp(yytext,"num")==0) return NUM;
+        else if (strcmp(yytext,"real")==0) return REAL;
+        else if (strcmp(yytext,"void")==0) return VOID;
+        else if (strcmp(yytext,"bool")==0) return BOOL;
+        else if (strcmp(yytext,"true")==0) return BOOLCONST;
+        else if (strcmp(yytext,"false")==0) return BOOLCONST;
+        else if (strcmp(yytext,"ink")==0){
+            printf("Ink\n");
+            return INK;
+        }
+        else if (strcmp(yytext,"spool")==0) return LOOP;
+        else if (strcmp(yytext,"break")==0) return BREAK;
+        else if (strcmp(yytext,"continue")==0) return CONTINUE;
+        else if (strcmp(yytext,"return")==0) return RETURN;
+    }
 }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 82 "lex.l"
+#line 126 "lex.l"
 {
-    fprintf(fparsed,"%s", yytext);
-    fprintf(ftoken,"keyword: %s\n", yytext);
-
-    if (strcmp(yytext,"img")==0) return IMG;
-    else if (strcmp(yytext,"gray_img")==0) return GRAY_IMG;
-    else if (strcmp(yytext,"vid")==0) return VID;
-    else if (strcmp(yytext,"gray_vid")==0) return GRAY_VID;
-    else if (strcmp(yytext,"num")==0) return NUM;
-    else if (strcmp(yytext,"real")==0) return REAL;
-    else if (strcmp(yytext,"void")==0) return VOID;
-    else if (strcmp(yytext,"bool")==0) return BOOL;
-    else if (strcmp(yytext,"true")==0) return BOOLCONST;
-    else if (strcmp(yytext,"false")==0) return BOOLCONST;
-    else if (strcmp(yytext,"ink")==0) return INK;
-    else if (strcmp(yytext,"spool")==0) return LOOP;
-    else if (strcmp(yytext,"break")==0) return BREAK;
-    else if (strcmp(yytext,"continue")==0) return CONTINUE;
-    else if (strcmp(yytext,"return")==0) return RETURN;
+    if (!inline_comment && !block_comment) {
+        fprintf(fparser,"%s", yytext);
+        fprintf(ftoken,"keyword: %s\n", yytext);
+        if (strcmp(yytext,"$")==0) return IF;
+        else if (strcmp(yytext,"$$")==0) return ELSE_IF;
+    }
 }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 103 "lex.l"
+#line 135 "lex.l"
 {
-    fprintf(fparsed,"%s", yytext);
-    fprintf(ftoken,"keyword: %s\n", yytext);
-    if (strcmp(yytext,"$")==0) return IF;
-    else if (strcmp(yytext,"$$")==0) return ELSE_IF;
+    if (!inline_comment && !block_comment) {
+        fprintf(fparser,"%s", yytext);
+        fprintf(ftoken,"ID: %s\n", yytext);
+        return ID;
+    }
 }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 110 "lex.l"
+#line 143 "lex.l"
 {
-    fprintf(fparsed,"%s", yytext);
-    fprintf(ftoken,"ID: %s\n", yytext);
-    return ID;
+    fprintf(fparser,"%s", yytext);
+    if (!inline_comment && !block_comment) {
+        if (strcmp(yytext,"#*")==0) block_comment = 1;
+        else if (strcmp(yytext,"#")==0) inline_comment = 1;
+    } else if (block_comment) {
+        if (strcmp(yytext,"*#")==0) block_comment = 0;
+    }
 }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 116 "lex.l"
+#line 153 "lex.l"
 {
     fprintf(ftoken, "punctuation: %s\n", yytext);
-    fprintf(fparsed, "%s", yytext);
+    fprintf(fparser, "%s", yytext);
     return *yytext;
 }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 121 "lex.l"
+#line 158 "lex.l"
 ECHO;
 	YY_BREAK
-#line 922 "lex.yy.c"
+#line 960 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1923,5 +1962,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 121 "lex.l"
+#line 158 "lex.l"
 
