@@ -28,6 +28,7 @@ if "$"|"$$"
 comments "#"|"#*"|"*#"
 punctuators [\{\}\[\]\(\)';,]
 operators "="|"+"|"-"|"*"|"/"|"^"|"~"|"++"|"--"
+path ['][a-zA-Z0-9_\/\.\~]+[']
 
 
 %%
@@ -47,7 +48,19 @@ operators "="|"+"|"-"|"*"|"/"|"^"|"~"|"++"|"--"
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"operator: %s\n", yytext);
-        return *yytext;
+
+        else if(strcmp(yytext,"=")==0) return BINARY_OP;
+        else if(strcmp(yytext,"+")==0) return BINARY_OP;
+        else if(strcmp(yytext,"-")==0) return BINARY_OP;
+        else if(strcmp(yytext,"*")==0) return BINARY_OP;
+        else if(strcmp(yytext,"/")==0) return BINARY_OP;
+        else if(strcmp(yytext,"^")==0) return BINARY_OP;
+
+        else if(strcmp(yytext,"~")==0) return INV_OP;
+
+        else if(strcmp(yytext,"++")==0) return UNARY_OP;
+        else if(strcmp(yytext,"--")==0) return UNARY_OP;
+        // return *yytext;
     }
 }
 
@@ -86,7 +99,7 @@ operators "="|"+"|"-"|"*"|"/"|"^"|"~"|"++"|"--"
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"constant: %s\n", yytext);
-        return NUM;
+        return NUM_LIT;
     }
 }
 
@@ -94,7 +107,7 @@ operators "="|"+"|"-"|"*"|"/"|"^"|"~"|"++"|"--"
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"constant: %s\n", yytext);
-        return REAL;
+        return REAL_LIT;
     }
 }
 
@@ -103,6 +116,14 @@ operators "="|"+"|"-"|"*"|"/"|"^"|"~"|"++"|"--"
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"operator: %s\n", yytext);
         return ARROW;
+    }
+}
+
+{path} {
+    if (!inline_comment && !block_comment) {
+        fprintf(fparser,"%s", yytext);
+        fprintf(ftoken,"path: %s\n", yytext);
+        return PATH;
     }
 }
 
@@ -119,10 +140,9 @@ operators "="|"+"|"-"|"*"|"/"|"^"|"~"|"++"|"--"
         else if (strcmp(yytext,"real")==0) return REAL;
         else if (strcmp(yytext,"void")==0) return VOID;
         else if (strcmp(yytext,"bool")==0) return BOOL;
-        else if (strcmp(yytext,"true")==0) return BOOLCONST;
-        else if (strcmp(yytext,"false")==0) return BOOLCONST;
+        else if (strcmp(yytext,"true")==0) return BOOL_LIT;
+        else if (strcmp(yytext,"false")==0) return BOOL_LIT;
         else if (strcmp(yytext,"ink")==0){
-            printf("Ink\n");
             return INK;
         }
         else if (strcmp(yytext,"spool")==0) return LOOP;
@@ -160,8 +180,10 @@ operators "="|"+"|"-"|"*"|"/"|"^"|"~"|"++"|"--"
 }
 
 {punctuators} {
-    fprintf(ftoken, "punctuation: %s\n", yytext);
-    fprintf(fparser, "%s", yytext);
-    return *yytext;
+    if (!inline_comment && !block_comment) {
+        fprintf(ftoken, "punctuation: %s\n", yytext);
+        fprintf(fparser, "%s", yytext);
+        return *yytext;
+    }
 }
 %%

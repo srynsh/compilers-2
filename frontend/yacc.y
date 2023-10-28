@@ -10,21 +10,6 @@
     int return_flag = 0;
 %}
 
-%token IF ELSE_IF RETURN CONTINUE BREAK LOOP INK
-%token ARROW DOT_OP LOG_OP REL_OP NEG_OP
-%token IMG GRAY_IMG VID GRAY_VID NUM REAL VOID BOOL BOOLCONST NEWLINE
-%token ID
-%start program
-
-
-%%
-
-program : program function new_lines
-        | function new_lines
-        | function
-        | program function
-        ;
-        
 /*
 ink main() -> void 
 { 
@@ -40,6 +25,20 @@ ink main() -> void {
 (id = id} is invalid)
 */
 
+%token IF ELSE_IF RETURN CONTINUE BREAK LOOP INK
+%token ARROW DOT_OP LOG_OP REL_OP NEG_OP
+%token IMG GRAY_IMG VID GRAY_VID NUM REAL VOID BOOL BOOL_LIT NEWLINE
+%token ID NUM_LIT REAL_LIT PATH BINARY_OP UNARY_OP INV_OP 
+%start program
+
+
+%%
+
+program : program function new_lines
+        | function new_lines
+        | function
+        | program function
+        ;
 
 func_body : '{' stmt_list '}'
         | '{' new_lines stmt_list '}'
@@ -49,9 +48,9 @@ new_lines : new_lines NEWLINE
         | NEWLINE
         ;   
 
-function : INK ID '(' arg_list ')' ARROW RET_TYPE func_body
+function : INK ID '(' par_list ')' ARROW RET_TYPE func_body
         | INK ID '(' ')' ARROW RET_TYPE func_body
-        | INK ID '(' arg_list ')' ARROW RET_TYPE new_lines func_body
+        | INK ID '(' par_list ')' ARROW RET_TYPE new_lines func_body
         | INK ID '(' ')' ARROW RET_TYPE new_lines func_body
         ;
 
@@ -59,11 +58,11 @@ RET_TYPE : datatype
         | VOID
         ;
         
-arg_list : arg_list ',' arg
-        | arg
+par_list : par_list ',' par
+        | par
         ;
 
-arg : datatype ID
+par : datatype ID
     ;
 
 datatype : IMG
@@ -79,15 +78,147 @@ stmt_list : stmt
         | stmt_list stmt 
         ;
 
-stmt : ID '=' ID new_lines {printf("boo yeah\n");}
+ stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
+//        | conditional_stmt new_lines
+        | call_stmt new_lines
+        | in_built_call_stmt new_lines
+        | expr_stmt /* 'new_lines' is included in expr_stmt */
+        | return_stmt /* 'new_lines' is included in expr_stmt */
+//        | loop_stmt new_lines
+        | '{'new_lines stmt_list '}' /* This allows nested scopes */
+        | '{' stmt_list '}' /* This allows nested scopes */
+        ; 
+
+return_stmt : RETURN expr_pred new_lines
+        | RETURN VOID new_lines // return void and not just return
+        ;
+
+decl_stmt : img_decl
+        | gray_img_decl
+        | vid_decl
+        | gray_vid_decl
+        | num_decl
+        | real_decl
+        | num_array_decl
+        | real_array_decl
+        ;
+
+img_decl : IMG ID '<' NUM_LIT ',' NUM_LIT  '>' new_lines
+        | IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+        | IMG ID '<' PATH '>' new_lines
+        | IMG ID '=' expr_pred new_lines
+        ; 
+
+gray_img_decl : GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
+        | GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+        | GRAY_IMG ID '<' PATH '>' new_lines
+        | GRAY_IMG ID '=' expr_pred new_lines
+        ;
+
+vid_decl : VID ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
+        | VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+        ;
+
+gray_vid_decl : GRAY_VID ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
+        | GRAY_VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+        ;
+
+num_decl : NUM ID new_lines
+        | NUM ID '=' expr_pred new_lines
+        ;
+
+real_decl : REAL ID new_lines
+        | REAL ID '=' expr_pred new_lines
+        ;
+
+num_array_decl : NUM array_element ID new_lines
+                | NUM array_element ID '=' ID new_lines   
+                | NUM array_element ID '=' brak_pred new_lines
+                ;
+
+
+real_array_decl : REAL array_element ID new_lines
+                | REAL array_element ID '=' ID new_lines
+                | REAL array_element ID '=' brak_pred new_lines
+                ;
+
+brak_pred : '{' brak_pred_list '}'
+          | '{' lit_list '}'
+          ;
+
+brak_pred_list : brak_pred_list ',' brak_pred
+               | brak_pred
+               ;
+
+lit_list : lit_list ',' lit
+         | lit
+         ;
+        
+lit : NUM_LIT
+    | REAL_LIT
+    | BOOL_LIT
     ;
 
 
+call_stmt : ID '(' arg_list ')' 
+        | ID '(' ')' 
+        ;
+
+arg_list : arg_list ',' expr_pred
+        | expr_pred
+        ;
+
+in_built_call_stmt : ID DOT_OP ID '(' arg_list ')'
+        | ID DOT_OP ID '(' ')'
+        ;
+
+expr_pred : ID 
+        | NUM_LIT
+        | REAL_LIT
+        | BOOL_LIT
+        | expr_pred REL_OP expr_pred
+        | expr_pred LOG_OP expr_pred
+        | '(' expr_pred ')'
+        | NEG_OP expr_pred
+        | call_stmt
+        | in_built_call_stmt 
+        | ID array_element
+        | expr_pred BINARY_OP expr_pred
+        | expr_pred UNARY_OP
+        | INV_OP expr_pred
+        ;
+
+
+expr_stmt : ID '=' expr_pred new_lines
+        | ID array_element '=' expr_pred new_lines
+        ;
+
+array_element : '[' expr_pred ']'
+        |  '[' expr_pred ',' expr_pred ']'
+        |  '[' expr_pred ',' expr_pred ',' expr_pred ']'
+        ;
 
 
 
-
-
+/*
+ int arr[2,2,2] = {{1,2,3}, {4,5,6}}
+ arr[0][0] = 1
+ arr[0][1] = 2
+ arr[0][2] = 3
+ arr[1][0] = 4
+ arr[1][1] = 5
+ arr[1][2] = 6
+ for (int i = 0; i < 2; i++) {
+     for (int j = 0; j < 3; j++) {
+         arr[i][j] = 0;
+     }
+ }
+ }
+num[x][y] arr
+arr[a][b] = bla (allowed operation)
+arr1 = 
+(/)
+*/
 
 
 
