@@ -31,6 +31,12 @@ ink main() -> void {
 %token ID NUM_LIT REAL_LIT PATH BINARY_OP UNARY_OP INV_OP 
 %start program
 
+%left DOT_OP
+%left UNARY_OP
+%right INV_OP NEG_OP
+%left BINARY_OP
+%left LOG_OP
+%left REL_OP
 
 %%
 
@@ -74,7 +80,7 @@ datatype : IMG
         | BOOL
         ;
 
-stmt_list : stmt
+stmt_list : stmt 
         | stmt_list stmt 
         ;
 
@@ -85,8 +91,10 @@ stmt_list : stmt
         | expr_stmt /* 'new_lines' is included in expr_stmt */
         | return_stmt /* 'new_lines' is included in expr_stmt */
 //        | loop_stmt new_lines
-        | '{'new_lines stmt_list '}' /* This allows nested scopes */
-        | '{' stmt_list '}' /* This allows nested scopes */
+        | '{'new_lines stmt_list '}' new_lines /* This allows nested scopes */
+        | '{' stmt_list '}' new_lines/* This allows nested scopes */
+        | '{' new_lines '}' new_lines
+        | '{' '}' new_lines
         ; 
 
 return_stmt : RETURN expr_pred new_lines
@@ -136,10 +144,9 @@ num_array_decl : NUM array_element ID new_lines
                 | NUM array_element ID '=' brak_pred new_lines
                 ;
 
-
 real_array_decl : REAL array_element ID new_lines
                 | REAL array_element ID '=' ID new_lines
-                | REAL array_element ID '=' brak_pred new_lines
+                | REAL array_element ID '=' brak_pred new_lines 
                 ;
 
 brak_pred : '{' brak_pred_list '}'
@@ -170,6 +177,8 @@ arg_list : arg_list ',' expr_pred
 
 in_built_call_stmt : ID DOT_OP ID '(' arg_list ')'
         | ID DOT_OP ID '(' ')'
+        | in_built_call_stmt DOT_OP ID '(' arg_list ')'
+        | in_built_call_stmt DOT_OP ID '(' ')'
         ;
 
 expr_pred : ID 

@@ -40,6 +40,7 @@ path ['][a-zA-Z0-9_\/\.\~]+[']
 
     if (!block_comment) {
         fprintf(fparser,"%s", yytext);
+        fprintf(ftoken,"newline: \\n\n", yytext);
         return NEWLINE;
     }
 }
@@ -49,7 +50,7 @@ path ['][a-zA-Z0-9_\/\.\~]+[']
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"operator: %s\n", yytext);
 
-        else if(strcmp(yytext,"=")==0) return BINARY_OP;
+        if(strcmp(yytext,"=")==0) return *yytext;
         else if(strcmp(yytext,"+")==0) return BINARY_OP;
         else if(strcmp(yytext,"-")==0) return BINARY_OP;
         else if(strcmp(yytext,"*")==0) return BINARY_OP;

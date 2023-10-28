@@ -1,2790 +1,3013 @@
-Terminals which are not used
+   0  $accept : program $end
 
-   IF
-   ELSE_IF
-   CONTINUE
-   BREAK
-   LOOP
+   1  program : program function new_lines
+   2          | function new_lines
+   3          | function
+   4          | program function
 
+   5  func_body : '{' stmt_list '}'
+   6            | '{' new_lines stmt_list '}'
 
-State 96 conflicts: 4 shift/reduce
-State 99 conflicts: 4 shift/reduce
-State 129 conflicts: 4 shift/reduce
-State 130 conflicts: 4 shift/reduce
-State 131 conflicts: 4 shift/reduce
+   7  new_lines : new_lines NEWLINE
+   8            | NEWLINE
 
+   9  function : INK ID '(' par_list ')' ARROW RET_TYPE func_body
+  10           | INK ID '(' ')' ARROW RET_TYPE func_body
+  11           | INK ID '(' par_list ')' ARROW RET_TYPE new_lines func_body
+  12           | INK ID '(' ')' ARROW RET_TYPE new_lines func_body
 
-Grammar
+  13  RET_TYPE : datatype
+  14           | VOID
 
-    0 $accept: program $end
+  15  par_list : par_list ',' par
+  16           | par
 
-    1 program: program function new_lines
-    2        | function new_lines
-    3        | function
-    4        | program function
+  17  par : datatype ID
 
-    5 func_body: '{' stmt_list '}'
-    6          | '{' new_lines stmt_list '}'
+  18  datatype : IMG
+  19           | GRAY_IMG
+  20           | VID
+  21           | GRAY_VID
+  22           | NUM
+  23           | REAL
+  24           | BOOL
 
-    7 new_lines: new_lines NEWLINE
-    8          | NEWLINE
+  25  stmt_list : stmt
+  26            | stmt_list stmt
 
-    9 function: INK ID '(' par_list ')' ARROW RET_TYPE func_body
-   10         | INK ID '(' ')' ARROW RET_TYPE func_body
-   11         | INK ID '(' par_list ')' ARROW RET_TYPE new_lines func_body
-   12         | INK ID '(' ')' ARROW RET_TYPE new_lines func_body
+  27  stmt : decl_stmt
+  28       | call_stmt new_lines
+  29       | in_built_call_stmt new_lines
+  30       | expr_stmt
+  31       | return_stmt
+  32       | '{' new_lines stmt_list '}' new_lines
+  33       | '{' stmt_list '}' new_lines
+  34       | '{' new_lines '}' new_lines
+  35       | '{' '}' new_lines
 
-   13 RET_TYPE: datatype
-   14         | VOID
+  36  return_stmt : RETURN expr_pred new_lines
+  37              | RETURN VOID new_lines
 
-   15 par_list: par_list ',' par
-   16         | par
+  38  decl_stmt : img_decl
+  39            | gray_img_decl
+  40            | vid_decl
+  41            | gray_vid_decl
+  42            | num_decl
+  43            | real_decl
+  44            | num_array_decl
+  45            | real_array_decl
 
-   17 par: datatype ID
+  46  img_decl : IMG ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
+  47           | IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+  48           | IMG ID '<' PATH '>' new_lines
+  49           | IMG ID '=' expr_pred new_lines
 
-   18 datatype: IMG
-   19         | GRAY_IMG
-   20         | VID
-   21         | GRAY_VID
-   22         | NUM
-   23         | REAL
-   24         | BOOL
+  50  gray_img_decl : GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
+  51                | GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+  52                | GRAY_IMG ID '<' PATH '>' new_lines
+  53                | GRAY_IMG ID '=' expr_pred new_lines
 
-   25 stmt_list: stmt
-   26          | stmt_list stmt
+  54  vid_decl : VID ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
+  55           | VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
 
-   27 stmt: decl_stmt
-   28     | call_stmt new_lines
-   29     | in_built_call_stmt new_lines
-   30     | expr_stmt
-   31     | return_stmt
-   32     | '{' new_lines stmt_list '}'
-   33     | '{' stmt_list '}'
+  56  gray_vid_decl : GRAY_VID ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
+  57                | GRAY_VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
 
-   34 return_stmt: RETURN expr_pred new_lines
-   35            | RETURN VOID new_lines
+  58  num_decl : NUM ID new_lines
+  59           | NUM ID '=' expr_pred new_lines
 
-   36 decl_stmt: img_decl
-   37          | gray_img_decl
-   38          | vid_decl
-   39          | gray_vid_decl
-   40          | num_decl
-   41          | real_decl
-   42          | num_array_decl
-   43          | real_array_decl
+  60  real_decl : REAL ID new_lines
+  61            | REAL ID '=' expr_pred new_lines
 
-   44 img_decl: IMG ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
-   45         | IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
-   46         | IMG ID '<' PATH '>' new_lines
-   47         | IMG ID '=' expr_pred new_lines
+  62  num_array_decl : NUM array_element ID new_lines
+  63                 | NUM array_element ID '=' ID new_lines
+  64                 | NUM array_element ID '=' brak_pred new_lines
 
-   48 gray_img_decl: GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
-   49              | GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
-   50              | GRAY_IMG ID '<' PATH '>' new_lines
-   51              | GRAY_IMG ID '=' expr_pred new_lines
+  65  real_array_decl : REAL array_element ID new_lines
+  66                  | REAL array_element ID '=' ID new_lines
+  67                  | REAL array_element ID '=' brak_pred new_lines
 
-   52 vid_decl: VID ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
-   53         | VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+  68  brak_pred : '{' brak_pred_list '}'
+  69            | '{' lit_list '}'
 
-   54 gray_vid_decl: GRAY_VID ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
-   55              | GRAY_VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+  70  brak_pred_list : brak_pred_list ',' brak_pred
+  71                 | brak_pred
 
-   56 num_decl: NUM ID new_lines
-   57         | NUM ID '=' expr_pred new_lines
+  72  lit_list : lit_list ',' lit
+  73           | lit
 
-   58 real_decl: REAL ID new_lines
-   59          | REAL ID '=' expr_pred new_lines
+  74  lit : NUM_LIT
+  75      | REAL_LIT
+  76      | BOOL_LIT
 
-   60 num_array_decl: NUM array_element ID new_lines
-   61               | NUM array_element ID '=' ID new_lines
-   62               | NUM array_element ID '=' brak_pred new_lines
+  77  call_stmt : ID '(' arg_list ')'
+  78            | ID '(' ')'
 
-   63 real_array_decl: REAL array_element ID new_lines
-   64                | REAL array_element ID '=' ID new_lines
-   65                | REAL array_element ID '=' brak_pred new_lines
+  79  arg_list : arg_list ',' expr_pred
+  80           | expr_pred
 
-   66 brak_pred: '{' brak_pred_list '}'
-   67          | '{' lit_list '}'
+  81  in_built_call_stmt : ID DOT_OP ID '(' arg_list ')'
+  82                     | ID DOT_OP ID '(' ')'
+  83                     | in_built_call_stmt DOT_OP ID '(' arg_list ')'
+  84                     | in_built_call_stmt DOT_OP ID '(' ')'
 
-   68 brak_pred_list: brak_pred_list ',' brak_pred
-   69               | brak_pred
+  85  expr_pred : ID
+  86            | NUM_LIT
+  87            | REAL_LIT
+  88            | BOOL_LIT
+  89            | expr_pred REL_OP expr_pred
+  90            | expr_pred LOG_OP expr_pred
+  91            | '(' expr_pred ')'
+  92            | NEG_OP expr_pred
+  93            | call_stmt
+  94            | in_built_call_stmt
+  95            | ID array_element
+  96            | expr_pred BINARY_OP expr_pred
+  97            | expr_pred UNARY_OP
+  98            | INV_OP expr_pred
 
-   70 lit_list: lit_list ',' lit
-   71         | lit
+  99  expr_stmt : ID '=' expr_pred new_lines
+ 100            | ID array_element '=' expr_pred new_lines
 
-   72 lit: NUM_LIT
-   73    | REAL_LIT
-   74    | BOOL_LIT
-
-   75 call_stmt: ID '(' arg_list ')'
-   76          | ID '(' ')'
-
-   77 arg_list: arg_list ',' expr_pred
-   78         | expr_pred
-
-   79 in_built_call_stmt: ID DOT_OP ID '(' arg_list ')'
-   80                   | ID DOT_OP ID '(' ')'
-
-   81 expr_pred: ID
-   82          | NUM_LIT
-   83          | REAL_LIT
-   84          | BOOL_LIT
-   85          | expr_pred REL_OP expr_pred
-   86          | expr_pred LOG_OP expr_pred
-   87          | '(' expr_pred ')'
-   88          | NEG_OP expr_pred
-   89          | call_stmt
-   90          | in_built_call_stmt
-   91          | ID array_element
-   92          | expr_pred BINARY_OP expr_pred
-   93          | expr_pred UNARY_OP
-   94          | INV_OP expr_pred
-
-   95 expr_stmt: ID '=' expr_pred new_lines
-   96          | ID array_element '=' expr_pred new_lines
-
-   97 array_element: '[' expr_pred ']'
-   98              | '[' expr_pred ',' expr_pred ']'
-   99              | '[' expr_pred ',' expr_pred ',' expr_pred ']'
-
-
-Terminals, with rules where they appear
-
-$end (0) 0
-'(' (40) 9 10 11 12 75 76 79 80 87
-')' (41) 9 10 11 12 75 76 79 80 87
-',' (44) 15 44 45 48 49 52 53 54 55 68 70 77 98 99
-'<' (60) 44 45 46 48 49 50 52 53 54 55
-'=' (61) 47 51 57 59 61 62 64 65 95 96
-'>' (62) 44 45 46 48 49 50 52 53 54 55
-'[' (91) 97 98 99
-']' (93) 97 98 99
-'{' (123) 5 6 32 33 66 67
-'}' (125) 5 6 32 33 66 67
-error (256)
-IF (258)
-ELSE_IF (259)
-RETURN (260) 34 35
-CONTINUE (261)
-BREAK (262)
-LOOP (263)
-INK (264) 9 10 11 12
-ARROW (265) 9 10 11 12
-DOT_OP (266) 79 80
-LOG_OP (267) 86
-REL_OP (268) 85
-NEG_OP (269) 88
-IMG (270) 18 44 45 46 47
-GRAY_IMG (271) 19 48 49 50 51
-VID (272) 20 52 53
-GRAY_VID (273) 21 54 55
-NUM (274) 22 56 57 60 61 62
-REAL (275) 23 58 59 63 64 65
-VOID (276) 14 35
-BOOL (277) 24
-BOOL_LIT (278) 74 84
-NEWLINE (279) 7 8
-ID (280) 9 10 11 12 17 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58
-    59 60 61 62 63 64 65 75 76 79 80 81 91 95 96
-NUM_LIT (281) 44 45 48 49 52 53 54 55 72 82
-REAL_LIT (282) 73 83
-PATH (283) 46 50
-BINARY_OP (284) 92
-UNARY_OP (285) 93
-INV_OP (286) 94
-
-
-Nonterminals, with rules where they appear
-
-$accept (42)
-    on left: 0
-program (43)
-    on left: 1 2 3 4, on right: 0 1 4
-func_body (44)
-    on left: 5 6, on right: 9 10 11 12
-new_lines (45)
-    on left: 7 8, on right: 1 2 6 7 11 12 28 29 32 34 35 44 45 46 47
-    48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 95 96
-function (46)
-    on left: 9 10 11 12, on right: 1 2 3 4
-RET_TYPE (47)
-    on left: 13 14, on right: 9 10 11 12
-par_list (48)
-    on left: 15 16, on right: 9 11 15
-par (49)
-    on left: 17, on right: 15 16
-datatype (50)
-    on left: 18 19 20 21 22 23 24, on right: 13 17
-stmt_list (51)
-    on left: 25 26, on right: 5 6 26 32 33
-stmt (52)
-    on left: 27 28 29 30 31 32 33, on right: 25 26
-return_stmt (53)
-    on left: 34 35, on right: 31
-decl_stmt (54)
-    on left: 36 37 38 39 40 41 42 43, on right: 27
-img_decl (55)
-    on left: 44 45 46 47, on right: 36
-gray_img_decl (56)
-    on left: 48 49 50 51, on right: 37
-vid_decl (57)
-    on left: 52 53, on right: 38
-gray_vid_decl (58)
-    on left: 54 55, on right: 39
-num_decl (59)
-    on left: 56 57, on right: 40
-real_decl (60)
-    on left: 58 59, on right: 41
-num_array_decl (61)
-    on left: 60 61 62, on right: 42
-real_array_decl (62)
-    on left: 63 64 65, on right: 43
-brak_pred (63)
-    on left: 66 67, on right: 62 65 68 69
-brak_pred_list (64)
-    on left: 68 69, on right: 66 68
-lit_list (65)
-    on left: 70 71, on right: 67 70
-lit (66)
-    on left: 72 73 74, on right: 70 71
-call_stmt (67)
-    on left: 75 76, on right: 28 89
-arg_list (68)
-    on left: 77 78, on right: 75 77 79
-in_built_call_stmt (69)
-    on left: 79 80, on right: 29 90
-expr_pred (70)
-    on left: 81 82 83 84 85 86 87 88 89 90 91 92 93 94,
-    on right: 34 47 51 57 59 77 78 85 86 87 88 92 93 94 95 96 97 98
-    99
-expr_stmt (71)
-    on left: 95 96, on right: 30
-array_element (72)
-    on left: 97 98 99, on right: 60 61 62 63 64 65 91 96
-
-
+ 101  array_element : '[' expr_pred ']'
+ 102                | '[' expr_pred ',' expr_pred ']'
+ 103                | '[' expr_pred ',' expr_pred ',' expr_pred ']'
+
 state 0
+	$accept : . program $end  (0)
 
-    0 $accept: . program $end
+	INK  shift 1
+	.  error
 
-    INK  shift, and go to state 1
-
-    program   go to state 2
-    function  go to state 3
+	program  goto 2
+	function  goto 3
 
 
 state 1
+	function : INK . ID '(' par_list ')' ARROW RET_TYPE func_body  (9)
+	function : INK . ID '(' ')' ARROW RET_TYPE func_body  (10)
+	function : INK . ID '(' par_list ')' ARROW RET_TYPE new_lines func_body  (11)
+	function : INK . ID '(' ')' ARROW RET_TYPE new_lines func_body  (12)
 
-    9 function: INK . ID '(' par_list ')' ARROW RET_TYPE func_body
-   10         | INK . ID '(' ')' ARROW RET_TYPE func_body
-   11         | INK . ID '(' par_list ')' ARROW RET_TYPE new_lines func_body
-   12         | INK . ID '(' ')' ARROW RET_TYPE new_lines func_body
-
-    ID  shift, and go to state 4
+	ID  shift 4
+	.  error
 
 
 state 2
+	$accept : program . $end  (0)
+	program : program . function new_lines  (1)
+	program : program . function  (4)
 
-    0 $accept: program . $end
-    1 program: program . function new_lines
-    4        | program . function
+	$end  accept
+	INK  shift 1
+	.  error
 
-    $end  shift, and go to state 5
-    INK   shift, and go to state 1
-
-    function  go to state 6
+	function  goto 5
 
 
 state 3
+	program : function . new_lines  (2)
+	program : function .  (3)
 
-    2 program: function . new_lines
-    3        | function .
+	NEWLINE  shift 6
+	$end  reduce 3
+	INK  reduce 3
 
-    NEWLINE  shift, and go to state 7
-
-    $default  reduce using rule 3 (program)
-
-    new_lines  go to state 8
+	new_lines  goto 7
 
 
 state 4
+	function : INK ID . '(' par_list ')' ARROW RET_TYPE func_body  (9)
+	function : INK ID . '(' ')' ARROW RET_TYPE func_body  (10)
+	function : INK ID . '(' par_list ')' ARROW RET_TYPE new_lines func_body  (11)
+	function : INK ID . '(' ')' ARROW RET_TYPE new_lines func_body  (12)
 
-    9 function: INK ID . '(' par_list ')' ARROW RET_TYPE func_body
-   10         | INK ID . '(' ')' ARROW RET_TYPE func_body
-   11         | INK ID . '(' par_list ')' ARROW RET_TYPE new_lines func_body
-   12         | INK ID . '(' ')' ARROW RET_TYPE new_lines func_body
-
-    '('  shift, and go to state 9
+	'('  shift 8
+	.  error
 
 
 state 5
+	program : program function . new_lines  (1)
+	program : program function .  (4)
 
-    0 $accept: program $end .
+	NEWLINE  shift 6
+	$end  reduce 4
+	INK  reduce 4
 
-    $default  accept
+	new_lines  goto 9
 
 
 state 6
+	new_lines : NEWLINE .  (8)
 
-    1 program: program function . new_lines
-    4        | program function .
-
-    NEWLINE  shift, and go to state 7
-
-    $default  reduce using rule 4 (program)
-
-    new_lines  go to state 10
+	.  reduce 8
 
 
 state 7
+	program : function new_lines .  (2)
+	new_lines : new_lines . NEWLINE  (7)
 
-    8 new_lines: NEWLINE .
-
-    $default  reduce using rule 8 (new_lines)
+	NEWLINE  shift 10
+	$end  reduce 2
+	INK  reduce 2
 
 
 state 8
+	function : INK ID '(' . par_list ')' ARROW RET_TYPE func_body  (9)
+	function : INK ID '(' . ')' ARROW RET_TYPE func_body  (10)
+	function : INK ID '(' . par_list ')' ARROW RET_TYPE new_lines func_body  (11)
+	function : INK ID '(' . ')' ARROW RET_TYPE new_lines func_body  (12)
 
-    2 program: function new_lines .
-    7 new_lines: new_lines . NEWLINE
+	IMG  shift 11
+	GRAY_IMG  shift 12
+	VID  shift 13
+	GRAY_VID  shift 14
+	NUM  shift 15
+	REAL  shift 16
+	BOOL  shift 17
+	')'  shift 18
+	.  error
 
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 2 (program)
+	par_list  goto 19
+	datatype  goto 20
+	par  goto 21
 
 
 state 9
+	program : program function new_lines .  (1)
+	new_lines : new_lines . NEWLINE  (7)
 
-    9 function: INK ID '(' . par_list ')' ARROW RET_TYPE func_body
-   10         | INK ID '(' . ')' ARROW RET_TYPE func_body
-   11         | INK ID '(' . par_list ')' ARROW RET_TYPE new_lines func_body
-   12         | INK ID '(' . ')' ARROW RET_TYPE new_lines func_body
-
-    IMG       shift, and go to state 12
-    GRAY_IMG  shift, and go to state 13
-    VID       shift, and go to state 14
-    GRAY_VID  shift, and go to state 15
-    NUM       shift, and go to state 16
-    REAL      shift, and go to state 17
-    BOOL      shift, and go to state 18
-    ')'       shift, and go to state 19
-
-    par_list  go to state 20
-    par       go to state 21
-    datatype  go to state 22
+	NEWLINE  shift 10
+	$end  reduce 1
+	INK  reduce 1
 
 
 state 10
+	new_lines : new_lines NEWLINE .  (7)
 
-    1 program: program function new_lines .
-    7 new_lines: new_lines . NEWLINE
-
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 1 (program)
+	.  reduce 7
 
 
 state 11
+	datatype : IMG .  (18)
 
-    7 new_lines: new_lines NEWLINE .
-
-    $default  reduce using rule 7 (new_lines)
+	.  reduce 18
 
 
 state 12
+	datatype : GRAY_IMG .  (19)
 
-   18 datatype: IMG .
-
-    $default  reduce using rule 18 (datatype)
+	.  reduce 19
 
 
 state 13
+	datatype : VID .  (20)
 
-   19 datatype: GRAY_IMG .
-
-    $default  reduce using rule 19 (datatype)
+	.  reduce 20
 
 
 state 14
+	datatype : GRAY_VID .  (21)
 
-   20 datatype: VID .
-
-    $default  reduce using rule 20 (datatype)
+	.  reduce 21
 
 
 state 15
+	datatype : NUM .  (22)
 
-   21 datatype: GRAY_VID .
-
-    $default  reduce using rule 21 (datatype)
+	.  reduce 22
 
 
 state 16
+	datatype : REAL .  (23)
 
-   22 datatype: NUM .
-
-    $default  reduce using rule 22 (datatype)
+	.  reduce 23
 
 
 state 17
+	datatype : BOOL .  (24)
 
-   23 datatype: REAL .
-
-    $default  reduce using rule 23 (datatype)
+	.  reduce 24
 
 
 state 18
+	function : INK ID '(' ')' . ARROW RET_TYPE func_body  (10)
+	function : INK ID '(' ')' . ARROW RET_TYPE new_lines func_body  (12)
 
-   24 datatype: BOOL .
-
-    $default  reduce using rule 24 (datatype)
+	ARROW  shift 22
+	.  error
 
 
 state 19
+	function : INK ID '(' par_list . ')' ARROW RET_TYPE func_body  (9)
+	function : INK ID '(' par_list . ')' ARROW RET_TYPE new_lines func_body  (11)
+	par_list : par_list . ',' par  (15)
 
-   10 function: INK ID '(' ')' . ARROW RET_TYPE func_body
-   12         | INK ID '(' ')' . ARROW RET_TYPE new_lines func_body
-
-    ARROW  shift, and go to state 23
+	')'  shift 23
+	','  shift 24
+	.  error
 
 
 state 20
+	par : datatype . ID  (17)
 
-    9 function: INK ID '(' par_list . ')' ARROW RET_TYPE func_body
-   11         | INK ID '(' par_list . ')' ARROW RET_TYPE new_lines func_body
-   15 par_list: par_list . ',' par
-
-    ')'  shift, and go to state 24
-    ','  shift, and go to state 25
+	ID  shift 25
+	.  error
 
 
 state 21
+	par_list : par .  (16)
 
-   16 par_list: par .
-
-    $default  reduce using rule 16 (par_list)
+	.  reduce 16
 
 
 state 22
+	function : INK ID '(' ')' ARROW . RET_TYPE func_body  (10)
+	function : INK ID '(' ')' ARROW . RET_TYPE new_lines func_body  (12)
 
-   17 par: datatype . ID
+	IMG  shift 11
+	GRAY_IMG  shift 12
+	VID  shift 13
+	GRAY_VID  shift 14
+	NUM  shift 15
+	REAL  shift 16
+	VOID  shift 26
+	BOOL  shift 17
+	.  error
 
-    ID  shift, and go to state 26
+	RET_TYPE  goto 27
+	datatype  goto 28
 
 
 state 23
+	function : INK ID '(' par_list ')' . ARROW RET_TYPE func_body  (9)
+	function : INK ID '(' par_list ')' . ARROW RET_TYPE new_lines func_body  (11)
 
-   10 function: INK ID '(' ')' ARROW . RET_TYPE func_body
-   12         | INK ID '(' ')' ARROW . RET_TYPE new_lines func_body
-
-    IMG       shift, and go to state 12
-    GRAY_IMG  shift, and go to state 13
-    VID       shift, and go to state 14
-    GRAY_VID  shift, and go to state 15
-    NUM       shift, and go to state 16
-    REAL      shift, and go to state 17
-    VOID      shift, and go to state 27
-    BOOL      shift, and go to state 18
-
-    RET_TYPE  go to state 28
-    datatype  go to state 29
+	ARROW  shift 29
+	.  error
 
 
 state 24
+	par_list : par_list ',' . par  (15)
 
-    9 function: INK ID '(' par_list ')' . ARROW RET_TYPE func_body
-   11         | INK ID '(' par_list ')' . ARROW RET_TYPE new_lines func_body
+	IMG  shift 11
+	GRAY_IMG  shift 12
+	VID  shift 13
+	GRAY_VID  shift 14
+	NUM  shift 15
+	REAL  shift 16
+	BOOL  shift 17
+	.  error
 
-    ARROW  shift, and go to state 30
+	datatype  goto 20
+	par  goto 30
 
 
 state 25
+	par : datatype ID .  (17)
 
-   15 par_list: par_list ',' . par
-
-    IMG       shift, and go to state 12
-    GRAY_IMG  shift, and go to state 13
-    VID       shift, and go to state 14
-    GRAY_VID  shift, and go to state 15
-    NUM       shift, and go to state 16
-    REAL      shift, and go to state 17
-    BOOL      shift, and go to state 18
-
-    par       go to state 31
-    datatype  go to state 22
+	.  reduce 17
 
 
 state 26
+	RET_TYPE : VOID .  (14)
 
-   17 par: datatype ID .
-
-    $default  reduce using rule 17 (par)
+	.  reduce 14
 
 
 state 27
+	function : INK ID '(' ')' ARROW RET_TYPE . func_body  (10)
+	function : INK ID '(' ')' ARROW RET_TYPE . new_lines func_body  (12)
 
-   14 RET_TYPE: VOID .
+	NEWLINE  shift 6
+	'{'  shift 31
+	.  error
 
-    $default  reduce using rule 14 (RET_TYPE)
+	new_lines  goto 32
+	func_body  goto 33
 
 
 state 28
+	RET_TYPE : datatype .  (13)
 
-   10 function: INK ID '(' ')' ARROW RET_TYPE . func_body
-   12         | INK ID '(' ')' ARROW RET_TYPE . new_lines func_body
-
-    NEWLINE  shift, and go to state 7
-    '{'      shift, and go to state 32
-
-    func_body  go to state 33
-    new_lines  go to state 34
+	.  reduce 13
 
 
 state 29
+	function : INK ID '(' par_list ')' ARROW . RET_TYPE func_body  (9)
+	function : INK ID '(' par_list ')' ARROW . RET_TYPE new_lines func_body  (11)
 
-   13 RET_TYPE: datatype .
+	IMG  shift 11
+	GRAY_IMG  shift 12
+	VID  shift 13
+	GRAY_VID  shift 14
+	NUM  shift 15
+	REAL  shift 16
+	VOID  shift 26
+	BOOL  shift 17
+	.  error
 
-    $default  reduce using rule 13 (RET_TYPE)
+	RET_TYPE  goto 34
+	datatype  goto 28
 
 
 state 30
+	par_list : par_list ',' par .  (15)
 
-    9 function: INK ID '(' par_list ')' ARROW . RET_TYPE func_body
-   11         | INK ID '(' par_list ')' ARROW . RET_TYPE new_lines func_body
-
-    IMG       shift, and go to state 12
-    GRAY_IMG  shift, and go to state 13
-    VID       shift, and go to state 14
-    GRAY_VID  shift, and go to state 15
-    NUM       shift, and go to state 16
-    REAL      shift, and go to state 17
-    VOID      shift, and go to state 27
-    BOOL      shift, and go to state 18
-
-    RET_TYPE  go to state 35
-    datatype  go to state 29
+	.  reduce 15
 
 
 state 31
+	func_body : '{' . stmt_list '}'  (5)
+	func_body : '{' . new_lines stmt_list '}'  (6)
 
-   15 par_list: par_list ',' par .
+	RETURN  shift 35
+	IMG  shift 36
+	GRAY_IMG  shift 37
+	VID  shift 38
+	GRAY_VID  shift 39
+	NUM  shift 40
+	REAL  shift 41
+	NEWLINE  shift 6
+	ID  shift 42
+	'{'  shift 43
+	.  error
 
-    $default  reduce using rule 15 (par_list)
+	new_lines  goto 44
+	stmt_list  goto 45
+	stmt  goto 46
+	decl_stmt  goto 47
+	call_stmt  goto 48
+	in_built_call_stmt  goto 49
+	expr_stmt  goto 50
+	return_stmt  goto 51
+	img_decl  goto 52
+	gray_img_decl  goto 53
+	vid_decl  goto 54
+	gray_vid_decl  goto 55
+	num_decl  goto 56
+	real_decl  goto 57
+	num_array_decl  goto 58
+	real_array_decl  goto 59
 
 
 state 32
+	new_lines : new_lines . NEWLINE  (7)
+	function : INK ID '(' ')' ARROW RET_TYPE new_lines . func_body  (12)
 
-    5 func_body: '{' . stmt_list '}'
-    6          | '{' . new_lines stmt_list '}'
+	NEWLINE  shift 10
+	'{'  shift 31
+	.  error
 
-    RETURN    shift, and go to state 36
-    IMG       shift, and go to state 37
-    GRAY_IMG  shift, and go to state 38
-    VID       shift, and go to state 39
-    GRAY_VID  shift, and go to state 40
-    NUM       shift, and go to state 41
-    REAL      shift, and go to state 42
-    NEWLINE   shift, and go to state 7
-    ID        shift, and go to state 43
-    '{'       shift, and go to state 44
-
-    new_lines           go to state 45
-    stmt_list           go to state 46
-    stmt                go to state 47
-    return_stmt         go to state 48
-    decl_stmt           go to state 49
-    img_decl            go to state 50
-    gray_img_decl       go to state 51
-    vid_decl            go to state 52
-    gray_vid_decl       go to state 53
-    num_decl            go to state 54
-    real_decl           go to state 55
-    num_array_decl      go to state 56
-    real_array_decl     go to state 57
-    call_stmt           go to state 58
-    in_built_call_stmt  go to state 59
-    expr_stmt           go to state 60
+	func_body  goto 60
 
 
 state 33
+	function : INK ID '(' ')' ARROW RET_TYPE func_body .  (10)
 
-   10 function: INK ID '(' ')' ARROW RET_TYPE func_body .
-
-    $default  reduce using rule 10 (function)
+	.  reduce 10
 
 
 state 34
+	function : INK ID '(' par_list ')' ARROW RET_TYPE . func_body  (9)
+	function : INK ID '(' par_list ')' ARROW RET_TYPE . new_lines func_body  (11)
 
-    7 new_lines: new_lines . NEWLINE
-   12 function: INK ID '(' ')' ARROW RET_TYPE new_lines . func_body
+	NEWLINE  shift 6
+	'{'  shift 31
+	.  error
 
-    NEWLINE  shift, and go to state 11
-    '{'      shift, and go to state 32
-
-    func_body  go to state 61
+	new_lines  goto 61
+	func_body  goto 62
 
 
 state 35
+	return_stmt : RETURN . expr_pred new_lines  (36)
+	return_stmt : RETURN . VOID new_lines  (37)
 
-    9 function: INK ID '(' par_list ')' ARROW RET_TYPE . func_body
-   11         | INK ID '(' par_list ')' ARROW RET_TYPE . new_lines func_body
+	NEG_OP  shift 63
+	VOID  shift 64
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	.  error
 
-    NEWLINE  shift, and go to state 7
-    '{'      shift, and go to state 32
-
-    func_body  go to state 62
-    new_lines  go to state 63
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 73
 
 
 state 36
+	img_decl : IMG . ID '<' NUM_LIT ',' NUM_LIT '>' new_lines  (46)
+	img_decl : IMG . ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines  (47)
+	img_decl : IMG . ID '<' PATH '>' new_lines  (48)
+	img_decl : IMG . ID '=' expr_pred new_lines  (49)
 
-   34 return_stmt: RETURN . expr_pred new_lines
-   35            | RETURN . VOID new_lines
-
-    NEG_OP    shift, and go to state 64
-    VOID      shift, and go to state 65
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-
-    call_stmt           go to state 72
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 74
+	ID  shift 74
+	.  error
 
 
 state 37
+	gray_img_decl : GRAY_IMG . ID '<' NUM_LIT ',' NUM_LIT '>' new_lines  (50)
+	gray_img_decl : GRAY_IMG . ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines  (51)
+	gray_img_decl : GRAY_IMG . ID '<' PATH '>' new_lines  (52)
+	gray_img_decl : GRAY_IMG . ID '=' expr_pred new_lines  (53)
 
-   44 img_decl: IMG . ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
-   45         | IMG . ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
-   46         | IMG . ID '<' PATH '>' new_lines
-   47         | IMG . ID '=' expr_pred new_lines
-
-    ID  shift, and go to state 75
+	ID  shift 75
+	.  error
 
 
 state 38
+	vid_decl : VID . ID '<' NUM_LIT ',' NUM_LIT '>' new_lines  (54)
+	vid_decl : VID . ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines  (55)
 
-   48 gray_img_decl: GRAY_IMG . ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
-   49              | GRAY_IMG . ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
-   50              | GRAY_IMG . ID '<' PATH '>' new_lines
-   51              | GRAY_IMG . ID '=' expr_pred new_lines
-
-    ID  shift, and go to state 76
+	ID  shift 76
+	.  error
 
 
 state 39
+	gray_vid_decl : GRAY_VID . ID '<' NUM_LIT ',' NUM_LIT '>' new_lines  (56)
+	gray_vid_decl : GRAY_VID . ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines  (57)
 
-   52 vid_decl: VID . ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
-   53         | VID . ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
-
-    ID  shift, and go to state 77
+	ID  shift 77
+	.  error
 
 
 state 40
+	num_decl : NUM . ID new_lines  (58)
+	num_decl : NUM . ID '=' expr_pred new_lines  (59)
+	num_array_decl : NUM . array_element ID new_lines  (62)
+	num_array_decl : NUM . array_element ID '=' ID new_lines  (63)
+	num_array_decl : NUM . array_element ID '=' brak_pred new_lines  (64)
 
-   54 gray_vid_decl: GRAY_VID . ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
-   55              | GRAY_VID . ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+	ID  shift 78
+	'['  shift 79
+	.  error
 
-    ID  shift, and go to state 78
+	array_element  goto 80
 
 
 state 41
+	real_decl : REAL . ID new_lines  (60)
+	real_decl : REAL . ID '=' expr_pred new_lines  (61)
+	real_array_decl : REAL . array_element ID new_lines  (65)
+	real_array_decl : REAL . array_element ID '=' ID new_lines  (66)
+	real_array_decl : REAL . array_element ID '=' brak_pred new_lines  (67)
 
-   56 num_decl: NUM . ID new_lines
-   57         | NUM . ID '=' expr_pred new_lines
-   60 num_array_decl: NUM . array_element ID new_lines
-   61               | NUM . array_element ID '=' ID new_lines
-   62               | NUM . array_element ID '=' brak_pred new_lines
+	ID  shift 81
+	'['  shift 79
+	.  error
 
-    ID   shift, and go to state 79
-    '['  shift, and go to state 80
-
-    array_element  go to state 81
+	array_element  goto 82
 
 
 state 42
+	call_stmt : ID . '(' arg_list ')'  (77)
+	call_stmt : ID . '(' ')'  (78)
+	in_built_call_stmt : ID . DOT_OP ID '(' arg_list ')'  (81)
+	in_built_call_stmt : ID . DOT_OP ID '(' ')'  (82)
+	expr_stmt : ID . '=' expr_pred new_lines  (99)
+	expr_stmt : ID . array_element '=' expr_pred new_lines  (100)
 
-   58 real_decl: REAL . ID new_lines
-   59          | REAL . ID '=' expr_pred new_lines
-   63 real_array_decl: REAL . array_element ID new_lines
-   64                | REAL . array_element ID '=' ID new_lines
-   65                | REAL . array_element ID '=' brak_pred new_lines
+	DOT_OP  shift 83
+	'('  shift 84
+	'='  shift 85
+	'['  shift 79
+	.  error
 
-    ID   shift, and go to state 82
-    '['  shift, and go to state 80
-
-    array_element  go to state 83
+	array_element  goto 86
 
 
 state 43
+	stmt : '{' . new_lines stmt_list '}' new_lines  (32)
+	stmt : '{' . stmt_list '}' new_lines  (33)
+	stmt : '{' . new_lines '}' new_lines  (34)
+	stmt : '{' . '}' new_lines  (35)
 
-   75 call_stmt: ID . '(' arg_list ')'
-   76          | ID . '(' ')'
-   79 in_built_call_stmt: ID . DOT_OP ID '(' arg_list ')'
-   80                   | ID . DOT_OP ID '(' ')'
-   95 expr_stmt: ID . '=' expr_pred new_lines
-   96          | ID . array_element '=' expr_pred new_lines
+	RETURN  shift 35
+	IMG  shift 36
+	GRAY_IMG  shift 37
+	VID  shift 38
+	GRAY_VID  shift 39
+	NUM  shift 40
+	REAL  shift 41
+	NEWLINE  shift 6
+	ID  shift 42
+	'{'  shift 43
+	'}'  shift 87
+	.  error
 
-    DOT_OP  shift, and go to state 84
-    '('     shift, and go to state 85
-    '='     shift, and go to state 86
-    '['     shift, and go to state 80
-
-    array_element  go to state 87
+	new_lines  goto 88
+	stmt_list  goto 89
+	stmt  goto 46
+	decl_stmt  goto 47
+	call_stmt  goto 48
+	in_built_call_stmt  goto 49
+	expr_stmt  goto 50
+	return_stmt  goto 51
+	img_decl  goto 52
+	gray_img_decl  goto 53
+	vid_decl  goto 54
+	gray_vid_decl  goto 55
+	num_decl  goto 56
+	real_decl  goto 57
+	num_array_decl  goto 58
+	real_array_decl  goto 59
 
 
 state 44
+	func_body : '{' new_lines . stmt_list '}'  (6)
+	new_lines : new_lines . NEWLINE  (7)
 
-   32 stmt: '{' . new_lines stmt_list '}'
-   33     | '{' . stmt_list '}'
+	RETURN  shift 35
+	IMG  shift 36
+	GRAY_IMG  shift 37
+	VID  shift 38
+	GRAY_VID  shift 39
+	NUM  shift 40
+	REAL  shift 41
+	NEWLINE  shift 10
+	ID  shift 42
+	'{'  shift 43
+	.  error
 
-    RETURN    shift, and go to state 36
-    IMG       shift, and go to state 37
-    GRAY_IMG  shift, and go to state 38
-    VID       shift, and go to state 39
-    GRAY_VID  shift, and go to state 40
-    NUM       shift, and go to state 41
-    REAL      shift, and go to state 42
-    NEWLINE   shift, and go to state 7
-    ID        shift, and go to state 43
-    '{'       shift, and go to state 44
-
-    new_lines           go to state 88
-    stmt_list           go to state 89
-    stmt                go to state 47
-    return_stmt         go to state 48
-    decl_stmt           go to state 49
-    img_decl            go to state 50
-    gray_img_decl       go to state 51
-    vid_decl            go to state 52
-    gray_vid_decl       go to state 53
-    num_decl            go to state 54
-    real_decl           go to state 55
-    num_array_decl      go to state 56
-    real_array_decl     go to state 57
-    call_stmt           go to state 58
-    in_built_call_stmt  go to state 59
-    expr_stmt           go to state 60
+	stmt_list  goto 90
+	stmt  goto 46
+	decl_stmt  goto 47
+	call_stmt  goto 48
+	in_built_call_stmt  goto 49
+	expr_stmt  goto 50
+	return_stmt  goto 51
+	img_decl  goto 52
+	gray_img_decl  goto 53
+	vid_decl  goto 54
+	gray_vid_decl  goto 55
+	num_decl  goto 56
+	real_decl  goto 57
+	num_array_decl  goto 58
+	real_array_decl  goto 59
 
 
 state 45
+	func_body : '{' stmt_list . '}'  (5)
+	stmt_list : stmt_list . stmt  (26)
 
-    6 func_body: '{' new_lines . stmt_list '}'
-    7 new_lines: new_lines . NEWLINE
+	RETURN  shift 35
+	IMG  shift 36
+	GRAY_IMG  shift 37
+	VID  shift 38
+	GRAY_VID  shift 39
+	NUM  shift 40
+	REAL  shift 41
+	ID  shift 42
+	'{'  shift 43
+	'}'  shift 91
+	.  error
 
-    RETURN    shift, and go to state 36
-    IMG       shift, and go to state 37
-    GRAY_IMG  shift, and go to state 38
-    VID       shift, and go to state 39
-    GRAY_VID  shift, and go to state 40
-    NUM       shift, and go to state 41
-    REAL      shift, and go to state 42
-    NEWLINE   shift, and go to state 11
-    ID        shift, and go to state 43
-    '{'       shift, and go to state 44
-
-    stmt_list           go to state 90
-    stmt                go to state 47
-    return_stmt         go to state 48
-    decl_stmt           go to state 49
-    img_decl            go to state 50
-    gray_img_decl       go to state 51
-    vid_decl            go to state 52
-    gray_vid_decl       go to state 53
-    num_decl            go to state 54
-    real_decl           go to state 55
-    num_array_decl      go to state 56
-    real_array_decl     go to state 57
-    call_stmt           go to state 58
-    in_built_call_stmt  go to state 59
-    expr_stmt           go to state 60
+	stmt  goto 92
+	decl_stmt  goto 47
+	call_stmt  goto 48
+	in_built_call_stmt  goto 49
+	expr_stmt  goto 50
+	return_stmt  goto 51
+	img_decl  goto 52
+	gray_img_decl  goto 53
+	vid_decl  goto 54
+	gray_vid_decl  goto 55
+	num_decl  goto 56
+	real_decl  goto 57
+	num_array_decl  goto 58
+	real_array_decl  goto 59
 
 
 state 46
+	stmt_list : stmt .  (25)
 
-    5 func_body: '{' stmt_list . '}'
-   26 stmt_list: stmt_list . stmt
-
-    RETURN    shift, and go to state 36
-    IMG       shift, and go to state 37
-    GRAY_IMG  shift, and go to state 38
-    VID       shift, and go to state 39
-    GRAY_VID  shift, and go to state 40
-    NUM       shift, and go to state 41
-    REAL      shift, and go to state 42
-    ID        shift, and go to state 43
-    '{'       shift, and go to state 44
-    '}'       shift, and go to state 91
-
-    stmt                go to state 92
-    return_stmt         go to state 48
-    decl_stmt           go to state 49
-    img_decl            go to state 50
-    gray_img_decl       go to state 51
-    vid_decl            go to state 52
-    gray_vid_decl       go to state 53
-    num_decl            go to state 54
-    real_decl           go to state 55
-    num_array_decl      go to state 56
-    real_array_decl     go to state 57
-    call_stmt           go to state 58
-    in_built_call_stmt  go to state 59
-    expr_stmt           go to state 60
+	.  reduce 25
 
 
 state 47
+	stmt : decl_stmt .  (27)
 
-   25 stmt_list: stmt .
-
-    $default  reduce using rule 25 (stmt_list)
+	.  reduce 27
 
 
 state 48
+	stmt : call_stmt . new_lines  (28)
 
-   31 stmt: return_stmt .
+	NEWLINE  shift 6
+	.  error
 
-    $default  reduce using rule 31 (stmt)
+	new_lines  goto 93
 
 
 state 49
+	stmt : in_built_call_stmt . new_lines  (29)
+	in_built_call_stmt : in_built_call_stmt . DOT_OP ID '(' arg_list ')'  (83)
+	in_built_call_stmt : in_built_call_stmt . DOT_OP ID '(' ')'  (84)
 
-   27 stmt: decl_stmt .
+	DOT_OP  shift 94
+	NEWLINE  shift 6
+	.  error
 
-    $default  reduce using rule 27 (stmt)
+	new_lines  goto 95
 
 
 state 50
+	stmt : expr_stmt .  (30)
 
-   36 decl_stmt: img_decl .
-
-    $default  reduce using rule 36 (decl_stmt)
+	.  reduce 30
 
 
 state 51
+	stmt : return_stmt .  (31)
 
-   37 decl_stmt: gray_img_decl .
-
-    $default  reduce using rule 37 (decl_stmt)
+	.  reduce 31
 
 
 state 52
+	decl_stmt : img_decl .  (38)
 
-   38 decl_stmt: vid_decl .
-
-    $default  reduce using rule 38 (decl_stmt)
+	.  reduce 38
 
 
 state 53
+	decl_stmt : gray_img_decl .  (39)
 
-   39 decl_stmt: gray_vid_decl .
-
-    $default  reduce using rule 39 (decl_stmt)
+	.  reduce 39
 
 
 state 54
+	decl_stmt : vid_decl .  (40)
 
-   40 decl_stmt: num_decl .
-
-    $default  reduce using rule 40 (decl_stmt)
+	.  reduce 40
 
 
 state 55
+	decl_stmt : gray_vid_decl .  (41)
 
-   41 decl_stmt: real_decl .
-
-    $default  reduce using rule 41 (decl_stmt)
+	.  reduce 41
 
 
 state 56
+	decl_stmt : num_decl .  (42)
 
-   42 decl_stmt: num_array_decl .
-
-    $default  reduce using rule 42 (decl_stmt)
+	.  reduce 42
 
 
 state 57
+	decl_stmt : real_decl .  (43)
 
-   43 decl_stmt: real_array_decl .
-
-    $default  reduce using rule 43 (decl_stmt)
+	.  reduce 43
 
 
 state 58
+	decl_stmt : num_array_decl .  (44)
 
-   28 stmt: call_stmt . new_lines
-
-    NEWLINE  shift, and go to state 7
-
-    new_lines  go to state 93
+	.  reduce 44
 
 
 state 59
+	decl_stmt : real_array_decl .  (45)
 
-   29 stmt: in_built_call_stmt . new_lines
-
-    NEWLINE  shift, and go to state 7
-
-    new_lines  go to state 94
+	.  reduce 45
 
 
 state 60
+	function : INK ID '(' ')' ARROW RET_TYPE new_lines func_body .  (12)
 
-   30 stmt: expr_stmt .
-
-    $default  reduce using rule 30 (stmt)
+	.  reduce 12
 
 
 state 61
+	new_lines : new_lines . NEWLINE  (7)
+	function : INK ID '(' par_list ')' ARROW RET_TYPE new_lines . func_body  (11)
 
-   12 function: INK ID '(' ')' ARROW RET_TYPE new_lines func_body .
+	NEWLINE  shift 10
+	'{'  shift 31
+	.  error
 
-    $default  reduce using rule 12 (function)
+	func_body  goto 96
 
 
 state 62
+	function : INK ID '(' par_list ')' ARROW RET_TYPE func_body .  (9)
 
-    9 function: INK ID '(' par_list ')' ARROW RET_TYPE func_body .
-
-    $default  reduce using rule 9 (function)
+	.  reduce 9
 
 
 state 63
+	expr_pred : NEG_OP . expr_pred  (92)
 
-    7 new_lines: new_lines . NEWLINE
-   11 function: INK ID '(' par_list ')' ARROW RET_TYPE new_lines . func_body
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	.  error
 
-    NEWLINE  shift, and go to state 11
-    '{'      shift, and go to state 32
-
-    func_body  go to state 95
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 97
 
 
 state 64
+	return_stmt : RETURN VOID . new_lines  (37)
 
-   88 expr_pred: NEG_OP . expr_pred
+	NEWLINE  shift 6
+	.  error
 
-    NEG_OP    shift, and go to state 64
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-
-    call_stmt           go to state 72
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 96
+	new_lines  goto 98
 
 
 state 65
+	expr_pred : BOOL_LIT .  (88)
 
-   35 return_stmt: RETURN VOID . new_lines
-
-    NEWLINE  shift, and go to state 7
-
-    new_lines  go to state 97
+	.  reduce 88
 
 
 state 66
+	call_stmt : ID . '(' arg_list ')'  (77)
+	call_stmt : ID . '(' ')'  (78)
+	in_built_call_stmt : ID . DOT_OP ID '(' arg_list ')'  (81)
+	in_built_call_stmt : ID . DOT_OP ID '(' ')'  (82)
+	expr_pred : ID .  (85)
+	expr_pred : ID . array_element  (95)
 
-   84 expr_pred: BOOL_LIT .
+	DOT_OP  shift 83
+	'('  shift 84
+	'['  shift 79
+	LOG_OP  reduce 85
+	REL_OP  reduce 85
+	NEWLINE  reduce 85
+	BINARY_OP  reduce 85
+	UNARY_OP  reduce 85
+	')'  reduce 85
+	','  reduce 85
+	']'  reduce 85
 
-    $default  reduce using rule 84 (expr_pred)
+	array_element  goto 99
 
 
 state 67
+	expr_pred : NUM_LIT .  (86)
 
-   75 call_stmt: ID . '(' arg_list ')'
-   76          | ID . '(' ')'
-   79 in_built_call_stmt: ID . DOT_OP ID '(' arg_list ')'
-   80                   | ID . DOT_OP ID '(' ')'
-   81 expr_pred: ID .
-   91          | ID . array_element
-
-    DOT_OP  shift, and go to state 84
-    '('     shift, and go to state 85
-    '['     shift, and go to state 80
-
-    $default  reduce using rule 81 (expr_pred)
-
-    array_element  go to state 98
+	.  reduce 86
 
 
 state 68
+	expr_pred : REAL_LIT .  (87)
 
-   82 expr_pred: NUM_LIT .
-
-    $default  reduce using rule 82 (expr_pred)
+	.  reduce 87
 
 
 state 69
+	expr_pred : INV_OP . expr_pred  (98)
 
-   83 expr_pred: REAL_LIT .
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	.  error
 
-    $default  reduce using rule 83 (expr_pred)
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 100
 
 
 state 70
+	expr_pred : '(' . expr_pred ')'  (91)
 
-   94 expr_pred: INV_OP . expr_pred
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	.  error
 
-    NEG_OP    shift, and go to state 64
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-
-    call_stmt           go to state 72
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 99
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 101
 
 
 state 71
+	expr_pred : call_stmt .  (93)
 
-   87 expr_pred: '(' . expr_pred ')'
-
-    NEG_OP    shift, and go to state 64
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-
-    call_stmt           go to state 72
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 100
+	.  reduce 93
 
 
 state 72
+	in_built_call_stmt : in_built_call_stmt . DOT_OP ID '(' arg_list ')'  (83)
+	in_built_call_stmt : in_built_call_stmt . DOT_OP ID '(' ')'  (84)
+	expr_pred : in_built_call_stmt .  (94)
 
-   89 expr_pred: call_stmt .
-
-    $default  reduce using rule 89 (expr_pred)
+	DOT_OP  shift 94
+	LOG_OP  reduce 94
+	REL_OP  reduce 94
+	NEWLINE  reduce 94
+	BINARY_OP  reduce 94
+	UNARY_OP  reduce 94
+	')'  reduce 94
+	','  reduce 94
+	']'  reduce 94
 
 
 state 73
+	return_stmt : RETURN expr_pred . new_lines  (36)
+	expr_pred : expr_pred . REL_OP expr_pred  (89)
+	expr_pred : expr_pred . LOG_OP expr_pred  (90)
+	expr_pred : expr_pred . BINARY_OP expr_pred  (96)
+	expr_pred : expr_pred . UNARY_OP  (97)
 
-   90 expr_pred: in_built_call_stmt .
+	LOG_OP  shift 102
+	REL_OP  shift 103
+	NEWLINE  shift 6
+	BINARY_OP  shift 104
+	UNARY_OP  shift 105
+	.  error
 
-    $default  reduce using rule 90 (expr_pred)
+	new_lines  goto 106
 
 
 state 74
+	img_decl : IMG ID . '<' NUM_LIT ',' NUM_LIT '>' new_lines  (46)
+	img_decl : IMG ID . '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines  (47)
+	img_decl : IMG ID . '<' PATH '>' new_lines  (48)
+	img_decl : IMG ID . '=' expr_pred new_lines  (49)
 
-   34 return_stmt: RETURN expr_pred . new_lines
-   85 expr_pred: expr_pred . REL_OP expr_pred
-   86          | expr_pred . LOG_OP expr_pred
-   92          | expr_pred . BINARY_OP expr_pred
-   93          | expr_pred . UNARY_OP
-
-    LOG_OP     shift, and go to state 101
-    REL_OP     shift, and go to state 102
-    NEWLINE    shift, and go to state 7
-    BINARY_OP  shift, and go to state 103
-    UNARY_OP   shift, and go to state 104
-
-    new_lines  go to state 105
+	'<'  shift 107
+	'='  shift 108
+	.  error
 
 
 state 75
+	gray_img_decl : GRAY_IMG ID . '<' NUM_LIT ',' NUM_LIT '>' new_lines  (50)
+	gray_img_decl : GRAY_IMG ID . '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines  (51)
+	gray_img_decl : GRAY_IMG ID . '<' PATH '>' new_lines  (52)
+	gray_img_decl : GRAY_IMG ID . '=' expr_pred new_lines  (53)
 
-   44 img_decl: IMG ID . '<' NUM_LIT ',' NUM_LIT '>' new_lines
-   45         | IMG ID . '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
-   46         | IMG ID . '<' PATH '>' new_lines
-   47         | IMG ID . '=' expr_pred new_lines
-
-    '<'  shift, and go to state 106
-    '='  shift, and go to state 107
+	'<'  shift 109
+	'='  shift 110
+	.  error
 
 
 state 76
+	vid_decl : VID ID . '<' NUM_LIT ',' NUM_LIT '>' new_lines  (54)
+	vid_decl : VID ID . '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines  (55)
 
-   48 gray_img_decl: GRAY_IMG ID . '<' NUM_LIT ',' NUM_LIT '>' new_lines
-   49              | GRAY_IMG ID . '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
-   50              | GRAY_IMG ID . '<' PATH '>' new_lines
-   51              | GRAY_IMG ID . '=' expr_pred new_lines
-
-    '<'  shift, and go to state 108
-    '='  shift, and go to state 109
+	'<'  shift 111
+	.  error
 
 
 state 77
+	gray_vid_decl : GRAY_VID ID . '<' NUM_LIT ',' NUM_LIT '>' new_lines  (56)
+	gray_vid_decl : GRAY_VID ID . '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines  (57)
 
-   52 vid_decl: VID ID . '<' NUM_LIT ',' NUM_LIT '>' new_lines
-   53         | VID ID . '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
-
-    '<'  shift, and go to state 110
+	'<'  shift 112
+	.  error
 
 
 state 78
+	num_decl : NUM ID . new_lines  (58)
+	num_decl : NUM ID . '=' expr_pred new_lines  (59)
 
-   54 gray_vid_decl: GRAY_VID ID . '<' NUM_LIT ',' NUM_LIT '>' new_lines
-   55              | GRAY_VID ID . '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+	NEWLINE  shift 6
+	'='  shift 113
+	.  error
 
-    '<'  shift, and go to state 111
+	new_lines  goto 114
 
 
 state 79
+	array_element : '[' . expr_pred ']'  (101)
+	array_element : '[' . expr_pred ',' expr_pred ']'  (102)
+	array_element : '[' . expr_pred ',' expr_pred ',' expr_pred ']'  (103)
 
-   56 num_decl: NUM ID . new_lines
-   57         | NUM ID . '=' expr_pred new_lines
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	.  error
 
-    NEWLINE  shift, and go to state 7
-    '='      shift, and go to state 112
-
-    new_lines  go to state 113
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 115
 
 
 state 80
+	num_array_decl : NUM array_element . ID new_lines  (62)
+	num_array_decl : NUM array_element . ID '=' ID new_lines  (63)
+	num_array_decl : NUM array_element . ID '=' brak_pred new_lines  (64)
 
-   97 array_element: '[' . expr_pred ']'
-   98              | '[' . expr_pred ',' expr_pred ']'
-   99              | '[' . expr_pred ',' expr_pred ',' expr_pred ']'
-
-    NEG_OP    shift, and go to state 64
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-
-    call_stmt           go to state 72
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 114
+	ID  shift 116
+	.  error
 
 
 state 81
+	real_decl : REAL ID . new_lines  (60)
+	real_decl : REAL ID . '=' expr_pred new_lines  (61)
 
-   60 num_array_decl: NUM array_element . ID new_lines
-   61               | NUM array_element . ID '=' ID new_lines
-   62               | NUM array_element . ID '=' brak_pred new_lines
+	NEWLINE  shift 6
+	'='  shift 117
+	.  error
 
-    ID  shift, and go to state 115
+	new_lines  goto 118
 
 
 state 82
+	real_array_decl : REAL array_element . ID new_lines  (65)
+	real_array_decl : REAL array_element . ID '=' ID new_lines  (66)
+	real_array_decl : REAL array_element . ID '=' brak_pred new_lines  (67)
 
-   58 real_decl: REAL ID . new_lines
-   59          | REAL ID . '=' expr_pred new_lines
-
-    NEWLINE  shift, and go to state 7
-    '='      shift, and go to state 116
-
-    new_lines  go to state 117
+	ID  shift 119
+	.  error
 
 
 state 83
+	in_built_call_stmt : ID DOT_OP . ID '(' arg_list ')'  (81)
+	in_built_call_stmt : ID DOT_OP . ID '(' ')'  (82)
 
-   63 real_array_decl: REAL array_element . ID new_lines
-   64                | REAL array_element . ID '=' ID new_lines
-   65                | REAL array_element . ID '=' brak_pred new_lines
-
-    ID  shift, and go to state 118
+	ID  shift 120
+	.  error
 
 
 state 84
+	call_stmt : ID '(' . arg_list ')'  (77)
+	call_stmt : ID '(' . ')'  (78)
 
-   79 in_built_call_stmt: ID DOT_OP . ID '(' arg_list ')'
-   80                   | ID DOT_OP . ID '(' ')'
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	')'  shift 121
+	.  error
 
-    ID  shift, and go to state 119
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 122
+	arg_list  goto 123
 
 
 state 85
+	expr_stmt : ID '=' . expr_pred new_lines  (99)
 
-   75 call_stmt: ID '(' . arg_list ')'
-   76          | ID '(' . ')'
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	.  error
 
-    NEG_OP    shift, and go to state 64
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-    ')'       shift, and go to state 120
-
-    call_stmt           go to state 72
-    arg_list            go to state 121
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 122
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 124
 
 
 state 86
+	expr_stmt : ID array_element . '=' expr_pred new_lines  (100)
 
-   95 expr_stmt: ID '=' . expr_pred new_lines
-
-    NEG_OP    shift, and go to state 64
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-
-    call_stmt           go to state 72
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 123
+	'='  shift 125
+	.  error
 
 
 state 87
+	stmt : '{' '}' . new_lines  (35)
 
-   96 expr_stmt: ID array_element . '=' expr_pred new_lines
+	NEWLINE  shift 6
+	.  error
 
-    '='  shift, and go to state 124
+	new_lines  goto 126
 
 
 state 88
+	new_lines : new_lines . NEWLINE  (7)
+	stmt : '{' new_lines . stmt_list '}' new_lines  (32)
+	stmt : '{' new_lines . '}' new_lines  (34)
 
-    7 new_lines: new_lines . NEWLINE
-   32 stmt: '{' new_lines . stmt_list '}'
+	RETURN  shift 35
+	IMG  shift 36
+	GRAY_IMG  shift 37
+	VID  shift 38
+	GRAY_VID  shift 39
+	NUM  shift 40
+	REAL  shift 41
+	NEWLINE  shift 10
+	ID  shift 42
+	'{'  shift 43
+	'}'  shift 127
+	.  error
 
-    RETURN    shift, and go to state 36
-    IMG       shift, and go to state 37
-    GRAY_IMG  shift, and go to state 38
-    VID       shift, and go to state 39
-    GRAY_VID  shift, and go to state 40
-    NUM       shift, and go to state 41
-    REAL      shift, and go to state 42
-    NEWLINE   shift, and go to state 11
-    ID        shift, and go to state 43
-    '{'       shift, and go to state 44
-
-    stmt_list           go to state 125
-    stmt                go to state 47
-    return_stmt         go to state 48
-    decl_stmt           go to state 49
-    img_decl            go to state 50
-    gray_img_decl       go to state 51
-    vid_decl            go to state 52
-    gray_vid_decl       go to state 53
-    num_decl            go to state 54
-    real_decl           go to state 55
-    num_array_decl      go to state 56
-    real_array_decl     go to state 57
-    call_stmt           go to state 58
-    in_built_call_stmt  go to state 59
-    expr_stmt           go to state 60
+	stmt_list  goto 128
+	stmt  goto 46
+	decl_stmt  goto 47
+	call_stmt  goto 48
+	in_built_call_stmt  goto 49
+	expr_stmt  goto 50
+	return_stmt  goto 51
+	img_decl  goto 52
+	gray_img_decl  goto 53
+	vid_decl  goto 54
+	gray_vid_decl  goto 55
+	num_decl  goto 56
+	real_decl  goto 57
+	num_array_decl  goto 58
+	real_array_decl  goto 59
 
 
 state 89
+	stmt_list : stmt_list . stmt  (26)
+	stmt : '{' stmt_list . '}' new_lines  (33)
 
-   26 stmt_list: stmt_list . stmt
-   33 stmt: '{' stmt_list . '}'
+	RETURN  shift 35
+	IMG  shift 36
+	GRAY_IMG  shift 37
+	VID  shift 38
+	GRAY_VID  shift 39
+	NUM  shift 40
+	REAL  shift 41
+	ID  shift 42
+	'{'  shift 43
+	'}'  shift 129
+	.  error
 
-    RETURN    shift, and go to state 36
-    IMG       shift, and go to state 37
-    GRAY_IMG  shift, and go to state 38
-    VID       shift, and go to state 39
-    GRAY_VID  shift, and go to state 40
-    NUM       shift, and go to state 41
-    REAL      shift, and go to state 42
-    ID        shift, and go to state 43
-    '{'       shift, and go to state 44
-    '}'       shift, and go to state 126
-
-    stmt                go to state 92
-    return_stmt         go to state 48
-    decl_stmt           go to state 49
-    img_decl            go to state 50
-    gray_img_decl       go to state 51
-    vid_decl            go to state 52
-    gray_vid_decl       go to state 53
-    num_decl            go to state 54
-    real_decl           go to state 55
-    num_array_decl      go to state 56
-    real_array_decl     go to state 57
-    call_stmt           go to state 58
-    in_built_call_stmt  go to state 59
-    expr_stmt           go to state 60
+	stmt  goto 92
+	decl_stmt  goto 47
+	call_stmt  goto 48
+	in_built_call_stmt  goto 49
+	expr_stmt  goto 50
+	return_stmt  goto 51
+	img_decl  goto 52
+	gray_img_decl  goto 53
+	vid_decl  goto 54
+	gray_vid_decl  goto 55
+	num_decl  goto 56
+	real_decl  goto 57
+	num_array_decl  goto 58
+	real_array_decl  goto 59
 
 
 state 90
+	func_body : '{' new_lines stmt_list . '}'  (6)
+	stmt_list : stmt_list . stmt  (26)
 
-    6 func_body: '{' new_lines stmt_list . '}'
-   26 stmt_list: stmt_list . stmt
+	RETURN  shift 35
+	IMG  shift 36
+	GRAY_IMG  shift 37
+	VID  shift 38
+	GRAY_VID  shift 39
+	NUM  shift 40
+	REAL  shift 41
+	ID  shift 42
+	'{'  shift 43
+	'}'  shift 130
+	.  error
 
-    RETURN    shift, and go to state 36
-    IMG       shift, and go to state 37
-    GRAY_IMG  shift, and go to state 38
-    VID       shift, and go to state 39
-    GRAY_VID  shift, and go to state 40
-    NUM       shift, and go to state 41
-    REAL      shift, and go to state 42
-    ID        shift, and go to state 43
-    '{'       shift, and go to state 44
-    '}'       shift, and go to state 127
-
-    stmt                go to state 92
-    return_stmt         go to state 48
-    decl_stmt           go to state 49
-    img_decl            go to state 50
-    gray_img_decl       go to state 51
-    vid_decl            go to state 52
-    gray_vid_decl       go to state 53
-    num_decl            go to state 54
-    real_decl           go to state 55
-    num_array_decl      go to state 56
-    real_array_decl     go to state 57
-    call_stmt           go to state 58
-    in_built_call_stmt  go to state 59
-    expr_stmt           go to state 60
+	stmt  goto 92
+	decl_stmt  goto 47
+	call_stmt  goto 48
+	in_built_call_stmt  goto 49
+	expr_stmt  goto 50
+	return_stmt  goto 51
+	img_decl  goto 52
+	gray_img_decl  goto 53
+	vid_decl  goto 54
+	gray_vid_decl  goto 55
+	num_decl  goto 56
+	real_decl  goto 57
+	num_array_decl  goto 58
+	real_array_decl  goto 59
 
 
 state 91
+	func_body : '{' stmt_list '}' .  (5)
 
-    5 func_body: '{' stmt_list '}' .
-
-    $default  reduce using rule 5 (func_body)
+	.  reduce 5
 
 
 state 92
+	stmt_list : stmt_list stmt .  (26)
 
-   26 stmt_list: stmt_list stmt .
-
-    $default  reduce using rule 26 (stmt_list)
+	.  reduce 26
 
 
 state 93
+	new_lines : new_lines . NEWLINE  (7)
+	stmt : call_stmt new_lines .  (28)
 
-    7 new_lines: new_lines . NEWLINE
-   28 stmt: call_stmt new_lines .
-
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 28 (stmt)
+	NEWLINE  shift 10
+	RETURN  reduce 28
+	IMG  reduce 28
+	GRAY_IMG  reduce 28
+	VID  reduce 28
+	GRAY_VID  reduce 28
+	NUM  reduce 28
+	REAL  reduce 28
+	ID  reduce 28
+	'{'  reduce 28
+	'}'  reduce 28
 
 
 state 94
+	in_built_call_stmt : in_built_call_stmt DOT_OP . ID '(' arg_list ')'  (83)
+	in_built_call_stmt : in_built_call_stmt DOT_OP . ID '(' ')'  (84)
 
-    7 new_lines: new_lines . NEWLINE
-   29 stmt: in_built_call_stmt new_lines .
-
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 29 (stmt)
+	ID  shift 131
+	.  error
 
 
 state 95
+	new_lines : new_lines . NEWLINE  (7)
+	stmt : in_built_call_stmt new_lines .  (29)
 
-   11 function: INK ID '(' par_list ')' ARROW RET_TYPE new_lines func_body .
-
-    $default  reduce using rule 11 (function)
+	NEWLINE  shift 10
+	RETURN  reduce 29
+	IMG  reduce 29
+	GRAY_IMG  reduce 29
+	VID  reduce 29
+	GRAY_VID  reduce 29
+	NUM  reduce 29
+	REAL  reduce 29
+	ID  reduce 29
+	'{'  reduce 29
+	'}'  reduce 29
 
 
 state 96
+	function : INK ID '(' par_list ')' ARROW RET_TYPE new_lines func_body .  (11)
 
-   85 expr_pred: expr_pred . REL_OP expr_pred
-   86          | expr_pred . LOG_OP expr_pred
-   88          | NEG_OP expr_pred .
-   92          | expr_pred . BINARY_OP expr_pred
-   93          | expr_pred . UNARY_OP
-
-    LOG_OP     shift, and go to state 101
-    REL_OP     shift, and go to state 102
-    BINARY_OP  shift, and go to state 103
-    UNARY_OP   shift, and go to state 104
-
-    LOG_OP     [reduce using rule 88 (expr_pred)]
-    REL_OP     [reduce using rule 88 (expr_pred)]
-    BINARY_OP  [reduce using rule 88 (expr_pred)]
-    UNARY_OP   [reduce using rule 88 (expr_pred)]
-    $default   reduce using rule 88 (expr_pred)
+	.  reduce 11
 
 
 state 97
+	expr_pred : expr_pred . REL_OP expr_pred  (89)
+	expr_pred : expr_pred . LOG_OP expr_pred  (90)
+	expr_pred : NEG_OP expr_pred .  (92)
+	expr_pred : expr_pred . BINARY_OP expr_pred  (96)
+	expr_pred : expr_pred . UNARY_OP  (97)
 
-    7 new_lines: new_lines . NEWLINE
-   35 return_stmt: RETURN VOID new_lines .
-
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 35 (return_stmt)
+	LOG_OP  shift 102
+	REL_OP  shift 103
+	BINARY_OP  shift 104
+	NEWLINE  reduce 92
+	UNARY_OP  reduce 92
+	')'  reduce 92
+	','  reduce 92
+	']'  reduce 92
 
 
 state 98
+	new_lines : new_lines . NEWLINE  (7)
+	return_stmt : RETURN VOID new_lines .  (37)
 
-   91 expr_pred: ID array_element .
-
-    $default  reduce using rule 91 (expr_pred)
+	NEWLINE  shift 10
+	RETURN  reduce 37
+	IMG  reduce 37
+	GRAY_IMG  reduce 37
+	VID  reduce 37
+	GRAY_VID  reduce 37
+	NUM  reduce 37
+	REAL  reduce 37
+	ID  reduce 37
+	'{'  reduce 37
+	'}'  reduce 37
 
 
 state 99
+	expr_pred : ID array_element .  (95)
 
-   85 expr_pred: expr_pred . REL_OP expr_pred
-   86          | expr_pred . LOG_OP expr_pred
-   92          | expr_pred . BINARY_OP expr_pred
-   93          | expr_pred . UNARY_OP
-   94          | INV_OP expr_pred .
-
-    LOG_OP     shift, and go to state 101
-    REL_OP     shift, and go to state 102
-    BINARY_OP  shift, and go to state 103
-    UNARY_OP   shift, and go to state 104
-
-    LOG_OP     [reduce using rule 94 (expr_pred)]
-    REL_OP     [reduce using rule 94 (expr_pred)]
-    BINARY_OP  [reduce using rule 94 (expr_pred)]
-    UNARY_OP   [reduce using rule 94 (expr_pred)]
-    $default   reduce using rule 94 (expr_pred)
+	.  reduce 95
 
 
 state 100
+	expr_pred : expr_pred . REL_OP expr_pred  (89)
+	expr_pred : expr_pred . LOG_OP expr_pred  (90)
+	expr_pred : expr_pred . BINARY_OP expr_pred  (96)
+	expr_pred : expr_pred . UNARY_OP  (97)
+	expr_pred : INV_OP expr_pred .  (98)
 
-   85 expr_pred: expr_pred . REL_OP expr_pred
-   86          | expr_pred . LOG_OP expr_pred
-   87          | '(' expr_pred . ')'
-   92          | expr_pred . BINARY_OP expr_pred
-   93          | expr_pred . UNARY_OP
-
-    LOG_OP     shift, and go to state 101
-    REL_OP     shift, and go to state 102
-    BINARY_OP  shift, and go to state 103
-    UNARY_OP   shift, and go to state 104
-    ')'        shift, and go to state 128
+	LOG_OP  shift 102
+	REL_OP  shift 103
+	BINARY_OP  shift 104
+	NEWLINE  reduce 98
+	UNARY_OP  reduce 98
+	')'  reduce 98
+	','  reduce 98
+	']'  reduce 98
 
 
 state 101
+	expr_pred : expr_pred . REL_OP expr_pred  (89)
+	expr_pred : expr_pred . LOG_OP expr_pred  (90)
+	expr_pred : '(' expr_pred . ')'  (91)
+	expr_pred : expr_pred . BINARY_OP expr_pred  (96)
+	expr_pred : expr_pred . UNARY_OP  (97)
 
-   86 expr_pred: expr_pred LOG_OP . expr_pred
-
-    NEG_OP    shift, and go to state 64
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-
-    call_stmt           go to state 72
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 129
+	LOG_OP  shift 102
+	REL_OP  shift 103
+	BINARY_OP  shift 104
+	UNARY_OP  shift 105
+	')'  shift 132
+	.  error
 
 
 state 102
+	expr_pred : expr_pred LOG_OP . expr_pred  (90)
 
-   85 expr_pred: expr_pred REL_OP . expr_pred
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	.  error
 
-    NEG_OP    shift, and go to state 64
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-
-    call_stmt           go to state 72
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 130
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 133
 
 
 state 103
+	expr_pred : expr_pred REL_OP . expr_pred  (89)
 
-   92 expr_pred: expr_pred BINARY_OP . expr_pred
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	.  error
 
-    NEG_OP    shift, and go to state 64
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-
-    call_stmt           go to state 72
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 131
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 134
 
 
 state 104
+	expr_pred : expr_pred BINARY_OP . expr_pred  (96)
 
-   93 expr_pred: expr_pred UNARY_OP .
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	.  error
 
-    $default  reduce using rule 93 (expr_pred)
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 135
 
 
 state 105
+	expr_pred : expr_pred UNARY_OP .  (97)
 
-    7 new_lines: new_lines . NEWLINE
-   34 return_stmt: RETURN expr_pred new_lines .
-
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 34 (return_stmt)
+	.  reduce 97
 
 
 state 106
+	new_lines : new_lines . NEWLINE  (7)
+	return_stmt : RETURN expr_pred new_lines .  (36)
 
-   44 img_decl: IMG ID '<' . NUM_LIT ',' NUM_LIT '>' new_lines
-   45         | IMG ID '<' . NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
-   46         | IMG ID '<' . PATH '>' new_lines
-
-    NUM_LIT  shift, and go to state 132
-    PATH     shift, and go to state 133
+	NEWLINE  shift 10
+	RETURN  reduce 36
+	IMG  reduce 36
+	GRAY_IMG  reduce 36
+	VID  reduce 36
+	GRAY_VID  reduce 36
+	NUM  reduce 36
+	REAL  reduce 36
+	ID  reduce 36
+	'{'  reduce 36
+	'}'  reduce 36
 
 
 state 107
+	img_decl : IMG ID '<' . NUM_LIT ',' NUM_LIT '>' new_lines  (46)
+	img_decl : IMG ID '<' . NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines  (47)
+	img_decl : IMG ID '<' . PATH '>' new_lines  (48)
 
-   47 img_decl: IMG ID '=' . expr_pred new_lines
-
-    NEG_OP    shift, and go to state 64
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-
-    call_stmt           go to state 72
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 134
+	NUM_LIT  shift 136
+	PATH  shift 137
+	.  error
 
 
 state 108
+	img_decl : IMG ID '=' . expr_pred new_lines  (49)
 
-   48 gray_img_decl: GRAY_IMG ID '<' . NUM_LIT ',' NUM_LIT '>' new_lines
-   49              | GRAY_IMG ID '<' . NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
-   50              | GRAY_IMG ID '<' . PATH '>' new_lines
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	.  error
 
-    NUM_LIT  shift, and go to state 135
-    PATH     shift, and go to state 136
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 138
 
 
 state 109
+	gray_img_decl : GRAY_IMG ID '<' . NUM_LIT ',' NUM_LIT '>' new_lines  (50)
+	gray_img_decl : GRAY_IMG ID '<' . NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines  (51)
+	gray_img_decl : GRAY_IMG ID '<' . PATH '>' new_lines  (52)
 
-   51 gray_img_decl: GRAY_IMG ID '=' . expr_pred new_lines
-
-    NEG_OP    shift, and go to state 64
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-
-    call_stmt           go to state 72
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 137
+	NUM_LIT  shift 139
+	PATH  shift 140
+	.  error
 
 
 state 110
+	gray_img_decl : GRAY_IMG ID '=' . expr_pred new_lines  (53)
 
-   52 vid_decl: VID ID '<' . NUM_LIT ',' NUM_LIT '>' new_lines
-   53         | VID ID '<' . NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	.  error
 
-    NUM_LIT  shift, and go to state 138
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 141
 
 
 state 111
+	vid_decl : VID ID '<' . NUM_LIT ',' NUM_LIT '>' new_lines  (54)
+	vid_decl : VID ID '<' . NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines  (55)
 
-   54 gray_vid_decl: GRAY_VID ID '<' . NUM_LIT ',' NUM_LIT '>' new_lines
-   55              | GRAY_VID ID '<' . NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
-
-    NUM_LIT  shift, and go to state 139
+	NUM_LIT  shift 142
+	.  error
 
 
 state 112
+	gray_vid_decl : GRAY_VID ID '<' . NUM_LIT ',' NUM_LIT '>' new_lines  (56)
+	gray_vid_decl : GRAY_VID ID '<' . NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines  (57)
 
-   57 num_decl: NUM ID '=' . expr_pred new_lines
-
-    NEG_OP    shift, and go to state 64
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-
-    call_stmt           go to state 72
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 140
+	NUM_LIT  shift 143
+	.  error
 
 
 state 113
+	num_decl : NUM ID '=' . expr_pred new_lines  (59)
 
-    7 new_lines: new_lines . NEWLINE
-   56 num_decl: NUM ID new_lines .
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	.  error
 
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 56 (num_decl)
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 144
 
 
 state 114
+	new_lines : new_lines . NEWLINE  (7)
+	num_decl : NUM ID new_lines .  (58)
 
-   85 expr_pred: expr_pred . REL_OP expr_pred
-   86          | expr_pred . LOG_OP expr_pred
-   92          | expr_pred . BINARY_OP expr_pred
-   93          | expr_pred . UNARY_OP
-   97 array_element: '[' expr_pred . ']'
-   98              | '[' expr_pred . ',' expr_pred ']'
-   99              | '[' expr_pred . ',' expr_pred ',' expr_pred ']'
-
-    LOG_OP     shift, and go to state 101
-    REL_OP     shift, and go to state 102
-    BINARY_OP  shift, and go to state 103
-    UNARY_OP   shift, and go to state 104
-    ','        shift, and go to state 141
-    ']'        shift, and go to state 142
+	NEWLINE  shift 10
+	RETURN  reduce 58
+	IMG  reduce 58
+	GRAY_IMG  reduce 58
+	VID  reduce 58
+	GRAY_VID  reduce 58
+	NUM  reduce 58
+	REAL  reduce 58
+	ID  reduce 58
+	'{'  reduce 58
+	'}'  reduce 58
 
 
 state 115
+	expr_pred : expr_pred . REL_OP expr_pred  (89)
+	expr_pred : expr_pred . LOG_OP expr_pred  (90)
+	expr_pred : expr_pred . BINARY_OP expr_pred  (96)
+	expr_pred : expr_pred . UNARY_OP  (97)
+	array_element : '[' expr_pred . ']'  (101)
+	array_element : '[' expr_pred . ',' expr_pred ']'  (102)
+	array_element : '[' expr_pred . ',' expr_pred ',' expr_pred ']'  (103)
 
-   60 num_array_decl: NUM array_element ID . new_lines
-   61               | NUM array_element ID . '=' ID new_lines
-   62               | NUM array_element ID . '=' brak_pred new_lines
-
-    NEWLINE  shift, and go to state 7
-    '='      shift, and go to state 143
-
-    new_lines  go to state 144
+	LOG_OP  shift 102
+	REL_OP  shift 103
+	BINARY_OP  shift 104
+	UNARY_OP  shift 105
+	','  shift 145
+	']'  shift 146
+	.  error
 
 
 state 116
+	num_array_decl : NUM array_element ID . new_lines  (62)
+	num_array_decl : NUM array_element ID . '=' ID new_lines  (63)
+	num_array_decl : NUM array_element ID . '=' brak_pred new_lines  (64)
 
-   59 real_decl: REAL ID '=' . expr_pred new_lines
+	NEWLINE  shift 6
+	'='  shift 147
+	.  error
 
-    NEG_OP    shift, and go to state 64
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-
-    call_stmt           go to state 72
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 145
+	new_lines  goto 148
 
 
 state 117
+	real_decl : REAL ID '=' . expr_pred new_lines  (61)
 
-    7 new_lines: new_lines . NEWLINE
-   58 real_decl: REAL ID new_lines .
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	.  error
 
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 58 (real_decl)
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 149
 
 
 state 118
+	new_lines : new_lines . NEWLINE  (7)
+	real_decl : REAL ID new_lines .  (60)
 
-   63 real_array_decl: REAL array_element ID . new_lines
-   64                | REAL array_element ID . '=' ID new_lines
-   65                | REAL array_element ID . '=' brak_pred new_lines
-
-    NEWLINE  shift, and go to state 7
-    '='      shift, and go to state 146
-
-    new_lines  go to state 147
+	NEWLINE  shift 10
+	RETURN  reduce 60
+	IMG  reduce 60
+	GRAY_IMG  reduce 60
+	VID  reduce 60
+	GRAY_VID  reduce 60
+	NUM  reduce 60
+	REAL  reduce 60
+	ID  reduce 60
+	'{'  reduce 60
+	'}'  reduce 60
 
 
 state 119
+	real_array_decl : REAL array_element ID . new_lines  (65)
+	real_array_decl : REAL array_element ID . '=' ID new_lines  (66)
+	real_array_decl : REAL array_element ID . '=' brak_pred new_lines  (67)
 
-   79 in_built_call_stmt: ID DOT_OP ID . '(' arg_list ')'
-   80                   | ID DOT_OP ID . '(' ')'
+	NEWLINE  shift 6
+	'='  shift 150
+	.  error
 
-    '('  shift, and go to state 148
+	new_lines  goto 151
 
 
 state 120
+	in_built_call_stmt : ID DOT_OP ID . '(' arg_list ')'  (81)
+	in_built_call_stmt : ID DOT_OP ID . '(' ')'  (82)
 
-   76 call_stmt: ID '(' ')' .
-
-    $default  reduce using rule 76 (call_stmt)
+	'('  shift 152
+	.  error
 
 
 state 121
+	call_stmt : ID '(' ')' .  (78)
 
-   75 call_stmt: ID '(' arg_list . ')'
-   77 arg_list: arg_list . ',' expr_pred
-
-    ')'  shift, and go to state 149
-    ','  shift, and go to state 150
+	.  reduce 78
 
 
 state 122
+	arg_list : expr_pred .  (80)
+	expr_pred : expr_pred . REL_OP expr_pred  (89)
+	expr_pred : expr_pred . LOG_OP expr_pred  (90)
+	expr_pred : expr_pred . BINARY_OP expr_pred  (96)
+	expr_pred : expr_pred . UNARY_OP  (97)
 
-   78 arg_list: expr_pred .
-   85 expr_pred: expr_pred . REL_OP expr_pred
-   86          | expr_pred . LOG_OP expr_pred
-   92          | expr_pred . BINARY_OP expr_pred
-   93          | expr_pred . UNARY_OP
-
-    LOG_OP     shift, and go to state 101
-    REL_OP     shift, and go to state 102
-    BINARY_OP  shift, and go to state 103
-    UNARY_OP   shift, and go to state 104
-
-    $default  reduce using rule 78 (arg_list)
+	LOG_OP  shift 102
+	REL_OP  shift 103
+	BINARY_OP  shift 104
+	UNARY_OP  shift 105
+	')'  reduce 80
+	','  reduce 80
 
 
 state 123
+	call_stmt : ID '(' arg_list . ')'  (77)
+	arg_list : arg_list . ',' expr_pred  (79)
 
-   85 expr_pred: expr_pred . REL_OP expr_pred
-   86          | expr_pred . LOG_OP expr_pred
-   92          | expr_pred . BINARY_OP expr_pred
-   93          | expr_pred . UNARY_OP
-   95 expr_stmt: ID '=' expr_pred . new_lines
-
-    LOG_OP     shift, and go to state 101
-    REL_OP     shift, and go to state 102
-    NEWLINE    shift, and go to state 7
-    BINARY_OP  shift, and go to state 103
-    UNARY_OP   shift, and go to state 104
-
-    new_lines  go to state 151
+	')'  shift 153
+	','  shift 154
+	.  error
 
 
 state 124
+	expr_pred : expr_pred . REL_OP expr_pred  (89)
+	expr_pred : expr_pred . LOG_OP expr_pred  (90)
+	expr_pred : expr_pred . BINARY_OP expr_pred  (96)
+	expr_pred : expr_pred . UNARY_OP  (97)
+	expr_stmt : ID '=' expr_pred . new_lines  (99)
 
-   96 expr_stmt: ID array_element '=' . expr_pred new_lines
+	LOG_OP  shift 102
+	REL_OP  shift 103
+	NEWLINE  shift 6
+	BINARY_OP  shift 104
+	UNARY_OP  shift 105
+	.  error
 
-    NEG_OP    shift, and go to state 64
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-
-    call_stmt           go to state 72
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 152
+	new_lines  goto 155
 
 
 state 125
+	expr_stmt : ID array_element '=' . expr_pred new_lines  (100)
 
-   26 stmt_list: stmt_list . stmt
-   32 stmt: '{' new_lines stmt_list . '}'
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	.  error
 
-    RETURN    shift, and go to state 36
-    IMG       shift, and go to state 37
-    GRAY_IMG  shift, and go to state 38
-    VID       shift, and go to state 39
-    GRAY_VID  shift, and go to state 40
-    NUM       shift, and go to state 41
-    REAL      shift, and go to state 42
-    ID        shift, and go to state 43
-    '{'       shift, and go to state 44
-    '}'       shift, and go to state 153
-
-    stmt                go to state 92
-    return_stmt         go to state 48
-    decl_stmt           go to state 49
-    img_decl            go to state 50
-    gray_img_decl       go to state 51
-    vid_decl            go to state 52
-    gray_vid_decl       go to state 53
-    num_decl            go to state 54
-    real_decl           go to state 55
-    num_array_decl      go to state 56
-    real_array_decl     go to state 57
-    call_stmt           go to state 58
-    in_built_call_stmt  go to state 59
-    expr_stmt           go to state 60
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 156
 
 
 state 126
+	new_lines : new_lines . NEWLINE  (7)
+	stmt : '{' '}' new_lines .  (35)
 
-   33 stmt: '{' stmt_list '}' .
-
-    $default  reduce using rule 33 (stmt)
+	NEWLINE  shift 10
+	RETURN  reduce 35
+	IMG  reduce 35
+	GRAY_IMG  reduce 35
+	VID  reduce 35
+	GRAY_VID  reduce 35
+	NUM  reduce 35
+	REAL  reduce 35
+	ID  reduce 35
+	'{'  reduce 35
+	'}'  reduce 35
 
 
 state 127
+	stmt : '{' new_lines '}' . new_lines  (34)
 
-    6 func_body: '{' new_lines stmt_list '}' .
+	NEWLINE  shift 6
+	.  error
 
-    $default  reduce using rule 6 (func_body)
+	new_lines  goto 157
 
 
 state 128
+	stmt_list : stmt_list . stmt  (26)
+	stmt : '{' new_lines stmt_list . '}' new_lines  (32)
 
-   87 expr_pred: '(' expr_pred ')' .
+	RETURN  shift 35
+	IMG  shift 36
+	GRAY_IMG  shift 37
+	VID  shift 38
+	GRAY_VID  shift 39
+	NUM  shift 40
+	REAL  shift 41
+	ID  shift 42
+	'{'  shift 43
+	'}'  shift 158
+	.  error
 
-    $default  reduce using rule 87 (expr_pred)
+	stmt  goto 92
+	decl_stmt  goto 47
+	call_stmt  goto 48
+	in_built_call_stmt  goto 49
+	expr_stmt  goto 50
+	return_stmt  goto 51
+	img_decl  goto 52
+	gray_img_decl  goto 53
+	vid_decl  goto 54
+	gray_vid_decl  goto 55
+	num_decl  goto 56
+	real_decl  goto 57
+	num_array_decl  goto 58
+	real_array_decl  goto 59
 
 
 state 129
+	stmt : '{' stmt_list '}' . new_lines  (33)
 
-   85 expr_pred: expr_pred . REL_OP expr_pred
-   86          | expr_pred . LOG_OP expr_pred
-   86          | expr_pred LOG_OP expr_pred .
-   92          | expr_pred . BINARY_OP expr_pred
-   93          | expr_pred . UNARY_OP
+	NEWLINE  shift 6
+	.  error
 
-    LOG_OP     shift, and go to state 101
-    REL_OP     shift, and go to state 102
-    BINARY_OP  shift, and go to state 103
-    UNARY_OP   shift, and go to state 104
-
-    LOG_OP     [reduce using rule 86 (expr_pred)]
-    REL_OP     [reduce using rule 86 (expr_pred)]
-    BINARY_OP  [reduce using rule 86 (expr_pred)]
-    UNARY_OP   [reduce using rule 86 (expr_pred)]
-    $default   reduce using rule 86 (expr_pred)
+	new_lines  goto 159
 
 
 state 130
+	func_body : '{' new_lines stmt_list '}' .  (6)
 
-   85 expr_pred: expr_pred . REL_OP expr_pred
-   85          | expr_pred REL_OP expr_pred .
-   86          | expr_pred . LOG_OP expr_pred
-   92          | expr_pred . BINARY_OP expr_pred
-   93          | expr_pred . UNARY_OP
-
-    LOG_OP     shift, and go to state 101
-    REL_OP     shift, and go to state 102
-    BINARY_OP  shift, and go to state 103
-    UNARY_OP   shift, and go to state 104
-
-    LOG_OP     [reduce using rule 85 (expr_pred)]
-    REL_OP     [reduce using rule 85 (expr_pred)]
-    BINARY_OP  [reduce using rule 85 (expr_pred)]
-    UNARY_OP   [reduce using rule 85 (expr_pred)]
-    $default   reduce using rule 85 (expr_pred)
+	.  reduce 6
 
 
 state 131
+	in_built_call_stmt : in_built_call_stmt DOT_OP ID . '(' arg_list ')'  (83)
+	in_built_call_stmt : in_built_call_stmt DOT_OP ID . '(' ')'  (84)
 
-   85 expr_pred: expr_pred . REL_OP expr_pred
-   86          | expr_pred . LOG_OP expr_pred
-   92          | expr_pred . BINARY_OP expr_pred
-   92          | expr_pred BINARY_OP expr_pred .
-   93          | expr_pred . UNARY_OP
-
-    LOG_OP     shift, and go to state 101
-    REL_OP     shift, and go to state 102
-    BINARY_OP  shift, and go to state 103
-    UNARY_OP   shift, and go to state 104
-
-    LOG_OP     [reduce using rule 92 (expr_pred)]
-    REL_OP     [reduce using rule 92 (expr_pred)]
-    BINARY_OP  [reduce using rule 92 (expr_pred)]
-    UNARY_OP   [reduce using rule 92 (expr_pred)]
-    $default   reduce using rule 92 (expr_pred)
+	'('  shift 160
+	.  error
 
 
 state 132
+	expr_pred : '(' expr_pred ')' .  (91)
 
-   44 img_decl: IMG ID '<' NUM_LIT . ',' NUM_LIT '>' new_lines
-   45         | IMG ID '<' NUM_LIT . ',' NUM_LIT ',' NUM_LIT '>' new_lines
-
-    ','  shift, and go to state 154
+	.  reduce 91
 
 
 state 133
+	expr_pred : expr_pred . REL_OP expr_pred  (89)
+	expr_pred : expr_pred . LOG_OP expr_pred  (90)
+	expr_pred : expr_pred LOG_OP expr_pred .  (90)
+	expr_pred : expr_pred . BINARY_OP expr_pred  (96)
+	expr_pred : expr_pred . UNARY_OP  (97)
 
-   46 img_decl: IMG ID '<' PATH . '>' new_lines
-
-    '>'  shift, and go to state 155
+	REL_OP  shift 103
+	LOG_OP  reduce 90
+	NEWLINE  reduce 90
+	BINARY_OP  reduce 90
+	UNARY_OP  reduce 90
+	')'  reduce 90
+	','  reduce 90
+	']'  reduce 90
 
 
 state 134
+	expr_pred : expr_pred . REL_OP expr_pred  (89)
+	expr_pred : expr_pred REL_OP expr_pred .  (89)
+	expr_pred : expr_pred . LOG_OP expr_pred  (90)
+	expr_pred : expr_pred . BINARY_OP expr_pred  (96)
+	expr_pred : expr_pred . UNARY_OP  (97)
 
-   47 img_decl: IMG ID '=' expr_pred . new_lines
-   85 expr_pred: expr_pred . REL_OP expr_pred
-   86          | expr_pred . LOG_OP expr_pred
-   92          | expr_pred . BINARY_OP expr_pred
-   93          | expr_pred . UNARY_OP
-
-    LOG_OP     shift, and go to state 101
-    REL_OP     shift, and go to state 102
-    NEWLINE    shift, and go to state 7
-    BINARY_OP  shift, and go to state 103
-    UNARY_OP   shift, and go to state 104
-
-    new_lines  go to state 156
+	.  reduce 89
 
 
 state 135
+	expr_pred : expr_pred . REL_OP expr_pred  (89)
+	expr_pred : expr_pred . LOG_OP expr_pred  (90)
+	expr_pred : expr_pred . BINARY_OP expr_pred  (96)
+	expr_pred : expr_pred BINARY_OP expr_pred .  (96)
+	expr_pred : expr_pred . UNARY_OP  (97)
 
-   48 gray_img_decl: GRAY_IMG ID '<' NUM_LIT . ',' NUM_LIT '>' new_lines
-   49              | GRAY_IMG ID '<' NUM_LIT . ',' NUM_LIT ',' NUM_LIT '>' new_lines
-
-    ','  shift, and go to state 157
+	LOG_OP  shift 102
+	REL_OP  shift 103
+	NEWLINE  reduce 96
+	BINARY_OP  reduce 96
+	UNARY_OP  reduce 96
+	')'  reduce 96
+	','  reduce 96
+	']'  reduce 96
 
 
 state 136
+	img_decl : IMG ID '<' NUM_LIT . ',' NUM_LIT '>' new_lines  (46)
+	img_decl : IMG ID '<' NUM_LIT . ',' NUM_LIT ',' NUM_LIT '>' new_lines  (47)
 
-   50 gray_img_decl: GRAY_IMG ID '<' PATH . '>' new_lines
-
-    '>'  shift, and go to state 158
+	','  shift 161
+	.  error
 
 
 state 137
+	img_decl : IMG ID '<' PATH . '>' new_lines  (48)
 
-   51 gray_img_decl: GRAY_IMG ID '=' expr_pred . new_lines
-   85 expr_pred: expr_pred . REL_OP expr_pred
-   86          | expr_pred . LOG_OP expr_pred
-   92          | expr_pred . BINARY_OP expr_pred
-   93          | expr_pred . UNARY_OP
-
-    LOG_OP     shift, and go to state 101
-    REL_OP     shift, and go to state 102
-    NEWLINE    shift, and go to state 7
-    BINARY_OP  shift, and go to state 103
-    UNARY_OP   shift, and go to state 104
-
-    new_lines  go to state 159
+	'>'  shift 162
+	.  error
 
 
 state 138
+	img_decl : IMG ID '=' expr_pred . new_lines  (49)
+	expr_pred : expr_pred . REL_OP expr_pred  (89)
+	expr_pred : expr_pred . LOG_OP expr_pred  (90)
+	expr_pred : expr_pred . BINARY_OP expr_pred  (96)
+	expr_pred : expr_pred . UNARY_OP  (97)
 
-   52 vid_decl: VID ID '<' NUM_LIT . ',' NUM_LIT '>' new_lines
-   53         | VID ID '<' NUM_LIT . ',' NUM_LIT ',' NUM_LIT '>' new_lines
+	LOG_OP  shift 102
+	REL_OP  shift 103
+	NEWLINE  shift 6
+	BINARY_OP  shift 104
+	UNARY_OP  shift 105
+	.  error
 
-    ','  shift, and go to state 160
+	new_lines  goto 163
 
 
 state 139
+	gray_img_decl : GRAY_IMG ID '<' NUM_LIT . ',' NUM_LIT '>' new_lines  (50)
+	gray_img_decl : GRAY_IMG ID '<' NUM_LIT . ',' NUM_LIT ',' NUM_LIT '>' new_lines  (51)
 
-   54 gray_vid_decl: GRAY_VID ID '<' NUM_LIT . ',' NUM_LIT '>' new_lines
-   55              | GRAY_VID ID '<' NUM_LIT . ',' NUM_LIT ',' NUM_LIT '>' new_lines
-
-    ','  shift, and go to state 161
+	','  shift 164
+	.  error
 
 
 state 140
+	gray_img_decl : GRAY_IMG ID '<' PATH . '>' new_lines  (52)
 
-   57 num_decl: NUM ID '=' expr_pred . new_lines
-   85 expr_pred: expr_pred . REL_OP expr_pred
-   86          | expr_pred . LOG_OP expr_pred
-   92          | expr_pred . BINARY_OP expr_pred
-   93          | expr_pred . UNARY_OP
-
-    LOG_OP     shift, and go to state 101
-    REL_OP     shift, and go to state 102
-    NEWLINE    shift, and go to state 7
-    BINARY_OP  shift, and go to state 103
-    UNARY_OP   shift, and go to state 104
-
-    new_lines  go to state 162
+	'>'  shift 165
+	.  error
 
 
 state 141
+	gray_img_decl : GRAY_IMG ID '=' expr_pred . new_lines  (53)
+	expr_pred : expr_pred . REL_OP expr_pred  (89)
+	expr_pred : expr_pred . LOG_OP expr_pred  (90)
+	expr_pred : expr_pred . BINARY_OP expr_pred  (96)
+	expr_pred : expr_pred . UNARY_OP  (97)
 
-   98 array_element: '[' expr_pred ',' . expr_pred ']'
-   99              | '[' expr_pred ',' . expr_pred ',' expr_pred ']'
+	LOG_OP  shift 102
+	REL_OP  shift 103
+	NEWLINE  shift 6
+	BINARY_OP  shift 104
+	UNARY_OP  shift 105
+	.  error
 
-    NEG_OP    shift, and go to state 64
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-
-    call_stmt           go to state 72
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 163
+	new_lines  goto 166
 
 
 state 142
+	vid_decl : VID ID '<' NUM_LIT . ',' NUM_LIT '>' new_lines  (54)
+	vid_decl : VID ID '<' NUM_LIT . ',' NUM_LIT ',' NUM_LIT '>' new_lines  (55)
 
-   97 array_element: '[' expr_pred ']' .
-
-    $default  reduce using rule 97 (array_element)
+	','  shift 167
+	.  error
 
 
 state 143
+	gray_vid_decl : GRAY_VID ID '<' NUM_LIT . ',' NUM_LIT '>' new_lines  (56)
+	gray_vid_decl : GRAY_VID ID '<' NUM_LIT . ',' NUM_LIT ',' NUM_LIT '>' new_lines  (57)
 
-   61 num_array_decl: NUM array_element ID '=' . ID new_lines
-   62               | NUM array_element ID '=' . brak_pred new_lines
-
-    ID   shift, and go to state 164
-    '{'  shift, and go to state 165
-
-    brak_pred  go to state 166
+	','  shift 168
+	.  error
 
 
 state 144
+	num_decl : NUM ID '=' expr_pred . new_lines  (59)
+	expr_pred : expr_pred . REL_OP expr_pred  (89)
+	expr_pred : expr_pred . LOG_OP expr_pred  (90)
+	expr_pred : expr_pred . BINARY_OP expr_pred  (96)
+	expr_pred : expr_pred . UNARY_OP  (97)
 
-    7 new_lines: new_lines . NEWLINE
-   60 num_array_decl: NUM array_element ID new_lines .
+	LOG_OP  shift 102
+	REL_OP  shift 103
+	NEWLINE  shift 6
+	BINARY_OP  shift 104
+	UNARY_OP  shift 105
+	.  error
 
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 60 (num_array_decl)
+	new_lines  goto 169
 
 
 state 145
+	array_element : '[' expr_pred ',' . expr_pred ']'  (102)
+	array_element : '[' expr_pred ',' . expr_pred ',' expr_pred ']'  (103)
 
-   59 real_decl: REAL ID '=' expr_pred . new_lines
-   85 expr_pred: expr_pred . REL_OP expr_pred
-   86          | expr_pred . LOG_OP expr_pred
-   92          | expr_pred . BINARY_OP expr_pred
-   93          | expr_pred . UNARY_OP
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	.  error
 
-    LOG_OP     shift, and go to state 101
-    REL_OP     shift, and go to state 102
-    NEWLINE    shift, and go to state 7
-    BINARY_OP  shift, and go to state 103
-    UNARY_OP   shift, and go to state 104
-
-    new_lines  go to state 167
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 170
 
 
 state 146
+	array_element : '[' expr_pred ']' .  (101)
 
-   64 real_array_decl: REAL array_element ID '=' . ID new_lines
-   65                | REAL array_element ID '=' . brak_pred new_lines
-
-    ID   shift, and go to state 168
-    '{'  shift, and go to state 165
-
-    brak_pred  go to state 169
+	.  reduce 101
 
 
 state 147
+	num_array_decl : NUM array_element ID '=' . ID new_lines  (63)
+	num_array_decl : NUM array_element ID '=' . brak_pred new_lines  (64)
 
-    7 new_lines: new_lines . NEWLINE
-   63 real_array_decl: REAL array_element ID new_lines .
+	ID  shift 171
+	'{'  shift 172
+	.  error
 
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 63 (real_array_decl)
+	brak_pred  goto 173
 
 
 state 148
+	new_lines : new_lines . NEWLINE  (7)
+	num_array_decl : NUM array_element ID new_lines .  (62)
 
-   79 in_built_call_stmt: ID DOT_OP ID '(' . arg_list ')'
-   80                   | ID DOT_OP ID '(' . ')'
-
-    NEG_OP    shift, and go to state 64
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-    ')'       shift, and go to state 170
-
-    call_stmt           go to state 72
-    arg_list            go to state 171
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 122
+	NEWLINE  shift 10
+	RETURN  reduce 62
+	IMG  reduce 62
+	GRAY_IMG  reduce 62
+	VID  reduce 62
+	GRAY_VID  reduce 62
+	NUM  reduce 62
+	REAL  reduce 62
+	ID  reduce 62
+	'{'  reduce 62
+	'}'  reduce 62
 
 
 state 149
+	real_decl : REAL ID '=' expr_pred . new_lines  (61)
+	expr_pred : expr_pred . REL_OP expr_pred  (89)
+	expr_pred : expr_pred . LOG_OP expr_pred  (90)
+	expr_pred : expr_pred . BINARY_OP expr_pred  (96)
+	expr_pred : expr_pred . UNARY_OP  (97)
 
-   75 call_stmt: ID '(' arg_list ')' .
+	LOG_OP  shift 102
+	REL_OP  shift 103
+	NEWLINE  shift 6
+	BINARY_OP  shift 104
+	UNARY_OP  shift 105
+	.  error
 
-    $default  reduce using rule 75 (call_stmt)
+	new_lines  goto 174
 
 
 state 150
+	real_array_decl : REAL array_element ID '=' . ID new_lines  (66)
+	real_array_decl : REAL array_element ID '=' . brak_pred new_lines  (67)
 
-   77 arg_list: arg_list ',' . expr_pred
+	ID  shift 175
+	'{'  shift 172
+	.  error
 
-    NEG_OP    shift, and go to state 64
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-
-    call_stmt           go to state 72
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 172
+	brak_pred  goto 176
 
 
 state 151
+	new_lines : new_lines . NEWLINE  (7)
+	real_array_decl : REAL array_element ID new_lines .  (65)
 
-    7 new_lines: new_lines . NEWLINE
-   95 expr_stmt: ID '=' expr_pred new_lines .
-
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 95 (expr_stmt)
+	NEWLINE  shift 10
+	RETURN  reduce 65
+	IMG  reduce 65
+	GRAY_IMG  reduce 65
+	VID  reduce 65
+	GRAY_VID  reduce 65
+	NUM  reduce 65
+	REAL  reduce 65
+	ID  reduce 65
+	'{'  reduce 65
+	'}'  reduce 65
 
 
 state 152
+	in_built_call_stmt : ID DOT_OP ID '(' . arg_list ')'  (81)
+	in_built_call_stmt : ID DOT_OP ID '(' . ')'  (82)
 
-   85 expr_pred: expr_pred . REL_OP expr_pred
-   86          | expr_pred . LOG_OP expr_pred
-   92          | expr_pred . BINARY_OP expr_pred
-   93          | expr_pred . UNARY_OP
-   96 expr_stmt: ID array_element '=' expr_pred . new_lines
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	')'  shift 177
+	.  error
 
-    LOG_OP     shift, and go to state 101
-    REL_OP     shift, and go to state 102
-    NEWLINE    shift, and go to state 7
-    BINARY_OP  shift, and go to state 103
-    UNARY_OP   shift, and go to state 104
-
-    new_lines  go to state 173
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 122
+	arg_list  goto 178
 
 
 state 153
+	call_stmt : ID '(' arg_list ')' .  (77)
 
-   32 stmt: '{' new_lines stmt_list '}' .
-
-    $default  reduce using rule 32 (stmt)
+	.  reduce 77
 
 
 state 154
+	arg_list : arg_list ',' . expr_pred  (79)
 
-   44 img_decl: IMG ID '<' NUM_LIT ',' . NUM_LIT '>' new_lines
-   45         | IMG ID '<' NUM_LIT ',' . NUM_LIT ',' NUM_LIT '>' new_lines
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	.  error
 
-    NUM_LIT  shift, and go to state 174
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 179
 
 
 state 155
+	new_lines : new_lines . NEWLINE  (7)
+	expr_stmt : ID '=' expr_pred new_lines .  (99)
 
-   46 img_decl: IMG ID '<' PATH '>' . new_lines
-
-    NEWLINE  shift, and go to state 7
-
-    new_lines  go to state 175
+	NEWLINE  shift 10
+	RETURN  reduce 99
+	IMG  reduce 99
+	GRAY_IMG  reduce 99
+	VID  reduce 99
+	GRAY_VID  reduce 99
+	NUM  reduce 99
+	REAL  reduce 99
+	ID  reduce 99
+	'{'  reduce 99
+	'}'  reduce 99
 
 
 state 156
+	expr_pred : expr_pred . REL_OP expr_pred  (89)
+	expr_pred : expr_pred . LOG_OP expr_pred  (90)
+	expr_pred : expr_pred . BINARY_OP expr_pred  (96)
+	expr_pred : expr_pred . UNARY_OP  (97)
+	expr_stmt : ID array_element '=' expr_pred . new_lines  (100)
 
-    7 new_lines: new_lines . NEWLINE
-   47 img_decl: IMG ID '=' expr_pred new_lines .
+	LOG_OP  shift 102
+	REL_OP  shift 103
+	NEWLINE  shift 6
+	BINARY_OP  shift 104
+	UNARY_OP  shift 105
+	.  error
 
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 47 (img_decl)
+	new_lines  goto 180
 
 
 state 157
+	new_lines : new_lines . NEWLINE  (7)
+	stmt : '{' new_lines '}' new_lines .  (34)
 
-   48 gray_img_decl: GRAY_IMG ID '<' NUM_LIT ',' . NUM_LIT '>' new_lines
-   49              | GRAY_IMG ID '<' NUM_LIT ',' . NUM_LIT ',' NUM_LIT '>' new_lines
-
-    NUM_LIT  shift, and go to state 176
+	NEWLINE  shift 10
+	RETURN  reduce 34
+	IMG  reduce 34
+	GRAY_IMG  reduce 34
+	VID  reduce 34
+	GRAY_VID  reduce 34
+	NUM  reduce 34
+	REAL  reduce 34
+	ID  reduce 34
+	'{'  reduce 34
+	'}'  reduce 34
 
 
 state 158
+	stmt : '{' new_lines stmt_list '}' . new_lines  (32)
 
-   50 gray_img_decl: GRAY_IMG ID '<' PATH '>' . new_lines
+	NEWLINE  shift 6
+	.  error
 
-    NEWLINE  shift, and go to state 7
-
-    new_lines  go to state 177
+	new_lines  goto 181
 
 
 state 159
+	new_lines : new_lines . NEWLINE  (7)
+	stmt : '{' stmt_list '}' new_lines .  (33)
 
-    7 new_lines: new_lines . NEWLINE
-   51 gray_img_decl: GRAY_IMG ID '=' expr_pred new_lines .
-
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 51 (gray_img_decl)
+	NEWLINE  shift 10
+	RETURN  reduce 33
+	IMG  reduce 33
+	GRAY_IMG  reduce 33
+	VID  reduce 33
+	GRAY_VID  reduce 33
+	NUM  reduce 33
+	REAL  reduce 33
+	ID  reduce 33
+	'{'  reduce 33
+	'}'  reduce 33
 
 
 state 160
+	in_built_call_stmt : in_built_call_stmt DOT_OP ID '(' . arg_list ')'  (83)
+	in_built_call_stmt : in_built_call_stmt DOT_OP ID '(' . ')'  (84)
 
-   52 vid_decl: VID ID '<' NUM_LIT ',' . NUM_LIT '>' new_lines
-   53         | VID ID '<' NUM_LIT ',' . NUM_LIT ',' NUM_LIT '>' new_lines
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	')'  shift 182
+	.  error
 
-    NUM_LIT  shift, and go to state 178
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 122
+	arg_list  goto 183
 
 
 state 161
+	img_decl : IMG ID '<' NUM_LIT ',' . NUM_LIT '>' new_lines  (46)
+	img_decl : IMG ID '<' NUM_LIT ',' . NUM_LIT ',' NUM_LIT '>' new_lines  (47)
 
-   54 gray_vid_decl: GRAY_VID ID '<' NUM_LIT ',' . NUM_LIT '>' new_lines
-   55              | GRAY_VID ID '<' NUM_LIT ',' . NUM_LIT ',' NUM_LIT '>' new_lines
-
-    NUM_LIT  shift, and go to state 179
+	NUM_LIT  shift 184
+	.  error
 
 
 state 162
+	img_decl : IMG ID '<' PATH '>' . new_lines  (48)
 
-    7 new_lines: new_lines . NEWLINE
-   57 num_decl: NUM ID '=' expr_pred new_lines .
+	NEWLINE  shift 6
+	.  error
 
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 57 (num_decl)
+	new_lines  goto 185
 
 
 state 163
+	new_lines : new_lines . NEWLINE  (7)
+	img_decl : IMG ID '=' expr_pred new_lines .  (49)
 
-   85 expr_pred: expr_pred . REL_OP expr_pred
-   86          | expr_pred . LOG_OP expr_pred
-   92          | expr_pred . BINARY_OP expr_pred
-   93          | expr_pred . UNARY_OP
-   98 array_element: '[' expr_pred ',' expr_pred . ']'
-   99              | '[' expr_pred ',' expr_pred . ',' expr_pred ']'
-
-    LOG_OP     shift, and go to state 101
-    REL_OP     shift, and go to state 102
-    BINARY_OP  shift, and go to state 103
-    UNARY_OP   shift, and go to state 104
-    ','        shift, and go to state 180
-    ']'        shift, and go to state 181
+	NEWLINE  shift 10
+	RETURN  reduce 49
+	IMG  reduce 49
+	GRAY_IMG  reduce 49
+	VID  reduce 49
+	GRAY_VID  reduce 49
+	NUM  reduce 49
+	REAL  reduce 49
+	ID  reduce 49
+	'{'  reduce 49
+	'}'  reduce 49
 
 
 state 164
+	gray_img_decl : GRAY_IMG ID '<' NUM_LIT ',' . NUM_LIT '>' new_lines  (50)
+	gray_img_decl : GRAY_IMG ID '<' NUM_LIT ',' . NUM_LIT ',' NUM_LIT '>' new_lines  (51)
 
-   61 num_array_decl: NUM array_element ID '=' ID . new_lines
-
-    NEWLINE  shift, and go to state 7
-
-    new_lines  go to state 182
+	NUM_LIT  shift 186
+	.  error
 
 
 state 165
+	gray_img_decl : GRAY_IMG ID '<' PATH '>' . new_lines  (52)
 
-   66 brak_pred: '{' . brak_pred_list '}'
-   67          | '{' . lit_list '}'
+	NEWLINE  shift 6
+	.  error
 
-    BOOL_LIT  shift, and go to state 183
-    NUM_LIT   shift, and go to state 184
-    REAL_LIT  shift, and go to state 185
-    '{'       shift, and go to state 165
-
-    brak_pred       go to state 186
-    brak_pred_list  go to state 187
-    lit_list        go to state 188
-    lit             go to state 189
+	new_lines  goto 187
 
 
 state 166
+	new_lines : new_lines . NEWLINE  (7)
+	gray_img_decl : GRAY_IMG ID '=' expr_pred new_lines .  (53)
 
-   62 num_array_decl: NUM array_element ID '=' brak_pred . new_lines
-
-    NEWLINE  shift, and go to state 7
-
-    new_lines  go to state 190
+	NEWLINE  shift 10
+	RETURN  reduce 53
+	IMG  reduce 53
+	GRAY_IMG  reduce 53
+	VID  reduce 53
+	GRAY_VID  reduce 53
+	NUM  reduce 53
+	REAL  reduce 53
+	ID  reduce 53
+	'{'  reduce 53
+	'}'  reduce 53
 
 
 state 167
+	vid_decl : VID ID '<' NUM_LIT ',' . NUM_LIT '>' new_lines  (54)
+	vid_decl : VID ID '<' NUM_LIT ',' . NUM_LIT ',' NUM_LIT '>' new_lines  (55)
 
-    7 new_lines: new_lines . NEWLINE
-   59 real_decl: REAL ID '=' expr_pred new_lines .
-
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 59 (real_decl)
+	NUM_LIT  shift 188
+	.  error
 
 
 state 168
+	gray_vid_decl : GRAY_VID ID '<' NUM_LIT ',' . NUM_LIT '>' new_lines  (56)
+	gray_vid_decl : GRAY_VID ID '<' NUM_LIT ',' . NUM_LIT ',' NUM_LIT '>' new_lines  (57)
 
-   64 real_array_decl: REAL array_element ID '=' ID . new_lines
-
-    NEWLINE  shift, and go to state 7
-
-    new_lines  go to state 191
+	NUM_LIT  shift 189
+	.  error
 
 
 state 169
+	new_lines : new_lines . NEWLINE  (7)
+	num_decl : NUM ID '=' expr_pred new_lines .  (59)
 
-   65 real_array_decl: REAL array_element ID '=' brak_pred . new_lines
-
-    NEWLINE  shift, and go to state 7
-
-    new_lines  go to state 192
+	NEWLINE  shift 10
+	RETURN  reduce 59
+	IMG  reduce 59
+	GRAY_IMG  reduce 59
+	VID  reduce 59
+	GRAY_VID  reduce 59
+	NUM  reduce 59
+	REAL  reduce 59
+	ID  reduce 59
+	'{'  reduce 59
+	'}'  reduce 59
 
 
 state 170
+	expr_pred : expr_pred . REL_OP expr_pred  (89)
+	expr_pred : expr_pred . LOG_OP expr_pred  (90)
+	expr_pred : expr_pred . BINARY_OP expr_pred  (96)
+	expr_pred : expr_pred . UNARY_OP  (97)
+	array_element : '[' expr_pred ',' expr_pred . ']'  (102)
+	array_element : '[' expr_pred ',' expr_pred . ',' expr_pred ']'  (103)
 
-   80 in_built_call_stmt: ID DOT_OP ID '(' ')' .
-
-    $default  reduce using rule 80 (in_built_call_stmt)
+	LOG_OP  shift 102
+	REL_OP  shift 103
+	BINARY_OP  shift 104
+	UNARY_OP  shift 105
+	','  shift 190
+	']'  shift 191
+	.  error
 
 
 state 171
+	num_array_decl : NUM array_element ID '=' ID . new_lines  (63)
 
-   77 arg_list: arg_list . ',' expr_pred
-   79 in_built_call_stmt: ID DOT_OP ID '(' arg_list . ')'
+	NEWLINE  shift 6
+	.  error
 
-    ')'  shift, and go to state 193
-    ','  shift, and go to state 150
+	new_lines  goto 192
 
 
 state 172
+	brak_pred : '{' . brak_pred_list '}'  (68)
+	brak_pred : '{' . lit_list '}'  (69)
 
-   77 arg_list: arg_list ',' expr_pred .
-   85 expr_pred: expr_pred . REL_OP expr_pred
-   86          | expr_pred . LOG_OP expr_pred
-   92          | expr_pred . BINARY_OP expr_pred
-   93          | expr_pred . UNARY_OP
+	BOOL_LIT  shift 193
+	NUM_LIT  shift 194
+	REAL_LIT  shift 195
+	'{'  shift 172
+	.  error
 
-    LOG_OP     shift, and go to state 101
-    REL_OP     shift, and go to state 102
-    BINARY_OP  shift, and go to state 103
-    UNARY_OP   shift, and go to state 104
-
-    $default  reduce using rule 77 (arg_list)
+	brak_pred  goto 196
+	brak_pred_list  goto 197
+	lit_list  goto 198
+	lit  goto 199
 
 
 state 173
+	num_array_decl : NUM array_element ID '=' brak_pred . new_lines  (64)
 
-    7 new_lines: new_lines . NEWLINE
-   96 expr_stmt: ID array_element '=' expr_pred new_lines .
+	NEWLINE  shift 6
+	.  error
 
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 96 (expr_stmt)
+	new_lines  goto 200
 
 
 state 174
+	new_lines : new_lines . NEWLINE  (7)
+	real_decl : REAL ID '=' expr_pred new_lines .  (61)
 
-   44 img_decl: IMG ID '<' NUM_LIT ',' NUM_LIT . '>' new_lines
-   45         | IMG ID '<' NUM_LIT ',' NUM_LIT . ',' NUM_LIT '>' new_lines
-
-    ','  shift, and go to state 194
-    '>'  shift, and go to state 195
+	NEWLINE  shift 10
+	RETURN  reduce 61
+	IMG  reduce 61
+	GRAY_IMG  reduce 61
+	VID  reduce 61
+	GRAY_VID  reduce 61
+	NUM  reduce 61
+	REAL  reduce 61
+	ID  reduce 61
+	'{'  reduce 61
+	'}'  reduce 61
 
 
 state 175
+	real_array_decl : REAL array_element ID '=' ID . new_lines  (66)
 
-    7 new_lines: new_lines . NEWLINE
-   46 img_decl: IMG ID '<' PATH '>' new_lines .
+	NEWLINE  shift 6
+	.  error
 
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 46 (img_decl)
+	new_lines  goto 201
 
 
 state 176
+	real_array_decl : REAL array_element ID '=' brak_pred . new_lines  (67)
 
-   48 gray_img_decl: GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT . '>' new_lines
-   49              | GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT . ',' NUM_LIT '>' new_lines
+	NEWLINE  shift 6
+	.  error
 
-    ','  shift, and go to state 196
-    '>'  shift, and go to state 197
+	new_lines  goto 202
 
 
 state 177
+	in_built_call_stmt : ID DOT_OP ID '(' ')' .  (82)
 
-    7 new_lines: new_lines . NEWLINE
-   50 gray_img_decl: GRAY_IMG ID '<' PATH '>' new_lines .
-
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 50 (gray_img_decl)
+	.  reduce 82
 
 
 state 178
+	arg_list : arg_list . ',' expr_pred  (79)
+	in_built_call_stmt : ID DOT_OP ID '(' arg_list . ')'  (81)
 
-   52 vid_decl: VID ID '<' NUM_LIT ',' NUM_LIT . '>' new_lines
-   53         | VID ID '<' NUM_LIT ',' NUM_LIT . ',' NUM_LIT '>' new_lines
-
-    ','  shift, and go to state 198
-    '>'  shift, and go to state 199
+	')'  shift 203
+	','  shift 154
+	.  error
 
 
 state 179
+	arg_list : arg_list ',' expr_pred .  (79)
+	expr_pred : expr_pred . REL_OP expr_pred  (89)
+	expr_pred : expr_pred . LOG_OP expr_pred  (90)
+	expr_pred : expr_pred . BINARY_OP expr_pred  (96)
+	expr_pred : expr_pred . UNARY_OP  (97)
 
-   54 gray_vid_decl: GRAY_VID ID '<' NUM_LIT ',' NUM_LIT . '>' new_lines
-   55              | GRAY_VID ID '<' NUM_LIT ',' NUM_LIT . ',' NUM_LIT '>' new_lines
-
-    ','  shift, and go to state 200
-    '>'  shift, and go to state 201
+	LOG_OP  shift 102
+	REL_OP  shift 103
+	BINARY_OP  shift 104
+	UNARY_OP  shift 105
+	')'  reduce 79
+	','  reduce 79
 
 
 state 180
+	new_lines : new_lines . NEWLINE  (7)
+	expr_stmt : ID array_element '=' expr_pred new_lines .  (100)
 
-   99 array_element: '[' expr_pred ',' expr_pred ',' . expr_pred ']'
-
-    NEG_OP    shift, and go to state 64
-    BOOL_LIT  shift, and go to state 66
-    ID        shift, and go to state 67
-    NUM_LIT   shift, and go to state 68
-    REAL_LIT  shift, and go to state 69
-    INV_OP    shift, and go to state 70
-    '('       shift, and go to state 71
-
-    call_stmt           go to state 72
-    in_built_call_stmt  go to state 73
-    expr_pred           go to state 202
+	NEWLINE  shift 10
+	RETURN  reduce 100
+	IMG  reduce 100
+	GRAY_IMG  reduce 100
+	VID  reduce 100
+	GRAY_VID  reduce 100
+	NUM  reduce 100
+	REAL  reduce 100
+	ID  reduce 100
+	'{'  reduce 100
+	'}'  reduce 100
 
 
 state 181
+	new_lines : new_lines . NEWLINE  (7)
+	stmt : '{' new_lines stmt_list '}' new_lines .  (32)
 
-   98 array_element: '[' expr_pred ',' expr_pred ']' .
-
-    $default  reduce using rule 98 (array_element)
+	NEWLINE  shift 10
+	RETURN  reduce 32
+	IMG  reduce 32
+	GRAY_IMG  reduce 32
+	VID  reduce 32
+	GRAY_VID  reduce 32
+	NUM  reduce 32
+	REAL  reduce 32
+	ID  reduce 32
+	'{'  reduce 32
+	'}'  reduce 32
 
 
 state 182
+	in_built_call_stmt : in_built_call_stmt DOT_OP ID '(' ')' .  (84)
 
-    7 new_lines: new_lines . NEWLINE
-   61 num_array_decl: NUM array_element ID '=' ID new_lines .
-
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 61 (num_array_decl)
+	.  reduce 84
 
 
 state 183
+	arg_list : arg_list . ',' expr_pred  (79)
+	in_built_call_stmt : in_built_call_stmt DOT_OP ID '(' arg_list . ')'  (83)
 
-   74 lit: BOOL_LIT .
-
-    $default  reduce using rule 74 (lit)
+	')'  shift 204
+	','  shift 154
+	.  error
 
 
 state 184
+	img_decl : IMG ID '<' NUM_LIT ',' NUM_LIT . '>' new_lines  (46)
+	img_decl : IMG ID '<' NUM_LIT ',' NUM_LIT . ',' NUM_LIT '>' new_lines  (47)
 
-   72 lit: NUM_LIT .
-
-    $default  reduce using rule 72 (lit)
+	','  shift 205
+	'>'  shift 206
+	.  error
 
 
 state 185
+	new_lines : new_lines . NEWLINE  (7)
+	img_decl : IMG ID '<' PATH '>' new_lines .  (48)
 
-   73 lit: REAL_LIT .
-
-    $default  reduce using rule 73 (lit)
+	NEWLINE  shift 10
+	RETURN  reduce 48
+	IMG  reduce 48
+	GRAY_IMG  reduce 48
+	VID  reduce 48
+	GRAY_VID  reduce 48
+	NUM  reduce 48
+	REAL  reduce 48
+	ID  reduce 48
+	'{'  reduce 48
+	'}'  reduce 48
 
 
 state 186
+	gray_img_decl : GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT . '>' new_lines  (50)
+	gray_img_decl : GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT . ',' NUM_LIT '>' new_lines  (51)
 
-   69 brak_pred_list: brak_pred .
-
-    $default  reduce using rule 69 (brak_pred_list)
+	','  shift 207
+	'>'  shift 208
+	.  error
 
 
 state 187
+	new_lines : new_lines . NEWLINE  (7)
+	gray_img_decl : GRAY_IMG ID '<' PATH '>' new_lines .  (52)
 
-   66 brak_pred: '{' brak_pred_list . '}'
-   68 brak_pred_list: brak_pred_list . ',' brak_pred
-
-    '}'  shift, and go to state 203
-    ','  shift, and go to state 204
+	NEWLINE  shift 10
+	RETURN  reduce 52
+	IMG  reduce 52
+	GRAY_IMG  reduce 52
+	VID  reduce 52
+	GRAY_VID  reduce 52
+	NUM  reduce 52
+	REAL  reduce 52
+	ID  reduce 52
+	'{'  reduce 52
+	'}'  reduce 52
 
 
 state 188
+	vid_decl : VID ID '<' NUM_LIT ',' NUM_LIT . '>' new_lines  (54)
+	vid_decl : VID ID '<' NUM_LIT ',' NUM_LIT . ',' NUM_LIT '>' new_lines  (55)
 
-   67 brak_pred: '{' lit_list . '}'
-   70 lit_list: lit_list . ',' lit
-
-    '}'  shift, and go to state 205
-    ','  shift, and go to state 206
+	','  shift 209
+	'>'  shift 210
+	.  error
 
 
 state 189
+	gray_vid_decl : GRAY_VID ID '<' NUM_LIT ',' NUM_LIT . '>' new_lines  (56)
+	gray_vid_decl : GRAY_VID ID '<' NUM_LIT ',' NUM_LIT . ',' NUM_LIT '>' new_lines  (57)
 
-   71 lit_list: lit .
-
-    $default  reduce using rule 71 (lit_list)
+	','  shift 211
+	'>'  shift 212
+	.  error
 
 
 state 190
+	array_element : '[' expr_pred ',' expr_pred ',' . expr_pred ']'  (103)
 
-    7 new_lines: new_lines . NEWLINE
-   62 num_array_decl: NUM array_element ID '=' brak_pred new_lines .
+	NEG_OP  shift 63
+	BOOL_LIT  shift 65
+	ID  shift 66
+	NUM_LIT  shift 67
+	REAL_LIT  shift 68
+	INV_OP  shift 69
+	'('  shift 70
+	.  error
 
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 62 (num_array_decl)
+	call_stmt  goto 71
+	in_built_call_stmt  goto 72
+	expr_pred  goto 213
 
 
 state 191
+	array_element : '[' expr_pred ',' expr_pred ']' .  (102)
 
-    7 new_lines: new_lines . NEWLINE
-   64 real_array_decl: REAL array_element ID '=' ID new_lines .
-
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 64 (real_array_decl)
+	.  reduce 102
 
 
 state 192
+	new_lines : new_lines . NEWLINE  (7)
+	num_array_decl : NUM array_element ID '=' ID new_lines .  (63)
 
-    7 new_lines: new_lines . NEWLINE
-   65 real_array_decl: REAL array_element ID '=' brak_pred new_lines .
-
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 65 (real_array_decl)
+	NEWLINE  shift 10
+	RETURN  reduce 63
+	IMG  reduce 63
+	GRAY_IMG  reduce 63
+	VID  reduce 63
+	GRAY_VID  reduce 63
+	NUM  reduce 63
+	REAL  reduce 63
+	ID  reduce 63
+	'{'  reduce 63
+	'}'  reduce 63
 
 
 state 193
+	lit : BOOL_LIT .  (76)
 
-   79 in_built_call_stmt: ID DOT_OP ID '(' arg_list ')' .
-
-    $default  reduce using rule 79 (in_built_call_stmt)
+	.  reduce 76
 
 
 state 194
+	lit : NUM_LIT .  (74)
 
-   45 img_decl: IMG ID '<' NUM_LIT ',' NUM_LIT ',' . NUM_LIT '>' new_lines
-
-    NUM_LIT  shift, and go to state 207
+	.  reduce 74
 
 
 state 195
+	lit : REAL_LIT .  (75)
 
-   44 img_decl: IMG ID '<' NUM_LIT ',' NUM_LIT '>' . new_lines
-
-    NEWLINE  shift, and go to state 7
-
-    new_lines  go to state 208
+	.  reduce 75
 
 
 state 196
+	brak_pred_list : brak_pred .  (71)
 
-   49 gray_img_decl: GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT ',' . NUM_LIT '>' new_lines
-
-    NUM_LIT  shift, and go to state 209
+	.  reduce 71
 
 
 state 197
+	brak_pred : '{' brak_pred_list . '}'  (68)
+	brak_pred_list : brak_pred_list . ',' brak_pred  (70)
 
-   48 gray_img_decl: GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT '>' . new_lines
-
-    NEWLINE  shift, and go to state 7
-
-    new_lines  go to state 210
+	'}'  shift 214
+	','  shift 215
+	.  error
 
 
 state 198
+	brak_pred : '{' lit_list . '}'  (69)
+	lit_list : lit_list . ',' lit  (72)
 
-   53 vid_decl: VID ID '<' NUM_LIT ',' NUM_LIT ',' . NUM_LIT '>' new_lines
-
-    NUM_LIT  shift, and go to state 211
+	'}'  shift 216
+	','  shift 217
+	.  error
 
 
 state 199
+	lit_list : lit .  (73)
 
-   52 vid_decl: VID ID '<' NUM_LIT ',' NUM_LIT '>' . new_lines
-
-    NEWLINE  shift, and go to state 7
-
-    new_lines  go to state 212
+	.  reduce 73
 
 
 state 200
+	new_lines : new_lines . NEWLINE  (7)
+	num_array_decl : NUM array_element ID '=' brak_pred new_lines .  (64)
 
-   55 gray_vid_decl: GRAY_VID ID '<' NUM_LIT ',' NUM_LIT ',' . NUM_LIT '>' new_lines
-
-    NUM_LIT  shift, and go to state 213
+	NEWLINE  shift 10
+	RETURN  reduce 64
+	IMG  reduce 64
+	GRAY_IMG  reduce 64
+	VID  reduce 64
+	GRAY_VID  reduce 64
+	NUM  reduce 64
+	REAL  reduce 64
+	ID  reduce 64
+	'{'  reduce 64
+	'}'  reduce 64
 
 
 state 201
+	new_lines : new_lines . NEWLINE  (7)
+	real_array_decl : REAL array_element ID '=' ID new_lines .  (66)
 
-   54 gray_vid_decl: GRAY_VID ID '<' NUM_LIT ',' NUM_LIT '>' . new_lines
-
-    NEWLINE  shift, and go to state 7
-
-    new_lines  go to state 214
+	NEWLINE  shift 10
+	RETURN  reduce 66
+	IMG  reduce 66
+	GRAY_IMG  reduce 66
+	VID  reduce 66
+	GRAY_VID  reduce 66
+	NUM  reduce 66
+	REAL  reduce 66
+	ID  reduce 66
+	'{'  reduce 66
+	'}'  reduce 66
 
 
 state 202
+	new_lines : new_lines . NEWLINE  (7)
+	real_array_decl : REAL array_element ID '=' brak_pred new_lines .  (67)
 
-   85 expr_pred: expr_pred . REL_OP expr_pred
-   86          | expr_pred . LOG_OP expr_pred
-   92          | expr_pred . BINARY_OP expr_pred
-   93          | expr_pred . UNARY_OP
-   99 array_element: '[' expr_pred ',' expr_pred ',' expr_pred . ']'
-
-    LOG_OP     shift, and go to state 101
-    REL_OP     shift, and go to state 102
-    BINARY_OP  shift, and go to state 103
-    UNARY_OP   shift, and go to state 104
-    ']'        shift, and go to state 215
+	NEWLINE  shift 10
+	RETURN  reduce 67
+	IMG  reduce 67
+	GRAY_IMG  reduce 67
+	VID  reduce 67
+	GRAY_VID  reduce 67
+	NUM  reduce 67
+	REAL  reduce 67
+	ID  reduce 67
+	'{'  reduce 67
+	'}'  reduce 67
 
 
 state 203
+	in_built_call_stmt : ID DOT_OP ID '(' arg_list ')' .  (81)
 
-   66 brak_pred: '{' brak_pred_list '}' .
-
-    $default  reduce using rule 66 (brak_pred)
+	.  reduce 81
 
 
 state 204
+	in_built_call_stmt : in_built_call_stmt DOT_OP ID '(' arg_list ')' .  (83)
 
-   68 brak_pred_list: brak_pred_list ',' . brak_pred
-
-    '{'  shift, and go to state 165
-
-    brak_pred  go to state 216
+	.  reduce 83
 
 
 state 205
+	img_decl : IMG ID '<' NUM_LIT ',' NUM_LIT ',' . NUM_LIT '>' new_lines  (47)
 
-   67 brak_pred: '{' lit_list '}' .
-
-    $default  reduce using rule 67 (brak_pred)
+	NUM_LIT  shift 218
+	.  error
 
 
 state 206
+	img_decl : IMG ID '<' NUM_LIT ',' NUM_LIT '>' . new_lines  (46)
 
-   70 lit_list: lit_list ',' . lit
+	NEWLINE  shift 6
+	.  error
 
-    BOOL_LIT  shift, and go to state 183
-    NUM_LIT   shift, and go to state 184
-    REAL_LIT  shift, and go to state 185
-
-    lit  go to state 217
+	new_lines  goto 219
 
 
 state 207
+	gray_img_decl : GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT ',' . NUM_LIT '>' new_lines  (51)
 
-   45 img_decl: IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT . '>' new_lines
-
-    '>'  shift, and go to state 218
+	NUM_LIT  shift 220
+	.  error
 
 
 state 208
+	gray_img_decl : GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT '>' . new_lines  (50)
 
-    7 new_lines: new_lines . NEWLINE
-   44 img_decl: IMG ID '<' NUM_LIT ',' NUM_LIT '>' new_lines .
+	NEWLINE  shift 6
+	.  error
 
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 44 (img_decl)
+	new_lines  goto 221
 
 
 state 209
+	vid_decl : VID ID '<' NUM_LIT ',' NUM_LIT ',' . NUM_LIT '>' new_lines  (55)
 
-   49 gray_img_decl: GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT . '>' new_lines
-
-    '>'  shift, and go to state 219
+	NUM_LIT  shift 222
+	.  error
 
 
 state 210
+	vid_decl : VID ID '<' NUM_LIT ',' NUM_LIT '>' . new_lines  (54)
 
-    7 new_lines: new_lines . NEWLINE
-   48 gray_img_decl: GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT '>' new_lines .
+	NEWLINE  shift 6
+	.  error
 
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 48 (gray_img_decl)
+	new_lines  goto 223
 
 
 state 211
+	gray_vid_decl : GRAY_VID ID '<' NUM_LIT ',' NUM_LIT ',' . NUM_LIT '>' new_lines  (57)
 
-   53 vid_decl: VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT . '>' new_lines
-
-    '>'  shift, and go to state 220
+	NUM_LIT  shift 224
+	.  error
 
 
 state 212
+	gray_vid_decl : GRAY_VID ID '<' NUM_LIT ',' NUM_LIT '>' . new_lines  (56)
 
-    7 new_lines: new_lines . NEWLINE
-   52 vid_decl: VID ID '<' NUM_LIT ',' NUM_LIT '>' new_lines .
+	NEWLINE  shift 6
+	.  error
 
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 52 (vid_decl)
+	new_lines  goto 225
 
 
 state 213
+	expr_pred : expr_pred . REL_OP expr_pred  (89)
+	expr_pred : expr_pred . LOG_OP expr_pred  (90)
+	expr_pred : expr_pred . BINARY_OP expr_pred  (96)
+	expr_pred : expr_pred . UNARY_OP  (97)
+	array_element : '[' expr_pred ',' expr_pred ',' expr_pred . ']'  (103)
 
-   55 gray_vid_decl: GRAY_VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT . '>' new_lines
-
-    '>'  shift, and go to state 221
+	LOG_OP  shift 102
+	REL_OP  shift 103
+	BINARY_OP  shift 104
+	UNARY_OP  shift 105
+	']'  shift 226
+	.  error
 
 
 state 214
+	brak_pred : '{' brak_pred_list '}' .  (68)
 
-    7 new_lines: new_lines . NEWLINE
-   54 gray_vid_decl: GRAY_VID ID '<' NUM_LIT ',' NUM_LIT '>' new_lines .
-
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 54 (gray_vid_decl)
+	.  reduce 68
 
 
 state 215
+	brak_pred_list : brak_pred_list ',' . brak_pred  (70)
 
-   99 array_element: '[' expr_pred ',' expr_pred ',' expr_pred ']' .
+	'{'  shift 172
+	.  error
 
-    $default  reduce using rule 99 (array_element)
+	brak_pred  goto 227
 
 
 state 216
+	brak_pred : '{' lit_list '}' .  (69)
 
-   68 brak_pred_list: brak_pred_list ',' brak_pred .
-
-    $default  reduce using rule 68 (brak_pred_list)
+	.  reduce 69
 
 
 state 217
+	lit_list : lit_list ',' . lit  (72)
 
-   70 lit_list: lit_list ',' lit .
+	BOOL_LIT  shift 193
+	NUM_LIT  shift 194
+	REAL_LIT  shift 195
+	.  error
 
-    $default  reduce using rule 70 (lit_list)
+	lit  goto 228
 
 
 state 218
+	img_decl : IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT . '>' new_lines  (47)
 
-   45 img_decl: IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' . new_lines
-
-    NEWLINE  shift, and go to state 7
-
-    new_lines  go to state 222
+	'>'  shift 229
+	.  error
 
 
 state 219
+	new_lines : new_lines . NEWLINE  (7)
+	img_decl : IMG ID '<' NUM_LIT ',' NUM_LIT '>' new_lines .  (46)
 
-   49 gray_img_decl: GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' . new_lines
-
-    NEWLINE  shift, and go to state 7
-
-    new_lines  go to state 223
+	NEWLINE  shift 10
+	RETURN  reduce 46
+	IMG  reduce 46
+	GRAY_IMG  reduce 46
+	VID  reduce 46
+	GRAY_VID  reduce 46
+	NUM  reduce 46
+	REAL  reduce 46
+	ID  reduce 46
+	'{'  reduce 46
+	'}'  reduce 46
 
 
 state 220
+	gray_img_decl : GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT . '>' new_lines  (51)
 
-   53 vid_decl: VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' . new_lines
-
-    NEWLINE  shift, and go to state 7
-
-    new_lines  go to state 224
+	'>'  shift 230
+	.  error
 
 
 state 221
+	new_lines : new_lines . NEWLINE  (7)
+	gray_img_decl : GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT '>' new_lines .  (50)
 
-   55 gray_vid_decl: GRAY_VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' . new_lines
-
-    NEWLINE  shift, and go to state 7
-
-    new_lines  go to state 225
+	NEWLINE  shift 10
+	RETURN  reduce 50
+	IMG  reduce 50
+	GRAY_IMG  reduce 50
+	VID  reduce 50
+	GRAY_VID  reduce 50
+	NUM  reduce 50
+	REAL  reduce 50
+	ID  reduce 50
+	'{'  reduce 50
+	'}'  reduce 50
 
 
 state 222
+	vid_decl : VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT . '>' new_lines  (55)
 
-    7 new_lines: new_lines . NEWLINE
-   45 img_decl: IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines .
-
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 45 (img_decl)
+	'>'  shift 231
+	.  error
 
 
 state 223
+	new_lines : new_lines . NEWLINE  (7)
+	vid_decl : VID ID '<' NUM_LIT ',' NUM_LIT '>' new_lines .  (54)
 
-    7 new_lines: new_lines . NEWLINE
-   49 gray_img_decl: GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines .
-
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 49 (gray_img_decl)
+	NEWLINE  shift 10
+	RETURN  reduce 54
+	IMG  reduce 54
+	GRAY_IMG  reduce 54
+	VID  reduce 54
+	GRAY_VID  reduce 54
+	NUM  reduce 54
+	REAL  reduce 54
+	ID  reduce 54
+	'{'  reduce 54
+	'}'  reduce 54
 
 
 state 224
+	gray_vid_decl : GRAY_VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT . '>' new_lines  (57)
 
-    7 new_lines: new_lines . NEWLINE
-   53 vid_decl: VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines .
-
-    NEWLINE  shift, and go to state 11
-
-    $default  reduce using rule 53 (vid_decl)
+	'>'  shift 232
+	.  error
 
 
 state 225
+	new_lines : new_lines . NEWLINE  (7)
+	gray_vid_decl : GRAY_VID ID '<' NUM_LIT ',' NUM_LIT '>' new_lines .  (56)
 
-    7 new_lines: new_lines . NEWLINE
-   55 gray_vid_decl: GRAY_VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines .
+	NEWLINE  shift 10
+	RETURN  reduce 56
+	IMG  reduce 56
+	GRAY_IMG  reduce 56
+	VID  reduce 56
+	GRAY_VID  reduce 56
+	NUM  reduce 56
+	REAL  reduce 56
+	ID  reduce 56
+	'{'  reduce 56
+	'}'  reduce 56
 
-    NEWLINE  shift, and go to state 11
 
-    $default  reduce using rule 55 (gray_vid_decl)
+state 226
+	array_element : '[' expr_pred ',' expr_pred ',' expr_pred ']' .  (103)
+
+	.  reduce 103
+
+
+state 227
+	brak_pred_list : brak_pred_list ',' brak_pred .  (70)
+
+	.  reduce 70
+
+
+state 228
+	lit_list : lit_list ',' lit .  (72)
+
+	.  reduce 72
+
+
+state 229
+	img_decl : IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' . new_lines  (47)
+
+	NEWLINE  shift 6
+	.  error
+
+	new_lines  goto 233
+
+
+state 230
+	gray_img_decl : GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' . new_lines  (51)
+
+	NEWLINE  shift 6
+	.  error
+
+	new_lines  goto 234
+
+
+state 231
+	vid_decl : VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' . new_lines  (55)
+
+	NEWLINE  shift 6
+	.  error
+
+	new_lines  goto 235
+
+
+state 232
+	gray_vid_decl : GRAY_VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' . new_lines  (57)
+
+	NEWLINE  shift 6
+	.  error
+
+	new_lines  goto 236
+
+
+state 233
+	new_lines : new_lines . NEWLINE  (7)
+	img_decl : IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines .  (47)
+
+	NEWLINE  shift 10
+	RETURN  reduce 47
+	IMG  reduce 47
+	GRAY_IMG  reduce 47
+	VID  reduce 47
+	GRAY_VID  reduce 47
+	NUM  reduce 47
+	REAL  reduce 47
+	ID  reduce 47
+	'{'  reduce 47
+	'}'  reduce 47
+
+
+state 234
+	new_lines : new_lines . NEWLINE  (7)
+	gray_img_decl : GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines .  (51)
+
+	NEWLINE  shift 10
+	RETURN  reduce 51
+	IMG  reduce 51
+	GRAY_IMG  reduce 51
+	VID  reduce 51
+	GRAY_VID  reduce 51
+	NUM  reduce 51
+	REAL  reduce 51
+	ID  reduce 51
+	'{'  reduce 51
+	'}'  reduce 51
+
+
+state 235
+	new_lines : new_lines . NEWLINE  (7)
+	vid_decl : VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines .  (55)
+
+	NEWLINE  shift 10
+	RETURN  reduce 55
+	IMG  reduce 55
+	GRAY_IMG  reduce 55
+	VID  reduce 55
+	GRAY_VID  reduce 55
+	NUM  reduce 55
+	REAL  reduce 55
+	ID  reduce 55
+	'{'  reduce 55
+	'}'  reduce 55
+
+
+state 236
+	new_lines : new_lines . NEWLINE  (7)
+	gray_vid_decl : GRAY_VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines .  (57)
+
+	NEWLINE  shift 10
+	RETURN  reduce 57
+	IMG  reduce 57
+	GRAY_IMG  reduce 57
+	VID  reduce 57
+	GRAY_VID  reduce 57
+	NUM  reduce 57
+	REAL  reduce 57
+	ID  reduce 57
+	'{'  reduce 57
+	'}'  reduce 57
+
+
+41 terminals, 31 nonterminals
+104 grammar rules, 237 states
+
+grammar parser grammar
+symbol# value# symbol
+     0      0  $end
+     1    256  error
+     2    257  IF
+     3    258  ELSE_IF
+     4    259  RETURN
+     5    260  CONTINUE
+     6    261  BREAK
+     7    262  LOOP
+     8    263  INK
+     9    264  ARROW
+    10    265  DOT_OP
+    11    266  LOG_OP
+    12    267  REL_OP
+    13    268  NEG_OP
+    14    269  IMG
+    15    270  GRAY_IMG
+    16    271  VID
+    17    272  GRAY_VID
+    18    273  NUM
+    19    274  REAL
+    20    275  VOID
+    21    276  BOOL
+    22    277  BOOL_LIT
+    23    278  NEWLINE
+    24    279  ID
+    25    280  NUM_LIT
+    26    281  REAL_LIT
+    27    282  PATH
+    28    283  BINARY_OP
+    29    284  UNARY_OP
+    30    285  INV_OP
+    31    123  '{'
+    32    125  '}'
+    33     40  '('
+    34     41  ')'
+    35     44  ','
+    36     60  '<'
+    37     62  '>'
+    38     61  '='
+    39     91  '['
+    40     93  ']'
+    41    286  $accept
+    42    287  program
+    43    288  function
+    44    289  new_lines
+    45    290  func_body
+    46    291  stmt_list
+    47    292  par_list
+    48    293  RET_TYPE
+    49    294  datatype
+    50    295  par
+    51    296  stmt
+    52    297  decl_stmt
+    53    298  call_stmt
+    54    299  in_built_call_stmt
+    55    300  expr_stmt
+    56    301  return_stmt
+    57    302  expr_pred
+    58    303  img_decl
+    59    304  gray_img_decl
+    60    305  vid_decl
+    61    306  gray_vid_decl
+    62    307  num_decl
+    63    308  real_decl
+    64    309  num_array_decl
+    65    310  real_array_decl
+    66    311  array_element
+    67    312  brak_pred
+    68    313  brak_pred_list
+    69    314  lit_list
+    70    315  lit
+    71    316  arg_list
