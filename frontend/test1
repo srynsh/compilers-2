@@ -3,26 +3,24 @@ ink _func1(img gray, gray_img blablablabla) -> img
 { num[1] r = {1}
 	num[2, 3434434  ] rahul =  {{1, 2}, {3, 5}}
 
-	{}
+	spool ( num i = 0; i23n32.catastrophe(iwf, eeer,er ,terretrte) + (i1 + i2) * (i3 - i4) / (i5 ^ i6) / ((xyz or be) and ~~i1.catastrophe2().cat()); ) 
 
 	{
-
-		
+		i1 = i2
 	}
-	
-	{ 
-	img dfghdgf<34 ,3445> 
+
+	$ (i1) -> {
+		i2 = i3
+	} $$ (1==3) -> {
+		i = s
+	} -> {
+		i = i
 	}
 
 	return void
-	return i23n32.catastrophe(iwf, eeer,er ,terretrte) + (i1 + i2) * (i3 - i4) / (i5 ^ i6) / ((xyz or be) and ~~i1.catastrophe2().cat())
-
-
-	img dfghdgf<'~/dfhjrsdjh.ddfsjhdfsjh/dsfjhjhdfsjhdsf/ansnbbnsdbnds...dfjhsdfjh~/dfjhg/jdf.bmp'> 
 }
 
 ink main() -> gray_vid {
-	
 	num [ 2, 5,    7] lol = { { {1, 2, 3}, {4, 5, 6} }, { {7, 8, 9}, {10, 11, 12} } }
 	img i1 <2 , 3  ,4   >
 	img i1 <1,      6>

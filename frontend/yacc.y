@@ -52,7 +52,11 @@ func_body : '{' stmt_list '}'
 
 new_lines : new_lines NEWLINE
         | NEWLINE
-        ;   
+        ;  
+
+optional_new_lines : /* empty */
+        | new_lines
+        ; 
 
 function : INK ID '(' par_list ')' ARROW RET_TYPE func_body
         | INK ID '(' ')' ARROW RET_TYPE func_body
@@ -85,28 +89,59 @@ stmt_list : stmt
         ;
 
  stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
-//        | conditional_stmt new_lines
+        | conditional_stmt new_lines
         | call_stmt new_lines
         | in_built_call_stmt new_lines
         | expr_stmt /* 'new_lines' is included in expr_stmt */
         | return_stmt /* 'new_lines' is included in expr_stmt */
-//        | loop_stmt new_lines
+        | loop_stmt new_lines
         | '{'new_lines stmt_list '}' new_lines /* This allows nested scopes */
         | '{' stmt_list '}' new_lines/* This allows nested scopes */
         | '{' new_lines '}' new_lines
         | '{' '}' new_lines
         ; 
 
+optional_expr_pred : expr_pred
+        | /* empty */
+        ;
+
+optional_num_data_decl : numeric_data_decl
+        | /* empty */
+        ;
+
+loop_stmt : LOOP '(' optional_expr_pred ')' func_body {fprintf(fparser, "loop\n");}
+        | LOOP '(' optional_expr_pred ')' new_lines func_body {fprintf(fparser, "loop\n");}
+        | LOOP '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' func_body {fprintf(fparser, "loop\n");}
+        | LOOP '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' new_lines func_body {fprintf(fparser, "loop\n");}
+        ;
+
+ELSE_IF_LIST : ELSE_IF_LIST optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+        ;
+
+conditional_stmt : IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body optional_new_lines ELSE_IF_LIST optional_new_lines ARROW func_body {fprintf(fparser, "conditional\n");}
+                 | IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body optional_new_lines ARROW optional_new_lines func_body {fprintf(fparser, "conditional\n");}
+                // | IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body {fprintf(fparser, "conditional\n");}
+                // | IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body optional_new_lines ELSE_IF_LIST {fprintf(fparser, "conditional\n");}
+                ;
+
+numeric_data_decl : num_decl
+        | real_decl
+        | bool_decl
+        ;
+
+
 return_stmt : RETURN expr_pred new_lines
         | RETURN VOID new_lines // return void and not just return
         ;
 
-decl_stmt : img_decl
+decl_stmt : img_decl 
         | gray_img_decl
         | vid_decl
         | gray_vid_decl
-        | num_decl
-        | real_decl
+        | num_decl new_lines
+        | bool_decl new_lines
+        | real_decl new_lines 
         | num_array_decl
         | real_array_decl
         ;
@@ -131,12 +166,16 @@ gray_vid_decl : GRAY_VID ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
         | GRAY_VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
         ;
 
-num_decl : NUM ID new_lines
-        | NUM ID '=' expr_pred new_lines
+num_decl : NUM ID
+        | NUM ID '=' expr_pred
         ;
 
-real_decl : REAL ID new_lines
-        | REAL ID '=' expr_pred new_lines
+bool_decl : BOOL ID
+        | BOOL ID '=' expr_pred
+        ;
+
+real_decl : REAL ID
+        | REAL ID '=' expr_pred
         ;
 
 num_array_decl : NUM array_element ID new_lines
