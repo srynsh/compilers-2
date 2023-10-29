@@ -1,4 +1,6 @@
+#include <_types/_uint8_t.h>
 #include <bits/stdc++.h>
+#include <cstdio>
 #include "kernel.h"
 #include "load_bmp.h"
 
@@ -17,12 +19,15 @@ gray_image to_gray_image(vector< vector<float> > vec);
 
 class image {
     private:
-        int h;
         int w;
+        int h;
 
         uint8_t **red;
         uint8_t **green;
         uint8_t **blue;
+        int buffer_size;
+        char* FileBuffer;
+        bool made;
 
     public:
         image(int h, int w, int color) {
@@ -34,26 +39,29 @@ class image {
             int green_c = ((color >> 8) & 0xFF);   // Extract the GG byte
             int blue_c = ((color) & 0xFF);
 
-            this->w = w;
             this->h = h;
+            this->w = w;
 
-            red = (uint8_t **)malloc(w * sizeof(int *));
-            green = (uint8_t **)malloc(w * sizeof(int *));
-            blue = (uint8_t **)malloc(w * sizeof(int *));
+            red = new uint8_t*[h];
+            green = new uint8_t*[h];
+            blue = new uint8_t*[h];
 
-            for (int i=0; i<w; i++) {
-                red[i] = (uint8_t *)malloc(h * sizeof(int));
-                green[i] = (uint8_t *)malloc(h * sizeof(int));
-                blue[i] = (uint8_t *)malloc(h * sizeof(int));
+            for (int i=0; i<h; i++) {
+                red[i] = new uint8_t[w];
+                green[i] = new uint8_t[w];
+                blue[i] = new uint8_t[w];
             }
 
-            for(int i=0; i<w; i++) {
-                for(int j=0; j<h; j++) {
+            for(int i=0; i<h; i++) {
+                for(int j=0; j<w; j++) {
                     red[i][j] = red_c;
                     green[i][j] = green_c;
                     blue[i][j] = blue_c;
                 }
             }
+
+            buffer_size = 54 + 3*w*h;
+            made = 1;
         }
 
         image(string filename) {
@@ -61,83 +69,53 @@ class image {
         }
 
         void load(string filename, bool init=false) {
-            FILE *f;
-            unsigned char info[54];
-            f = fopen(filename.c_str(), "rb");
-            fread(info, sizeof(unsigned char), 54, f); // read the 54-byte header
-
             if (!init) {    
-                for (int i=0; i<w; i++) {
-                    free(red[i]);
-                    free(green[i]);
-                    free(blue[i]);
+                for (int i=0; i<h; i++) {
+                    delete [] red[i];
+                    delete [] green[i];
+                    delete [] blue[i];
                 }
 
-                free(red);
-                free(green);
-                free(blue); 
+                delete [] red;
+                delete [] green;
+                delete [] blue; 
             }    
 
-            w = *(int*)&info[18];
-            h = *(int*)&info[22];
-
-            cout << "w: " << w << endl;
-            cout << "h: " << h << endl;
-
-            try {
-                assert(w > 0 && h > 0);
-            } catch (const std::exception& e) {
-                cout << "Error: Incorrect file format or corrupted file" << e.what() << endl;
+            if (!FillAndAllocate(FileBuffer, filename.c_str(), h, w, buffer_size)) {
+                cout << "File read error" << endl; 
                 return;
             }
 
-            try {
-                assert(w < MAX_SIZE && h < MAX_SIZE);
-            } catch (const std::exception& e) {
-                cout << "Error: Image size too large" << e.what() << endl;
-                return;
-            }
+            RGB_Allocate(red, h, w);
+            RGB_Allocate(green, h, w);
+            RGB_Allocate(blue, h, w);
+            GetPixlesFromBMP24( red,  green, blue, buffer_size, h, w, FileBuffer);
 
-            int size = 3 * w * h;
-            unsigned char* data = new unsigned char[size]; // allocate 3 bytes per pixel
-            fread(data, sizeof(unsigned char), size, f); // read the rest of the data at once
-            fclose(f);
-
-            red = (uint8_t **)malloc(w * sizeof(int *));
-            green = (uint8_t **)malloc(w * sizeof(int *));
-            blue = (uint8_t **)malloc(w * sizeof(int *));
-
-            for (int i=0; i<w; i++) {
-                red[i] = (uint8_t *)malloc(h * sizeof(int));
-                green[i] = (uint8_t *)malloc(h * sizeof(int));
-                blue[i] = (uint8_t *)malloc(h * sizeof(int));
-            }
-
-            for(int i=0; i<w; i++) {
-                for(int j=0; j<h; j++) {
-                    red[i][j] = data[(i+j*w)*3+2];
-                    green[i][j] = data[(i+j*w)*3+1];
-                    blue[i][j] = data[(i+j*w)*3+0];
-                }
-            }
-
-            delete[] data;
+            made = 0;
         }
 
         void frame(string filename) {
+            if (made) {
+                frame_self(filename);
+            } else {
+                frame_pre(filename);
+            }
+        }
+
+        void frame_self(string filename) {
             FILE *f;
             int filesize = 54 + 3*w*h;  //w is your image width, h is image height, both int
             unsigned char *canvas = NULL;
             canvas = (unsigned char *)malloc(3*w*h);
             memset(canvas,0,3*w*h);
 
-            for(int i=0; i<w; i++) {
-                for(int j=0; j<h; j++) {
-                    int x=i; int y=(h-1)-j;
-                    canvas[(x+y*w)*3+2] = (unsigned char)(red[i][j]);
-                    canvas[(x+y*w)*3+1] = (unsigned char)(green[i][j]);
-                    canvas[(x+y*w)*3+0] = (unsigned char)(blue[i][j]);
-                }
+            for(int i=0; i<h; i++) {
+                for(int j=0; j<w; j++) {
+                    int x=i; int y=j;
+                    canvas[(y+x*w)*3+0] = (unsigned char)(red[i][j]);
+                    canvas[(y+x*w)*3+1] = (unsigned char)(red[i][j]);
+                    canvas[(y+x*w)*3+2] = (unsigned char)(red[i][j]);
+                } 
             }
 
             unsigned char bmpfileheader[14] = {'B','M', 0,0,0,0, 0,0, 0,0, 54,0,0,0};
@@ -171,19 +149,23 @@ class image {
             fclose(f);
         }
 
+        void frame_pre(string filename) {
+            WriteOutBmp24(FileBuffer, filename.c_str(), buffer_size, h, w, red, green, blue);
+        }
+
         void paint() {
             // TODO: KG has to do this
         }
 
         void draw(string shape, vector<int> params) {
             if (shape == "circle") {
-                int r = params[0];
-                int cx = params[1];
-                int cy = params[2];
+                int r = params[2];
+                int cx = params[0];
+                int cy = params[1];
                 bool fill = params[3];
 
-                for (int y=0; y<h; y++) {
-                    for (int x=0; x<w; x++) {
+                for (int y=0; y<w; y++) {
+                    for (int x=0; x<h; x++) {
                         
                         if ((x-cx)*(x-cx) + (y-cy)*(y-cy) <= r*r) {
                             red[x][y] = 0;
@@ -213,23 +195,23 @@ class image {
         }
 
         int get_height() {
-            return h;
-        }
-
-        int get_width() {
             return w;
         }
 
+        int get_width() {
+            return h;
+        }
+
         ~image() {
-            for (int i=0; i<w; i++) {
-                free(red[i]);
-                free(green[i]);
-                free(blue[i]);
+            for (int i=0; i<h; i++) {
+                delete [] red[i];
+                delete [] green[i];
+                delete [] blue[i];
             }
 
-            free(red);
-            free(green);
-            free(blue);
+            delete [] red;
+            delete [] green;
+            delete [] blue;
         }
 };
 
@@ -957,27 +939,38 @@ gray_image to_gray_image(vector< vector<float> > vec) {
 
 // Check filters and functions
 int main() {
-    gray_image img("./in.bmp");
-    gray_image new_img = img.blur(5);
-    gray_image new_img2 = img.sharpen(20);
-    gray_image new_img3 = img.sobel();
-    gray_image new_img4 = img.hflip();
-    gray_image new_img5 = img.vflip();
-    gray_image new_img6 = img.T();
-    gray_image new_img7 = img.pixelate(5);
-    gray_image new_img8 = img.invert();
-    gray_image new_img9 = img.noise(15);
-    gray_image new_img10 = img.bnw();
-    img.frame("./outputs/output_orig.bmp");
-    new_img.frame("./outputs/output_blur.bmp");
-    new_img2.frame("./outputs/output_sharpen.bmp");
-    new_img3.frame("./outputs/output_sobel.bmp");
-    new_img4.frame("./outputs/output_hflip.bmp");
-    new_img5.frame("./outputs/output_vflip.bmp");
-    new_img6.frame("./outputs/output_transpose.bmp");
-    new_img7.frame("./outputs/output_pixelate.bmp");
-    new_img8.frame("./outputs/output_invert.bmp");
-    new_img9.frame("./outputs/output_noise.bmp");
-    new_img10.frame("./outputs/output_bnw.bmp");
+    // gray_image img("./in.bmp");
+    // gray_image new_img = img.blur(5);
+    // gray_image new_img2 = img.sharpen(20);
+    // gray_image new_img3 = img.sobel();
+    // gray_image new_img4 = img.hflip();
+    // gray_image new_img5 = img.vflip();
+    // gray_image new_img6 = img.T();
+    // gray_image new_img7 = img.pixelate(5);
+    // gray_image new_img8 = img.invert();
+    // gray_image new_img9 = img.noise(15);
+    // gray_image new_img10 = img.bnw();
+    // img.frame("./outputs/output_orig.bmp");
+    // new_img.frame("./outputs/output_blur.bmp");
+    // new_img2.frame("./outputs/output_sharpen.bmp");
+    // new_img3.frame("./outputs/output_sobel.bmp");
+    // new_img4.frame("./outputs/output_hflip.bmp");
+    // new_img5.frame("./outputs/output_vflip.bmp");
+    // new_img6.frame("./outputs/output_transpose.bmp");
+    // new_img7.frame("./outputs/output_pixelate.bmp");
+    // new_img8.frame("./outputs/output_invert.bmp");
+    // new_img9.frame("./outputs/output_noise.bmp");
+    // new_img10.frame("./outputs/output_bnw.bmp");
+
+    image i1(100, 200, 0xa3c511);
+    vector<int> v;
+    v.push_back(0);
+    v.push_back(0);
+    v.push_back(50);
+
+    i1.draw("circle", v);
+    i1.frame("./out.bmp");
+    i1.load("./images/inputs/snail.bmp");
+    i1.frame("./out2.bmp");
     return 0;
 }

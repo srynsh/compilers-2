@@ -3,7 +3,6 @@
 using namespace std;
 
 #pragma pack(1)
-#pragma once
 
 typedef int LONG;
 typedef unsigned short WORD;
@@ -37,7 +36,7 @@ uint8_t** blues;
 int rows;
 int cols;
 
-void RGB_Allocate(unsigned char**& dude) {
+void RGB_Allocate(unsigned char**& dude, int rows, int cols) {
     dude = new uint8_t*[rows];
      
     for (int i = 0; i < rows; i++) {
@@ -96,7 +95,7 @@ void GetPixlesFromBMP24(unsigned char** reds, unsigned char** greens, unsigned c
     }
 }
 
-void WriteOutBmp24(char* FileBuffer, const char* NameOfFileToCreate, int BufferSize) {
+void WriteOutBmp24(char* FileBuffer, const char* NameOfFileToCreate, int BufferSize, int rows, int cols, unsigned char** reds, unsigned char** greens, unsigned char** blues) {
     ofstream write(NameOfFileToCreate);
 
     if (!write) {
@@ -129,27 +128,4 @@ void WriteOutBmp24(char* FileBuffer, const char* NameOfFileToCreate, int BufferS
     }
 
     write.write(FileBuffer, BufferSize);
-}
-
-
-int main() {
-    char* FileBuffer; int BufferSize;
-
-    string Picture = "blackbuck.bmp";
-    if (!FillAndAllocate(FileBuffer, Picture.c_str(), rows, cols, BufferSize)) {
-        cout << "File read error" << endl; 
-        return 1;
-    }
-
-    cout << "Rows: " << rows << " Cols: " << cols << endl;
-
-    RGB_Allocate(reds);
-    RGB_Allocate(greens);
-    RGB_Allocate(blues);
-    GetPixlesFromBMP24( reds,  greens, blues,BufferSize, rows, cols, FileBuffer);
-
-    string WriteOutFile = "OutputPicture.bmp";
-    WriteOutBmp24(FileBuffer,  WriteOutFile.c_str(), BufferSize);
-    
-    return 0;
 }
