@@ -37,7 +37,7 @@ path ['][a-zA-Z0-9_\/\.\~]+[']
     if (inline_comment) {
         inline_comment = 0;
     }
-
+    lineno++;
     if (!block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"newline: \\n\n");

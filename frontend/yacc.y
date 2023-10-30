@@ -4,9 +4,9 @@
     #include "lex.yy.c"
     #include <string.h>
     int yylex (void);
-    void yyerror (char*);
     FILE* ftoken, *fparser;
     int lineno = 1; 
+    void yyerror (char*);
     int return_flag = 0;
 %}
 
@@ -38,9 +38,9 @@ ink main() -> void {
 %left LOG_OP
 %left REL_OP
 
-%nonassoc IF
-%nonassoc ELSE_IF
-
+/* %nonassoc IF
+%nonassoc ELSE_IF */
+%right IF ELSE_IF ARROW
 
 %%
 
@@ -125,15 +125,16 @@ if_block : IF '(' expr_pred')' ARROW func_body
         | IF '(' expr_pred')' new_lines ARROW new_lines func_body
         ;
 
-else_body : ARROW optional_new_lines func_body
+else : ARROW optional_new_lines func_body
         ;
 
-else_block : else_body
-        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body optional_new_lines else_block
+else_block : else
+        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body else_block
+        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body 
         ;
 
-conditional_stmt : if_block else_block %prec ELSE_IF {fprintf(fparser, "conditional\n");}
-                | if_block  %prec IF {fprintf(fparser, "conditional\n");}
+conditional_stmt : if_block else_block {fprintf(fparser, "conditional\n");}
+                | if_block {fprintf(fparser, "conditional\n");}
                 ;
 
 numeric_data_decl : num_decl
@@ -262,7 +263,7 @@ array_element : '[' expr_pred ']'
 
 int yywrap(){ return 1;}
 void yyerror(char* s){ 
-        printf("Error at line %d", lineno);
+        printf("Error at line %d\n", lineno);
         fprintf(fparser, " : invalid statement");
         exit(1);
 }
