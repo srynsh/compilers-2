@@ -10,21 +10,6 @@
     int return_flag = 0;
 %}
 
-/*
-ink main() -> void 
-{ 
-    
-}
-
-or 
-
-ink main() -> void {
-
-}
-
-(id = id} is invalid)
-*/
-
 %token IF ELSE_IF RETURN CONTINUE BREAK LOOP INK
 %token ARROW DOT_OP LOG_OP REL_OP NEG_OP
 %token IMG GRAY_IMG VID GRAY_VID NUM REAL VOID BOOL BOOL_LIT NEWLINE
@@ -38,19 +23,13 @@ ink main() -> void {
 %left LOG_OP
 %left REL_OP
 
-
-/* %right IF */
-/* %right ELSE_IF */
-%right SHORT_IF
-%right LONG_IF
 %%
 
 program : function new_lines program
         | function optional_new_lines
         ;
 
-func_body : '{' stmt_list '}'
-        | '{' new_lines stmt_list '}'
+func_body : '{' new_lines stmt_list '}'
         ;
 
 new_lines : new_lines NEWLINE
@@ -99,7 +78,6 @@ l_stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
         | return_stmt /* 'new_lines' is included in expr_stmt */
         | loop_stmt new_lines
         | '{'new_lines loop_stmt_list '}' new_lines /* This allows nested scopes */
-        | '{' loop_stmt_list '}' new_lines /* This allows nested scopes */
         | '{' new_lines '}' new_lines
         | '{' '}' new_lines
         | unary_stmt 
@@ -111,8 +89,7 @@ loop_stmt_list : l_stmt
         | loop_stmt_list l_stmt
         ;
 
-loop_body : '{' loop_stmt_list '}'
-        | '{' new_lines loop_stmt_list '}'
+loop_body : '{' new_lines loop_stmt_list '}'
         ;
 
 stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
@@ -123,7 +100,6 @@ stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
         | return_stmt /* 'new_lines' is included in expr_stmt */
         | loop_stmt new_lines
         | '{'new_lines stmt_list '}' new_lines /* This allows nested scopes */
-        | '{' stmt_list '}' new_lines /* This allows nested scopes */
         | '{' new_lines '}' new_lines
         | '{' '}' new_lines
         | unary_stmt 
