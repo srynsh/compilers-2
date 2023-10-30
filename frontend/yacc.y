@@ -38,14 +38,11 @@ ink main() -> void {
 %left LOG_OP
 %left REL_OP
 
-%nonassoc IF
-%nonassoc ELSE_IF
-%nonassoc SHORT_IF
-%nonassoc LONG_IF
-// %right IF
-// %right ELSE_IF
-// %right NEWLINE
 
+/* %right IF */
+/* %right ELSE_IF */
+%right SHORT_IF
+%right LONG_IF
 %%
 
 program : function new_lines program
@@ -102,7 +99,7 @@ stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
         | return_stmt /* 'new_lines' is included in expr_stmt */
         | loop_stmt new_lines
         | '{'new_lines stmt_list '}' new_lines /* This allows nested scopes */
-        | '{' stmt_list '}' new_lines/* This allows nested scopes */
+        | '{' stmt_list '}' new_lines /* This allows nested scopes */
         | '{' new_lines '}' new_lines
         | '{' '}' new_lines
         ; 
@@ -125,14 +122,14 @@ if_block : IF optional_new_lines '(' expr_pred')' optional_new_lines ARROW optio
 else : ARROW optional_new_lines func_body
         ;
 
-else_if_block_list : else_if_block_list optional_new_lines ELSE_IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
-        | ELSE_IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+else_if_block_list : else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body 
         ;
 
-conditional_stmt : if_block optional_new_lines else_if_block_list optional_new_lines else new_lines  
-                | if_block new_lines  
-                | if_block optional_new_lines else_if_block_list new_lines  
-                | if_block optional_new_lines else new_lines  
+conditional_stmt : if_block optional_new_lines else_if_block_list optional_new_lines else { fprintf(fparser, "conditional\n");} new_lines
+                | if_block new_lines {fprintf(fparser, "conditional\n");}
+                | if_block optional_new_lines else_if_block_list new_lines {fprintf(fparser, "conditional\n");}
+                | if_block optional_new_lines else {fprintf(fparser, "conditional\n");} new_lines
                 ;
 
 numeric_data_decl : num_decl
@@ -144,7 +141,7 @@ empty_return : /* empty */ {fprintf(fparser, "return");}
         ;
 
 return_stmt : RETURN expr_pred empty_return new_lines
-        | RETURN VOID empty_return new_lines // return void and not just return 
+        | RETURN VOID empty_return new_lines 
         ;
 
 decl_stmt : img_decl 

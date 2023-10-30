@@ -12,5 +12,7 @@
 **/*.dSYM
 **/*.tab.*
 **/*.output.*
+**/*.o
+**/*.output
 **/a.out
 **/.DS_Store
