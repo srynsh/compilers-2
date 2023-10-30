@@ -97,7 +97,7 @@ stmt_list : stmt
         ;
 
 stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
-        | conditional_stmt
+        | conditional_stmt 
         | call_stmt new_lines
         | in_built_call_stmt new_lines
         | expr_stmt /* 'new_lines' is included in expr_stmt */
@@ -127,13 +127,17 @@ if_block : IF '(' expr_pred')' optional_new_lines ARROW optional_new_lines func_
 else : ARROW optional_new_lines func_body
         ;
 
-else_block : else
-        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body optional_new_lines else_block // %prec LONG_IF
-        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body // %prec SHORT_IF
+else_if_block_list : else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
         ;
 
-conditional_stmt : if_block optional_new_lines else_block new_lines {fprintf(fparser, "conditional\n");} %prec ELSE_IF
-                | if_block new_lines {fprintf(fparser, "conditional\n");} %prec IF
+lmao : /* empty */  {fprintf(fparser, "conditional\n");}        
+        ;
+
+conditional_stmt : if_block optional_new_lines else_if_block_list optional_new_lines else lmao new_lines
+                | if_block lmao new_lines
+                | if_block optional_new_lines else_if_block_list lmao new_lines
+                | if_block optional_new_lines else lmao new_lines
                 ;
 
 numeric_data_decl : num_decl
