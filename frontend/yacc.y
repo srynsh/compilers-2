@@ -48,10 +48,8 @@ ink main() -> void {
 
 %%
 
-program : program function new_lines
-        | function new_lines
-        | function
-        | program function
+program : function new_lines program
+        | function optional_new_lines
         ;
 
 func_body : '{' stmt_list '}'
@@ -97,7 +95,7 @@ stmt_list : stmt
         ;
 
 stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
-        | conditional_stmt 
+        | conditional_stmt /* 'new_lines' is included in conditional_stmt */
         | call_stmt new_lines
         | in_built_call_stmt new_lines
         | expr_stmt /* 'new_lines' is included in expr_stmt */
@@ -117,27 +115,24 @@ optional_num_data_decl : numeric_data_decl
         | /* empty */
         ;
 
-loop_stmt : LOOP optional_new_lines '(' optional_expr_pred ')' optional_new_lines func_body {fprintf(fparser, "loop\n");}
-        | LOOP optional_new_lines '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' optional_new_lines func_body {fprintf(fparser, "loop\n");}
+loop_stmt : LOOP optional_new_lines '(' optional_expr_pred ')' optional_new_lines func_body {fprintf(fparser, "loop");}
+        | LOOP optional_new_lines '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' optional_new_lines func_body {fprintf(fparser, "loop");}
         ;
 
-if_block : IF '(' expr_pred')' optional_new_lines ARROW optional_new_lines func_body 
+if_block : IF optional_new_lines '(' expr_pred')' optional_new_lines ARROW optional_new_lines func_body 
         ;
 
 else : ARROW optional_new_lines func_body
         ;
 
-else_if_block_list : else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
-        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+else_if_block_list : else_if_block_list optional_new_lines ELSE_IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+        | ELSE_IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
         ;
 
-lmao : /* empty */  {fprintf(fparser, "conditional\n");}        
-        ;
-
-conditional_stmt : if_block optional_new_lines else_if_block_list optional_new_lines else lmao new_lines
-                | if_block lmao new_lines
-                | if_block optional_new_lines else_if_block_list lmao new_lines
-                | if_block optional_new_lines else lmao new_lines
+conditional_stmt : if_block optional_new_lines else_if_block_list optional_new_lines else new_lines  
+                | if_block new_lines  
+                | if_block optional_new_lines else_if_block_list new_lines  
+                | if_block optional_new_lines else new_lines  
                 ;
 
 numeric_data_decl : num_decl
@@ -145,9 +140,11 @@ numeric_data_decl : num_decl
         | bool_decl
         ;
 
+empty_return : /* empty */ {fprintf(fparser, "return");}
+        ;
 
-return_stmt : RETURN expr_pred new_lines
-        | RETURN VOID new_lines // return void and not just return
+return_stmt : RETURN expr_pred empty_return new_lines
+        | RETURN VOID empty_return new_lines // return void and not just return 
         ;
 
 decl_stmt : img_decl 
