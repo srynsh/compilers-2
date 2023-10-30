@@ -1,0 +1,4896 @@
+Terminals which are not used
+
+   SHORT_IF
+   LONG_IF
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: function new_lines program
+    2        | function optional_new_lines
+
+    3 func_body: '{' stmt_list '}'
+    4          | '{' new_lines stmt_list '}'
+
+    5 new_lines: new_lines NEWLINE
+    6          | NEWLINE
+
+    7 optional_new_lines: /* empty */
+    8                   | new_lines
+
+    9 function: INK ID '(' par_list ')' ARROW RET_TYPE func_body
+   10         | INK ID '(' ')' ARROW RET_TYPE func_body
+   11         | INK ID '(' par_list ')' ARROW RET_TYPE new_lines func_body
+   12         | INK ID '(' ')' ARROW RET_TYPE new_lines func_body
+
+   13 RET_TYPE: datatype
+   14         | VOID
+
+   15 par_list: par_list ',' par
+   16         | par
+
+   17 par: datatype ID
+
+   18 datatype: IMG
+   19         | GRAY_IMG
+   20         | VID
+   21         | GRAY_VID
+   22         | NUM
+   23         | REAL
+   24         | BOOL
+
+   25 stmt_list: stmt
+   26          | stmt_list stmt
+
+   27 l_stmt: decl_stmt
+   28       | loop_conditional_stmt
+   29       | call_stmt new_lines
+   30       | in_built_call_stmt new_lines
+   31       | expr_stmt
+   32       | return_stmt
+   33       | loop_stmt new_lines
+   34       | '{' new_lines loop_stmt_list '}' new_lines
+   35       | '{' loop_stmt_list '}' new_lines
+   36       | '{' new_lines '}' new_lines
+   37       | '{' '}' new_lines
+   38       | unary_stmt
+   39       | BREAK new_lines
+   40       | CONTINUE new_lines
+
+   41 loop_stmt_list: l_stmt
+   42               | loop_stmt_list l_stmt
+
+   43 loop_body: '{' loop_stmt_list '}'
+   44          | '{' new_lines loop_stmt_list '}'
+
+   45 stmt: decl_stmt
+   46     | conditional_stmt
+   47     | call_stmt new_lines
+   48     | in_built_call_stmt new_lines
+   49     | expr_stmt
+   50     | return_stmt
+   51     | loop_stmt new_lines
+   52     | '{' new_lines stmt_list '}' new_lines
+   53     | '{' stmt_list '}' new_lines
+   54     | '{' new_lines '}' new_lines
+   55     | '{' '}' new_lines
+   56     | unary_stmt
+
+   57 unary_stmt: ID UNARY_OP new_lines
+
+   58 optional_expr_pred: expr_pred
+   59                   | /* empty */
+
+   60 optional_num_data_decl: numeric_data_decl
+   61                       | /* empty */
+
+   62 loop_stmt: LOOP optional_new_lines '(' optional_expr_pred ')' optional_new_lines loop_body
+   63          | LOOP optional_new_lines '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' optional_new_lines loop_body
+
+   64 if_block: IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+
+   65 else: ARROW optional_new_lines func_body
+
+   66 else_if_block_list: else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+   67                   | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+
+   68 @1: /* empty */
+
+   69 conditional_stmt: if_block optional_new_lines else_if_block_list optional_new_lines else @1 new_lines
+   70                 | if_block new_lines
+   71                 | if_block optional_new_lines else_if_block_list new_lines
+
+   72 @2: /* empty */
+
+   73 conditional_stmt: if_block optional_new_lines else @2 new_lines
+
+   74 loop_if_block: IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body
+
+   75 loop_else: ARROW optional_new_lines loop_body
+
+   76 loop_else_if_block_list: loop_else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body
+   77                        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body
+
+   78 @3: /* empty */
+
+   79 loop_conditional_stmt: loop_if_block optional_new_lines loop_else_if_block_list optional_new_lines loop_else @3 new_lines
+   80                      | loop_if_block new_lines
+   81                      | loop_if_block optional_new_lines loop_else_if_block_list new_lines
+
+   82 @4: /* empty */
+
+   83 loop_conditional_stmt: loop_if_block optional_new_lines loop_else @4 new_lines
+
+   84 numeric_data_decl: num_decl
+   85                  | real_decl
+   86                  | bool_decl
+
+   87 empty_return: /* empty */
+
+   88 return_stmt: RETURN expr_pred empty_return new_lines
+   89            | RETURN VOID empty_return new_lines
+
+   90 decl_stmt: img_decl
+   91          | gray_img_decl
+   92          | vid_decl
+   93          | gray_vid_decl
+   94          | num_decl new_lines
+   95          | bool_decl new_lines
+   96          | real_decl new_lines
+   97          | num_array_decl
+   98          | real_array_decl
+
+   99 img_decl: IMG ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
+  100         | IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+  101         | IMG ID '<' PATH '>' new_lines
+  102         | IMG ID '=' expr_pred new_lines
+
+  103 gray_img_decl: GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
+  104              | GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+  105              | GRAY_IMG ID '<' PATH '>' new_lines
+  106              | GRAY_IMG ID '=' expr_pred new_lines
+
+  107 vid_decl: VID ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
+  108         | VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+
+  109 gray_vid_decl: GRAY_VID ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
+  110              | GRAY_VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+
+  111 num_decl: NUM ID
+  112         | NUM ID '=' expr_pred
+
+  113 bool_decl: BOOL ID
+  114          | BOOL ID '=' expr_pred
+
+  115 real_decl: REAL ID
+  116          | REAL ID '=' expr_pred
+
+  117 num_array_decl: NUM array_element ID new_lines
+  118               | NUM array_element ID '=' ID new_lines
+  119               | NUM array_element ID '=' brak_pred new_lines
+
+  120 real_array_decl: REAL array_element ID new_lines
+  121                | REAL array_element ID '=' ID new_lines
+  122                | REAL array_element ID '=' brak_pred new_lines
+
+  123 brak_pred: '{' brak_pred_list '}'
+  124          | '{' lit_list '}'
+
+  125 brak_pred_list: brak_pred_list ',' brak_pred
+  126               | brak_pred
+
+  127 lit_list: lit_list ',' lit
+  128         | lit
+
+  129 lit: NUM_LIT
+  130    | REAL_LIT
+  131    | BOOL_LIT
+
+  132 call_stmt: ID '(' arg_list ')'
+  133          | ID '(' ')'
+
+  134 arg_list: arg_list ',' expr_pred
+  135         | expr_pred
+
+  136 in_built_call_stmt: ID DOT_OP ID '(' arg_list ')'
+  137                   | ID DOT_OP ID '(' ')'
+  138                   | in_built_call_stmt DOT_OP ID '(' arg_list ')'
+  139                   | in_built_call_stmt DOT_OP ID '(' ')'
+
+  140 expr_pred: ID
+  141          | NUM_LIT
+  142          | REAL_LIT
+  143          | BOOL_LIT
+  144          | expr_pred REL_OP expr_pred
+  145          | expr_pred LOG_OP expr_pred
+  146          | '(' expr_pred ')'
+  147          | NEG_OP expr_pred
+  148          | call_stmt
+  149          | in_built_call_stmt
+  150          | ID array_element
+  151          | expr_pred BINARY_OP expr_pred
+  152          | expr_pred UNARY_OP
+  153          | INV_OP expr_pred
+
+  154 expr_stmt: ID '=' expr_pred new_lines
+  155          | ID array_element '=' expr_pred new_lines
+
+  156 array_element: '[' expr_pred ']'
+  157              | '[' expr_pred ',' expr_pred ']'
+  158              | '[' expr_pred ',' expr_pred ',' expr_pred ']'
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+'(' (40) 9 10 11 12 62 63 64 66 67 74 76 77 132 133 136 137 138 139
+    146
+')' (41) 9 10 11 12 62 63 64 66 67 74 76 77 132 133 136 137 138 139
+    146
+',' (44) 15 99 100 103 104 107 108 109 110 125 127 134 157 158
+';' (59) 63
+'<' (60) 99 100 101 103 104 105 107 108 109 110
+'=' (61) 102 106 112 114 116 118 119 121 122 154 155
+'>' (62) 99 100 101 103 104 105 107 108 109 110
+'[' (91) 156 157 158
+']' (93) 156 157 158
+'{' (123) 3 4 34 35 36 37 43 44 52 53 54 55 123 124
+'}' (125) 3 4 34 35 36 37 43 44 52 53 54 55 123 124
+error (256)
+IF (258) 64 74
+ELSE_IF (259) 66 67 76 77
+RETURN (260) 88 89
+CONTINUE (261) 40
+BREAK (262) 39
+LOOP (263) 62 63
+INK (264) 9 10 11 12
+ARROW (265) 9 10 11 12 64 65 66 67 74 75 76 77
+DOT_OP (266) 136 137 138 139
+LOG_OP (267) 145
+REL_OP (268) 144
+NEG_OP (269) 147
+IMG (270) 18 99 100 101 102
+GRAY_IMG (271) 19 103 104 105 106
+VID (272) 20 107 108
+GRAY_VID (273) 21 109 110
+NUM (274) 22 111 112 117 118 119
+REAL (275) 23 115 116 120 121 122
+VOID (276) 14 89
+BOOL (277) 24 113 114
+BOOL_LIT (278) 131 143
+NEWLINE (279) 5 6
+ID (280) 9 10 11 12 17 57 99 100 101 102 103 104 105 106 107 108 109
+    110 111 112 113 114 115 116 117 118 119 120 121 122 132 133 136
+    137 138 139 140 150 154 155
+NUM_LIT (281) 99 100 103 104 107 108 109 110 129 141
+REAL_LIT (282) 130 142
+PATH (283) 101 105
+BINARY_OP (284) 151
+UNARY_OP (285) 57 152
+INV_OP (286) 153
+SHORT_IF (287)
+LONG_IF (288)
+
+
+Nonterminals, with rules where they appear
+
+$accept (45)
+    on left: 0
+program (46)
+    on left: 1 2, on right: 0 1
+func_body (47)
+    on left: 3 4, on right: 9 10 11 12 64 65 66 67
+new_lines (48)
+    on left: 5 6, on right: 1 4 5 8 11 12 29 30 33 34 35 36 37 39 40
+    44 47 48 51 52 53 54 55 57 69 70 71 73 79 80 81 83 88 89 94 95
+    96 99 100 101 102 103 104 105 106 107 108 109 110 117 118 119 120
+    121 122 154 155
+optional_new_lines (49)
+    on left: 7 8, on right: 2 62 63 64 65 66 67 69 71 73 74 75 76 77
+    79 81 83
+function (50)
+    on left: 9 10 11 12, on right: 1 2
+RET_TYPE (51)
+    on left: 13 14, on right: 9 10 11 12
+par_list (52)
+    on left: 15 16, on right: 9 11 15
+par (53)
+    on left: 17, on right: 15 16
+datatype (54)
+    on left: 18 19 20 21 22 23 24, on right: 13 17
+stmt_list (55)
+    on left: 25 26, on right: 3 4 26 52 53
+l_stmt (56)
+    on left: 27 28 29 30 31 32 33 34 35 36 37 38 39 40,
+    on right: 41 42
+loop_stmt_list (57)
+    on left: 41 42, on right: 34 35 42 43 44
+loop_body (58)
+    on left: 43 44, on right: 62 63 74 75 76 77
+stmt (59)
+    on left: 45 46 47 48 49 50 51 52 53 54 55 56, on right: 25 26
+unary_stmt (60)
+    on left: 57, on right: 38 56
+optional_expr_pred (61)
+    on left: 58 59, on right: 62 63
+optional_num_data_decl (62)
+    on left: 60 61, on right: 63
+loop_stmt (63)
+    on left: 62 63, on right: 33 51
+if_block (64)
+    on left: 64, on right: 69 70 71 73
+else (65)
+    on left: 65, on right: 69 73
+else_if_block_list (66)
+    on left: 66 67, on right: 66 69 71
+conditional_stmt (67)
+    on left: 69 70 71 73, on right: 46
+@1 (68)
+    on left: 68, on right: 69
+@2 (69)
+    on left: 72, on right: 73
+loop_if_block (70)
+    on left: 74, on right: 79 80 81 83
+loop_else (71)
+    on left: 75, on right: 79 83
+loop_else_if_block_list (72)
+    on left: 76 77, on right: 76 79 81
+loop_conditional_stmt (73)
+    on left: 79 80 81 83, on right: 28
+@3 (74)
+    on left: 78, on right: 79
+@4 (75)
+    on left: 82, on right: 83
+numeric_data_decl (76)
+    on left: 84 85 86, on right: 60
+empty_return (77)
+    on left: 87, on right: 88 89
+return_stmt (78)
+    on left: 88 89, on right: 32 50
+decl_stmt (79)
+    on left: 90 91 92 93 94 95 96 97 98, on right: 27 45
+img_decl (80)
+    on left: 99 100 101 102, on right: 90
+gray_img_decl (81)
+    on left: 103 104 105 106, on right: 91
+vid_decl (82)
+    on left: 107 108, on right: 92
+gray_vid_decl (83)
+    on left: 109 110, on right: 93
+num_decl (84)
+    on left: 111 112, on right: 84 94
+bool_decl (85)
+    on left: 113 114, on right: 86 95
+real_decl (86)
+    on left: 115 116, on right: 85 96
+num_array_decl (87)
+    on left: 117 118 119, on right: 97
+real_array_decl (88)
+    on left: 120 121 122, on right: 98
+brak_pred (89)
+    on left: 123 124, on right: 119 122 125 126
+brak_pred_list (90)
+    on left: 125 126, on right: 123 125
+lit_list (91)
+    on left: 127 128, on right: 124 127
+lit (92)
+    on left: 129 130 131, on right: 127 128
+call_stmt (93)
+    on left: 132 133, on right: 29 47 148
+arg_list (94)
+    on left: 134 135, on right: 132 134 136 138
+in_built_call_stmt (95)
+    on left: 136 137 138 139, on right: 30 48 138 139 149
+expr_pred (96)
+    on left: 140 141 142 143 144 145 146 147 148 149 150 151 152 153
+   , on right: 58 64 66 67 74 76 77 88 102 106 112 114 116 134 135
+    144 145 146 147 151 152 153 154 155 156 157 158
+expr_stmt (97)
+    on left: 154 155, on right: 31 49
+array_element (98)
+    on left: 156 157 158, on right: 117 118 119 120 121 122 150 155
+
+
+state 0
+
+    0 $accept: . program $end
+
+    INK  shift, and go to state 1
+
+    program   go to state 2
+    function  go to state 3
+
+
+state 1
+
+    9 function: INK . ID '(' par_list ')' ARROW RET_TYPE func_body
+   10         | INK . ID '(' ')' ARROW RET_TYPE func_body
+   11         | INK . ID '(' par_list ')' ARROW RET_TYPE new_lines func_body
+   12         | INK . ID '(' ')' ARROW RET_TYPE new_lines func_body
+
+    ID  shift, and go to state 4
+
+
+state 2
+
+    0 $accept: program . $end
+
+    $end  shift, and go to state 5
+
+
+state 3
+
+    1 program: function . new_lines program
+    2        | function . optional_new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 7
+    optional_new_lines  go to state 8
+
+
+state 4
+
+    9 function: INK ID . '(' par_list ')' ARROW RET_TYPE func_body
+   10         | INK ID . '(' ')' ARROW RET_TYPE func_body
+   11         | INK ID . '(' par_list ')' ARROW RET_TYPE new_lines func_body
+   12         | INK ID . '(' ')' ARROW RET_TYPE new_lines func_body
+
+    '('  shift, and go to state 9
+
+
+state 5
+
+    0 $accept: program $end .
+
+    $default  accept
+
+
+state 6
+
+    6 new_lines: NEWLINE .
+
+    $default  reduce using rule 6 (new_lines)
+
+
+state 7
+
+    1 program: function new_lines . program
+    5 new_lines: new_lines . NEWLINE
+    8 optional_new_lines: new_lines .
+
+    INK      shift, and go to state 1
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 8 (optional_new_lines)
+
+    program   go to state 11
+    function  go to state 3
+
+
+state 8
+
+    2 program: function optional_new_lines .
+
+    $default  reduce using rule 2 (program)
+
+
+state 9
+
+    9 function: INK ID '(' . par_list ')' ARROW RET_TYPE func_body
+   10         | INK ID '(' . ')' ARROW RET_TYPE func_body
+   11         | INK ID '(' . par_list ')' ARROW RET_TYPE new_lines func_body
+   12         | INK ID '(' . ')' ARROW RET_TYPE new_lines func_body
+
+    IMG       shift, and go to state 12
+    GRAY_IMG  shift, and go to state 13
+    VID       shift, and go to state 14
+    GRAY_VID  shift, and go to state 15
+    NUM       shift, and go to state 16
+    REAL      shift, and go to state 17
+    BOOL      shift, and go to state 18
+    ')'       shift, and go to state 19
+
+    par_list  go to state 20
+    par       go to state 21
+    datatype  go to state 22
+
+
+state 10
+
+    5 new_lines: new_lines NEWLINE .
+
+    $default  reduce using rule 5 (new_lines)
+
+
+state 11
+
+    1 program: function new_lines program .
+
+    $default  reduce using rule 1 (program)
+
+
+state 12
+
+   18 datatype: IMG .
+
+    $default  reduce using rule 18 (datatype)
+
+
+state 13
+
+   19 datatype: GRAY_IMG .
+
+    $default  reduce using rule 19 (datatype)
+
+
+state 14
+
+   20 datatype: VID .
+
+    $default  reduce using rule 20 (datatype)
+
+
+state 15
+
+   21 datatype: GRAY_VID .
+
+    $default  reduce using rule 21 (datatype)
+
+
+state 16
+
+   22 datatype: NUM .
+
+    $default  reduce using rule 22 (datatype)
+
+
+state 17
+
+   23 datatype: REAL .
+
+    $default  reduce using rule 23 (datatype)
+
+
+state 18
+
+   24 datatype: BOOL .
+
+    $default  reduce using rule 24 (datatype)
+
+
+state 19
+
+   10 function: INK ID '(' ')' . ARROW RET_TYPE func_body
+   12         | INK ID '(' ')' . ARROW RET_TYPE new_lines func_body
+
+    ARROW  shift, and go to state 23
+
+
+state 20
+
+    9 function: INK ID '(' par_list . ')' ARROW RET_TYPE func_body
+   11         | INK ID '(' par_list . ')' ARROW RET_TYPE new_lines func_body
+   15 par_list: par_list . ',' par
+
+    ')'  shift, and go to state 24
+    ','  shift, and go to state 25
+
+
+state 21
+
+   16 par_list: par .
+
+    $default  reduce using rule 16 (par_list)
+
+
+state 22
+
+   17 par: datatype . ID
+
+    ID  shift, and go to state 26
+
+
+state 23
+
+   10 function: INK ID '(' ')' ARROW . RET_TYPE func_body
+   12         | INK ID '(' ')' ARROW . RET_TYPE new_lines func_body
+
+    IMG       shift, and go to state 12
+    GRAY_IMG  shift, and go to state 13
+    VID       shift, and go to state 14
+    GRAY_VID  shift, and go to state 15
+    NUM       shift, and go to state 16
+    REAL      shift, and go to state 17
+    VOID      shift, and go to state 27
+    BOOL      shift, and go to state 18
+
+    RET_TYPE  go to state 28
+    datatype  go to state 29
+
+
+state 24
+
+    9 function: INK ID '(' par_list ')' . ARROW RET_TYPE func_body
+   11         | INK ID '(' par_list ')' . ARROW RET_TYPE new_lines func_body
+
+    ARROW  shift, and go to state 30
+
+
+state 25
+
+   15 par_list: par_list ',' . par
+
+    IMG       shift, and go to state 12
+    GRAY_IMG  shift, and go to state 13
+    VID       shift, and go to state 14
+    GRAY_VID  shift, and go to state 15
+    NUM       shift, and go to state 16
+    REAL      shift, and go to state 17
+    BOOL      shift, and go to state 18
+
+    par       go to state 31
+    datatype  go to state 22
+
+
+state 26
+
+   17 par: datatype ID .
+
+    $default  reduce using rule 17 (par)
+
+
+state 27
+
+   14 RET_TYPE: VOID .
+
+    $default  reduce using rule 14 (RET_TYPE)
+
+
+state 28
+
+   10 function: INK ID '(' ')' ARROW RET_TYPE . func_body
+   12         | INK ID '(' ')' ARROW RET_TYPE . new_lines func_body
+
+    NEWLINE  shift, and go to state 6
+    '{'      shift, and go to state 32
+
+    func_body  go to state 33
+    new_lines  go to state 34
+
+
+state 29
+
+   13 RET_TYPE: datatype .
+
+    $default  reduce using rule 13 (RET_TYPE)
+
+
+state 30
+
+    9 function: INK ID '(' par_list ')' ARROW . RET_TYPE func_body
+   11         | INK ID '(' par_list ')' ARROW . RET_TYPE new_lines func_body
+
+    IMG       shift, and go to state 12
+    GRAY_IMG  shift, and go to state 13
+    VID       shift, and go to state 14
+    GRAY_VID  shift, and go to state 15
+    NUM       shift, and go to state 16
+    REAL      shift, and go to state 17
+    VOID      shift, and go to state 27
+    BOOL      shift, and go to state 18
+
+    RET_TYPE  go to state 35
+    datatype  go to state 29
+
+
+state 31
+
+   15 par_list: par_list ',' par .
+
+    $default  reduce using rule 15 (par_list)
+
+
+state 32
+
+    3 func_body: '{' . stmt_list '}'
+    4          | '{' . new_lines stmt_list '}'
+
+    IF        shift, and go to state 36
+    RETURN    shift, and go to state 37
+    LOOP      shift, and go to state 38
+    IMG       shift, and go to state 39
+    GRAY_IMG  shift, and go to state 40
+    VID       shift, and go to state 41
+    GRAY_VID  shift, and go to state 42
+    NUM       shift, and go to state 43
+    REAL      shift, and go to state 44
+    BOOL      shift, and go to state 45
+    NEWLINE   shift, and go to state 6
+    ID        shift, and go to state 46
+    '{'       shift, and go to state 47
+
+    new_lines           go to state 48
+    stmt_list           go to state 49
+    stmt                go to state 50
+    unary_stmt          go to state 51
+    loop_stmt           go to state 52
+    if_block            go to state 53
+    conditional_stmt    go to state 54
+    return_stmt         go to state 55
+    decl_stmt           go to state 56
+    img_decl            go to state 57
+    gray_img_decl       go to state 58
+    vid_decl            go to state 59
+    gray_vid_decl       go to state 60
+    num_decl            go to state 61
+    bool_decl           go to state 62
+    real_decl           go to state 63
+    num_array_decl      go to state 64
+    real_array_decl     go to state 65
+    call_stmt           go to state 66
+    in_built_call_stmt  go to state 67
+    expr_stmt           go to state 68
+
+
+state 33
+
+   10 function: INK ID '(' ')' ARROW RET_TYPE func_body .
+
+    $default  reduce using rule 10 (function)
+
+
+state 34
+
+    5 new_lines: new_lines . NEWLINE
+   12 function: INK ID '(' ')' ARROW RET_TYPE new_lines . func_body
+
+    NEWLINE  shift, and go to state 10
+    '{'      shift, and go to state 32
+
+    func_body  go to state 69
+
+
+state 35
+
+    9 function: INK ID '(' par_list ')' ARROW RET_TYPE . func_body
+   11         | INK ID '(' par_list ')' ARROW RET_TYPE . new_lines func_body
+
+    NEWLINE  shift, and go to state 6
+    '{'      shift, and go to state 32
+
+    func_body  go to state 70
+    new_lines  go to state 71
+
+
+state 36
+
+   64 if_block: IF . optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 73
+
+
+state 37
+
+   88 return_stmt: RETURN . expr_pred empty_return new_lines
+   89            | RETURN . VOID empty_return new_lines
+
+    NEG_OP    shift, and go to state 74
+    VOID      shift, and go to state 75
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 84
+
+
+state 38
+
+   62 loop_stmt: LOOP . optional_new_lines '(' optional_expr_pred ')' optional_new_lines loop_body
+   63          | LOOP . optional_new_lines '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' optional_new_lines loop_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 85
+
+
+state 39
+
+   99 img_decl: IMG . ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
+  100         | IMG . ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+  101         | IMG . ID '<' PATH '>' new_lines
+  102         | IMG . ID '=' expr_pred new_lines
+
+    ID  shift, and go to state 86
+
+
+state 40
+
+  103 gray_img_decl: GRAY_IMG . ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
+  104              | GRAY_IMG . ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+  105              | GRAY_IMG . ID '<' PATH '>' new_lines
+  106              | GRAY_IMG . ID '=' expr_pred new_lines
+
+    ID  shift, and go to state 87
+
+
+state 41
+
+  107 vid_decl: VID . ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
+  108         | VID . ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+
+    ID  shift, and go to state 88
+
+
+state 42
+
+  109 gray_vid_decl: GRAY_VID . ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
+  110              | GRAY_VID . ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+
+    ID  shift, and go to state 89
+
+
+state 43
+
+  111 num_decl: NUM . ID
+  112         | NUM . ID '=' expr_pred
+  117 num_array_decl: NUM . array_element ID new_lines
+  118               | NUM . array_element ID '=' ID new_lines
+  119               | NUM . array_element ID '=' brak_pred new_lines
+
+    ID   shift, and go to state 90
+    '['  shift, and go to state 91
+
+    array_element  go to state 92
+
+
+state 44
+
+  115 real_decl: REAL . ID
+  116          | REAL . ID '=' expr_pred
+  120 real_array_decl: REAL . array_element ID new_lines
+  121                | REAL . array_element ID '=' ID new_lines
+  122                | REAL . array_element ID '=' brak_pred new_lines
+
+    ID   shift, and go to state 93
+    '['  shift, and go to state 91
+
+    array_element  go to state 94
+
+
+state 45
+
+  113 bool_decl: BOOL . ID
+  114          | BOOL . ID '=' expr_pred
+
+    ID  shift, and go to state 95
+
+
+state 46
+
+   57 unary_stmt: ID . UNARY_OP new_lines
+  132 call_stmt: ID . '(' arg_list ')'
+  133          | ID . '(' ')'
+  136 in_built_call_stmt: ID . DOT_OP ID '(' arg_list ')'
+  137                   | ID . DOT_OP ID '(' ')'
+  154 expr_stmt: ID . '=' expr_pred new_lines
+  155          | ID . array_element '=' expr_pred new_lines
+
+    DOT_OP    shift, and go to state 96
+    UNARY_OP  shift, and go to state 97
+    '('       shift, and go to state 98
+    '='       shift, and go to state 99
+    '['       shift, and go to state 91
+
+    array_element  go to state 100
+
+
+state 47
+
+   52 stmt: '{' . new_lines stmt_list '}' new_lines
+   53     | '{' . stmt_list '}' new_lines
+   54     | '{' . new_lines '}' new_lines
+   55     | '{' . '}' new_lines
+
+    IF        shift, and go to state 36
+    RETURN    shift, and go to state 37
+    LOOP      shift, and go to state 38
+    IMG       shift, and go to state 39
+    GRAY_IMG  shift, and go to state 40
+    VID       shift, and go to state 41
+    GRAY_VID  shift, and go to state 42
+    NUM       shift, and go to state 43
+    REAL      shift, and go to state 44
+    BOOL      shift, and go to state 45
+    NEWLINE   shift, and go to state 6
+    ID        shift, and go to state 46
+    '{'       shift, and go to state 47
+    '}'       shift, and go to state 101
+
+    new_lines           go to state 102
+    stmt_list           go to state 103
+    stmt                go to state 50
+    unary_stmt          go to state 51
+    loop_stmt           go to state 52
+    if_block            go to state 53
+    conditional_stmt    go to state 54
+    return_stmt         go to state 55
+    decl_stmt           go to state 56
+    img_decl            go to state 57
+    gray_img_decl       go to state 58
+    vid_decl            go to state 59
+    gray_vid_decl       go to state 60
+    num_decl            go to state 61
+    bool_decl           go to state 62
+    real_decl           go to state 63
+    num_array_decl      go to state 64
+    real_array_decl     go to state 65
+    call_stmt           go to state 66
+    in_built_call_stmt  go to state 67
+    expr_stmt           go to state 68
+
+
+state 48
+
+    4 func_body: '{' new_lines . stmt_list '}'
+    5 new_lines: new_lines . NEWLINE
+
+    IF        shift, and go to state 36
+    RETURN    shift, and go to state 37
+    LOOP      shift, and go to state 38
+    IMG       shift, and go to state 39
+    GRAY_IMG  shift, and go to state 40
+    VID       shift, and go to state 41
+    GRAY_VID  shift, and go to state 42
+    NUM       shift, and go to state 43
+    REAL      shift, and go to state 44
+    BOOL      shift, and go to state 45
+    NEWLINE   shift, and go to state 10
+    ID        shift, and go to state 46
+    '{'       shift, and go to state 47
+
+    stmt_list           go to state 104
+    stmt                go to state 50
+    unary_stmt          go to state 51
+    loop_stmt           go to state 52
+    if_block            go to state 53
+    conditional_stmt    go to state 54
+    return_stmt         go to state 55
+    decl_stmt           go to state 56
+    img_decl            go to state 57
+    gray_img_decl       go to state 58
+    vid_decl            go to state 59
+    gray_vid_decl       go to state 60
+    num_decl            go to state 61
+    bool_decl           go to state 62
+    real_decl           go to state 63
+    num_array_decl      go to state 64
+    real_array_decl     go to state 65
+    call_stmt           go to state 66
+    in_built_call_stmt  go to state 67
+    expr_stmt           go to state 68
+
+
+state 49
+
+    3 func_body: '{' stmt_list . '}'
+   26 stmt_list: stmt_list . stmt
+
+    IF        shift, and go to state 36
+    RETURN    shift, and go to state 37
+    LOOP      shift, and go to state 38
+    IMG       shift, and go to state 39
+    GRAY_IMG  shift, and go to state 40
+    VID       shift, and go to state 41
+    GRAY_VID  shift, and go to state 42
+    NUM       shift, and go to state 43
+    REAL      shift, and go to state 44
+    BOOL      shift, and go to state 45
+    ID        shift, and go to state 46
+    '{'       shift, and go to state 47
+    '}'       shift, and go to state 105
+
+    stmt                go to state 106
+    unary_stmt          go to state 51
+    loop_stmt           go to state 52
+    if_block            go to state 53
+    conditional_stmt    go to state 54
+    return_stmt         go to state 55
+    decl_stmt           go to state 56
+    img_decl            go to state 57
+    gray_img_decl       go to state 58
+    vid_decl            go to state 59
+    gray_vid_decl       go to state 60
+    num_decl            go to state 61
+    bool_decl           go to state 62
+    real_decl           go to state 63
+    num_array_decl      go to state 64
+    real_array_decl     go to state 65
+    call_stmt           go to state 66
+    in_built_call_stmt  go to state 67
+    expr_stmt           go to state 68
+
+
+state 50
+
+   25 stmt_list: stmt .
+
+    $default  reduce using rule 25 (stmt_list)
+
+
+state 51
+
+   56 stmt: unary_stmt .
+
+    $default  reduce using rule 56 (stmt)
+
+
+state 52
+
+   51 stmt: loop_stmt . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 107
+
+
+state 53
+
+   69 conditional_stmt: if_block . optional_new_lines else_if_block_list optional_new_lines else @1 new_lines
+   70                 | if_block . new_lines
+   71                 | if_block . optional_new_lines else_if_block_list new_lines
+   73                 | if_block . optional_new_lines else @2 new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 108
+    optional_new_lines  go to state 109
+
+
+state 54
+
+   46 stmt: conditional_stmt .
+
+    $default  reduce using rule 46 (stmt)
+
+
+state 55
+
+   50 stmt: return_stmt .
+
+    $default  reduce using rule 50 (stmt)
+
+
+state 56
+
+   45 stmt: decl_stmt .
+
+    $default  reduce using rule 45 (stmt)
+
+
+state 57
+
+   90 decl_stmt: img_decl .
+
+    $default  reduce using rule 90 (decl_stmt)
+
+
+state 58
+
+   91 decl_stmt: gray_img_decl .
+
+    $default  reduce using rule 91 (decl_stmt)
+
+
+state 59
+
+   92 decl_stmt: vid_decl .
+
+    $default  reduce using rule 92 (decl_stmt)
+
+
+state 60
+
+   93 decl_stmt: gray_vid_decl .
+
+    $default  reduce using rule 93 (decl_stmt)
+
+
+state 61
+
+   94 decl_stmt: num_decl . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 110
+
+
+state 62
+
+   95 decl_stmt: bool_decl . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 111
+
+
+state 63
+
+   96 decl_stmt: real_decl . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 112
+
+
+state 64
+
+   97 decl_stmt: num_array_decl .
+
+    $default  reduce using rule 97 (decl_stmt)
+
+
+state 65
+
+   98 decl_stmt: real_array_decl .
+
+    $default  reduce using rule 98 (decl_stmt)
+
+
+state 66
+
+   47 stmt: call_stmt . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 113
+
+
+state 67
+
+   48 stmt: in_built_call_stmt . new_lines
+  138 in_built_call_stmt: in_built_call_stmt . DOT_OP ID '(' arg_list ')'
+  139                   | in_built_call_stmt . DOT_OP ID '(' ')'
+
+    DOT_OP   shift, and go to state 114
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 115
+
+
+state 68
+
+   49 stmt: expr_stmt .
+
+    $default  reduce using rule 49 (stmt)
+
+
+state 69
+
+   12 function: INK ID '(' ')' ARROW RET_TYPE new_lines func_body .
+
+    $default  reduce using rule 12 (function)
+
+
+state 70
+
+    9 function: INK ID '(' par_list ')' ARROW RET_TYPE func_body .
+
+    $default  reduce using rule 9 (function)
+
+
+state 71
+
+    5 new_lines: new_lines . NEWLINE
+   11 function: INK ID '(' par_list ')' ARROW RET_TYPE new_lines . func_body
+
+    NEWLINE  shift, and go to state 10
+    '{'      shift, and go to state 32
+
+    func_body  go to state 116
+
+
+state 72
+
+    5 new_lines: new_lines . NEWLINE
+    8 optional_new_lines: new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 8 (optional_new_lines)
+
+
+state 73
+
+   64 if_block: IF optional_new_lines . '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+
+    '('  shift, and go to state 117
+
+
+state 74
+
+  147 expr_pred: NEG_OP . expr_pred
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 118
+
+
+state 75
+
+   89 return_stmt: RETURN VOID . empty_return new_lines
+
+    $default  reduce using rule 87 (empty_return)
+
+    empty_return  go to state 119
+
+
+state 76
+
+  143 expr_pred: BOOL_LIT .
+
+    $default  reduce using rule 143 (expr_pred)
+
+
+state 77
+
+  132 call_stmt: ID . '(' arg_list ')'
+  133          | ID . '(' ')'
+  136 in_built_call_stmt: ID . DOT_OP ID '(' arg_list ')'
+  137                   | ID . DOT_OP ID '(' ')'
+  140 expr_pred: ID .
+  150          | ID . array_element
+
+    DOT_OP  shift, and go to state 96
+    '('     shift, and go to state 98
+    '['     shift, and go to state 91
+
+    $default  reduce using rule 140 (expr_pred)
+
+    array_element  go to state 120
+
+
+state 78
+
+  141 expr_pred: NUM_LIT .
+
+    $default  reduce using rule 141 (expr_pred)
+
+
+state 79
+
+  142 expr_pred: REAL_LIT .
+
+    $default  reduce using rule 142 (expr_pred)
+
+
+state 80
+
+  153 expr_pred: INV_OP . expr_pred
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 121
+
+
+state 81
+
+  146 expr_pred: '(' . expr_pred ')'
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 122
+
+
+state 82
+
+  148 expr_pred: call_stmt .
+
+    $default  reduce using rule 148 (expr_pred)
+
+
+state 83
+
+  138 in_built_call_stmt: in_built_call_stmt . DOT_OP ID '(' arg_list ')'
+  139                   | in_built_call_stmt . DOT_OP ID '(' ')'
+  149 expr_pred: in_built_call_stmt .
+
+    DOT_OP  shift, and go to state 114
+
+    $default  reduce using rule 149 (expr_pred)
+
+
+state 84
+
+   88 return_stmt: RETURN expr_pred . empty_return new_lines
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+
+    $default  reduce using rule 87 (empty_return)
+
+    empty_return  go to state 127
+
+
+state 85
+
+   62 loop_stmt: LOOP optional_new_lines . '(' optional_expr_pred ')' optional_new_lines loop_body
+   63          | LOOP optional_new_lines . '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' optional_new_lines loop_body
+
+    '('  shift, and go to state 128
+
+
+state 86
+
+   99 img_decl: IMG ID . '<' NUM_LIT ',' NUM_LIT '>' new_lines
+  100         | IMG ID . '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+  101         | IMG ID . '<' PATH '>' new_lines
+  102         | IMG ID . '=' expr_pred new_lines
+
+    '<'  shift, and go to state 129
+    '='  shift, and go to state 130
+
+
+state 87
+
+  103 gray_img_decl: GRAY_IMG ID . '<' NUM_LIT ',' NUM_LIT '>' new_lines
+  104              | GRAY_IMG ID . '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+  105              | GRAY_IMG ID . '<' PATH '>' new_lines
+  106              | GRAY_IMG ID . '=' expr_pred new_lines
+
+    '<'  shift, and go to state 131
+    '='  shift, and go to state 132
+
+
+state 88
+
+  107 vid_decl: VID ID . '<' NUM_LIT ',' NUM_LIT '>' new_lines
+  108         | VID ID . '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+
+    '<'  shift, and go to state 133
+
+
+state 89
+
+  109 gray_vid_decl: GRAY_VID ID . '<' NUM_LIT ',' NUM_LIT '>' new_lines
+  110              | GRAY_VID ID . '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+
+    '<'  shift, and go to state 134
+
+
+state 90
+
+  111 num_decl: NUM ID .
+  112         | NUM ID . '=' expr_pred
+
+    '='  shift, and go to state 135
+
+    $default  reduce using rule 111 (num_decl)
+
+
+state 91
+
+  156 array_element: '[' . expr_pred ']'
+  157              | '[' . expr_pred ',' expr_pred ']'
+  158              | '[' . expr_pred ',' expr_pred ',' expr_pred ']'
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 136
+
+
+state 92
+
+  117 num_array_decl: NUM array_element . ID new_lines
+  118               | NUM array_element . ID '=' ID new_lines
+  119               | NUM array_element . ID '=' brak_pred new_lines
+
+    ID  shift, and go to state 137
+
+
+state 93
+
+  115 real_decl: REAL ID .
+  116          | REAL ID . '=' expr_pred
+
+    '='  shift, and go to state 138
+
+    $default  reduce using rule 115 (real_decl)
+
+
+state 94
+
+  120 real_array_decl: REAL array_element . ID new_lines
+  121                | REAL array_element . ID '=' ID new_lines
+  122                | REAL array_element . ID '=' brak_pred new_lines
+
+    ID  shift, and go to state 139
+
+
+state 95
+
+  113 bool_decl: BOOL ID .
+  114          | BOOL ID . '=' expr_pred
+
+    '='  shift, and go to state 140
+
+    $default  reduce using rule 113 (bool_decl)
+
+
+state 96
+
+  136 in_built_call_stmt: ID DOT_OP . ID '(' arg_list ')'
+  137                   | ID DOT_OP . ID '(' ')'
+
+    ID  shift, and go to state 141
+
+
+state 97
+
+   57 unary_stmt: ID UNARY_OP . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 142
+
+
+state 98
+
+  132 call_stmt: ID '(' . arg_list ')'
+  133          | ID '(' . ')'
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+    ')'       shift, and go to state 143
+
+    call_stmt           go to state 82
+    arg_list            go to state 144
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 145
+
+
+state 99
+
+  154 expr_stmt: ID '=' . expr_pred new_lines
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 146
+
+
+state 100
+
+  155 expr_stmt: ID array_element . '=' expr_pred new_lines
+
+    '='  shift, and go to state 147
+
+
+state 101
+
+   55 stmt: '{' '}' . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 148
+
+
+state 102
+
+    5 new_lines: new_lines . NEWLINE
+   52 stmt: '{' new_lines . stmt_list '}' new_lines
+   54     | '{' new_lines . '}' new_lines
+
+    IF        shift, and go to state 36
+    RETURN    shift, and go to state 37
+    LOOP      shift, and go to state 38
+    IMG       shift, and go to state 39
+    GRAY_IMG  shift, and go to state 40
+    VID       shift, and go to state 41
+    GRAY_VID  shift, and go to state 42
+    NUM       shift, and go to state 43
+    REAL      shift, and go to state 44
+    BOOL      shift, and go to state 45
+    NEWLINE   shift, and go to state 10
+    ID        shift, and go to state 46
+    '{'       shift, and go to state 47
+    '}'       shift, and go to state 149
+
+    stmt_list           go to state 150
+    stmt                go to state 50
+    unary_stmt          go to state 51
+    loop_stmt           go to state 52
+    if_block            go to state 53
+    conditional_stmt    go to state 54
+    return_stmt         go to state 55
+    decl_stmt           go to state 56
+    img_decl            go to state 57
+    gray_img_decl       go to state 58
+    vid_decl            go to state 59
+    gray_vid_decl       go to state 60
+    num_decl            go to state 61
+    bool_decl           go to state 62
+    real_decl           go to state 63
+    num_array_decl      go to state 64
+    real_array_decl     go to state 65
+    call_stmt           go to state 66
+    in_built_call_stmt  go to state 67
+    expr_stmt           go to state 68
+
+
+state 103
+
+   26 stmt_list: stmt_list . stmt
+   53 stmt: '{' stmt_list . '}' new_lines
+
+    IF        shift, and go to state 36
+    RETURN    shift, and go to state 37
+    LOOP      shift, and go to state 38
+    IMG       shift, and go to state 39
+    GRAY_IMG  shift, and go to state 40
+    VID       shift, and go to state 41
+    GRAY_VID  shift, and go to state 42
+    NUM       shift, and go to state 43
+    REAL      shift, and go to state 44
+    BOOL      shift, and go to state 45
+    ID        shift, and go to state 46
+    '{'       shift, and go to state 47
+    '}'       shift, and go to state 151
+
+    stmt                go to state 106
+    unary_stmt          go to state 51
+    loop_stmt           go to state 52
+    if_block            go to state 53
+    conditional_stmt    go to state 54
+    return_stmt         go to state 55
+    decl_stmt           go to state 56
+    img_decl            go to state 57
+    gray_img_decl       go to state 58
+    vid_decl            go to state 59
+    gray_vid_decl       go to state 60
+    num_decl            go to state 61
+    bool_decl           go to state 62
+    real_decl           go to state 63
+    num_array_decl      go to state 64
+    real_array_decl     go to state 65
+    call_stmt           go to state 66
+    in_built_call_stmt  go to state 67
+    expr_stmt           go to state 68
+
+
+state 104
+
+    4 func_body: '{' new_lines stmt_list . '}'
+   26 stmt_list: stmt_list . stmt
+
+    IF        shift, and go to state 36
+    RETURN    shift, and go to state 37
+    LOOP      shift, and go to state 38
+    IMG       shift, and go to state 39
+    GRAY_IMG  shift, and go to state 40
+    VID       shift, and go to state 41
+    GRAY_VID  shift, and go to state 42
+    NUM       shift, and go to state 43
+    REAL      shift, and go to state 44
+    BOOL      shift, and go to state 45
+    ID        shift, and go to state 46
+    '{'       shift, and go to state 47
+    '}'       shift, and go to state 152
+
+    stmt                go to state 106
+    unary_stmt          go to state 51
+    loop_stmt           go to state 52
+    if_block            go to state 53
+    conditional_stmt    go to state 54
+    return_stmt         go to state 55
+    decl_stmt           go to state 56
+    img_decl            go to state 57
+    gray_img_decl       go to state 58
+    vid_decl            go to state 59
+    gray_vid_decl       go to state 60
+    num_decl            go to state 61
+    bool_decl           go to state 62
+    real_decl           go to state 63
+    num_array_decl      go to state 64
+    real_array_decl     go to state 65
+    call_stmt           go to state 66
+    in_built_call_stmt  go to state 67
+    expr_stmt           go to state 68
+
+
+state 105
+
+    3 func_body: '{' stmt_list '}' .
+
+    $default  reduce using rule 3 (func_body)
+
+
+state 106
+
+   26 stmt_list: stmt_list stmt .
+
+    $default  reduce using rule 26 (stmt_list)
+
+
+state 107
+
+    5 new_lines: new_lines . NEWLINE
+   51 stmt: loop_stmt new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 51 (stmt)
+
+
+state 108
+
+    5 new_lines: new_lines . NEWLINE
+    8 optional_new_lines: new_lines .
+   70 conditional_stmt: if_block new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    ELSE_IF   reduce using rule 8 (optional_new_lines)
+    ARROW     reduce using rule 8 (optional_new_lines)
+    $default  reduce using rule 70 (conditional_stmt)
+
+
+state 109
+
+   69 conditional_stmt: if_block optional_new_lines . else_if_block_list optional_new_lines else @1 new_lines
+   71                 | if_block optional_new_lines . else_if_block_list new_lines
+   73                 | if_block optional_new_lines . else @2 new_lines
+
+    ELSE_IF  shift, and go to state 153
+    ARROW    shift, and go to state 154
+
+    else                go to state 155
+    else_if_block_list  go to state 156
+
+
+state 110
+
+    5 new_lines: new_lines . NEWLINE
+   94 decl_stmt: num_decl new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 94 (decl_stmt)
+
+
+state 111
+
+    5 new_lines: new_lines . NEWLINE
+   95 decl_stmt: bool_decl new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 95 (decl_stmt)
+
+
+state 112
+
+    5 new_lines: new_lines . NEWLINE
+   96 decl_stmt: real_decl new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 96 (decl_stmt)
+
+
+state 113
+
+    5 new_lines: new_lines . NEWLINE
+   47 stmt: call_stmt new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 47 (stmt)
+
+
+state 114
+
+  138 in_built_call_stmt: in_built_call_stmt DOT_OP . ID '(' arg_list ')'
+  139                   | in_built_call_stmt DOT_OP . ID '(' ')'
+
+    ID  shift, and go to state 157
+
+
+state 115
+
+    5 new_lines: new_lines . NEWLINE
+   48 stmt: in_built_call_stmt new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 48 (stmt)
+
+
+state 116
+
+   11 function: INK ID '(' par_list ')' ARROW RET_TYPE new_lines func_body .
+
+    $default  reduce using rule 11 (function)
+
+
+state 117
+
+   64 if_block: IF optional_new_lines '(' . expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 158
+
+
+state 118
+
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  147          | NEG_OP expr_pred .
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+
+    $default  reduce using rule 147 (expr_pred)
+
+
+state 119
+
+   89 return_stmt: RETURN VOID empty_return . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 159
+
+
+state 120
+
+  150 expr_pred: ID array_element .
+
+    $default  reduce using rule 150 (expr_pred)
+
+
+state 121
+
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+  153          | INV_OP expr_pred .
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+
+    $default  reduce using rule 153 (expr_pred)
+
+
+state 122
+
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  146          | '(' expr_pred . ')'
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+    ')'        shift, and go to state 160
+
+
+state 123
+
+  145 expr_pred: expr_pred LOG_OP . expr_pred
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 161
+
+
+state 124
+
+  144 expr_pred: expr_pred REL_OP . expr_pred
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 162
+
+
+state 125
+
+  151 expr_pred: expr_pred BINARY_OP . expr_pred
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 163
+
+
+state 126
+
+  152 expr_pred: expr_pred UNARY_OP .
+
+    $default  reduce using rule 152 (expr_pred)
+
+
+state 127
+
+   88 return_stmt: RETURN expr_pred empty_return . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 164
+
+
+state 128
+
+   62 loop_stmt: LOOP optional_new_lines '(' . optional_expr_pred ')' optional_new_lines loop_body
+   63          | LOOP optional_new_lines '(' . optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' optional_new_lines loop_body
+
+    NEG_OP    shift, and go to state 74
+    NUM       shift, and go to state 165
+    REAL      shift, and go to state 166
+    BOOL      shift, and go to state 45
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    ';'       reduce using rule 61 (optional_num_data_decl)
+    $default  reduce using rule 59 (optional_expr_pred)
+
+    optional_expr_pred      go to state 167
+    optional_num_data_decl  go to state 168
+    numeric_data_decl       go to state 169
+    num_decl                go to state 170
+    bool_decl               go to state 171
+    real_decl               go to state 172
+    call_stmt               go to state 82
+    in_built_call_stmt      go to state 83
+    expr_pred               go to state 173
+
+
+state 129
+
+   99 img_decl: IMG ID '<' . NUM_LIT ',' NUM_LIT '>' new_lines
+  100         | IMG ID '<' . NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+  101         | IMG ID '<' . PATH '>' new_lines
+
+    NUM_LIT  shift, and go to state 174
+    PATH     shift, and go to state 175
+
+
+state 130
+
+  102 img_decl: IMG ID '=' . expr_pred new_lines
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 176
+
+
+state 131
+
+  103 gray_img_decl: GRAY_IMG ID '<' . NUM_LIT ',' NUM_LIT '>' new_lines
+  104              | GRAY_IMG ID '<' . NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+  105              | GRAY_IMG ID '<' . PATH '>' new_lines
+
+    NUM_LIT  shift, and go to state 177
+    PATH     shift, and go to state 178
+
+
+state 132
+
+  106 gray_img_decl: GRAY_IMG ID '=' . expr_pred new_lines
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 179
+
+
+state 133
+
+  107 vid_decl: VID ID '<' . NUM_LIT ',' NUM_LIT '>' new_lines
+  108         | VID ID '<' . NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+
+    NUM_LIT  shift, and go to state 180
+
+
+state 134
+
+  109 gray_vid_decl: GRAY_VID ID '<' . NUM_LIT ',' NUM_LIT '>' new_lines
+  110              | GRAY_VID ID '<' . NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+
+    NUM_LIT  shift, and go to state 181
+
+
+state 135
+
+  112 num_decl: NUM ID '=' . expr_pred
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 182
+
+
+state 136
+
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+  156 array_element: '[' expr_pred . ']'
+  157              | '[' expr_pred . ',' expr_pred ']'
+  158              | '[' expr_pred . ',' expr_pred ',' expr_pred ']'
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+    ','        shift, and go to state 183
+    ']'        shift, and go to state 184
+
+
+state 137
+
+  117 num_array_decl: NUM array_element ID . new_lines
+  118               | NUM array_element ID . '=' ID new_lines
+  119               | NUM array_element ID . '=' brak_pred new_lines
+
+    NEWLINE  shift, and go to state 6
+    '='      shift, and go to state 185
+
+    new_lines  go to state 186
+
+
+state 138
+
+  116 real_decl: REAL ID '=' . expr_pred
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 187
+
+
+state 139
+
+  120 real_array_decl: REAL array_element ID . new_lines
+  121                | REAL array_element ID . '=' ID new_lines
+  122                | REAL array_element ID . '=' brak_pred new_lines
+
+    NEWLINE  shift, and go to state 6
+    '='      shift, and go to state 188
+
+    new_lines  go to state 189
+
+
+state 140
+
+  114 bool_decl: BOOL ID '=' . expr_pred
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 190
+
+
+state 141
+
+  136 in_built_call_stmt: ID DOT_OP ID . '(' arg_list ')'
+  137                   | ID DOT_OP ID . '(' ')'
+
+    '('  shift, and go to state 191
+
+
+state 142
+
+    5 new_lines: new_lines . NEWLINE
+   57 unary_stmt: ID UNARY_OP new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 57 (unary_stmt)
+
+
+state 143
+
+  133 call_stmt: ID '(' ')' .
+
+    $default  reduce using rule 133 (call_stmt)
+
+
+state 144
+
+  132 call_stmt: ID '(' arg_list . ')'
+  134 arg_list: arg_list . ',' expr_pred
+
+    ')'  shift, and go to state 192
+    ','  shift, and go to state 193
+
+
+state 145
+
+  135 arg_list: expr_pred .
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+
+    $default  reduce using rule 135 (arg_list)
+
+
+state 146
+
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+  154 expr_stmt: ID '=' expr_pred . new_lines
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    NEWLINE    shift, and go to state 6
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+
+    new_lines  go to state 194
+
+
+state 147
+
+  155 expr_stmt: ID array_element '=' . expr_pred new_lines
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 195
+
+
+state 148
+
+    5 new_lines: new_lines . NEWLINE
+   55 stmt: '{' '}' new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 55 (stmt)
+
+
+state 149
+
+   54 stmt: '{' new_lines '}' . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 196
+
+
+state 150
+
+   26 stmt_list: stmt_list . stmt
+   52 stmt: '{' new_lines stmt_list . '}' new_lines
+
+    IF        shift, and go to state 36
+    RETURN    shift, and go to state 37
+    LOOP      shift, and go to state 38
+    IMG       shift, and go to state 39
+    GRAY_IMG  shift, and go to state 40
+    VID       shift, and go to state 41
+    GRAY_VID  shift, and go to state 42
+    NUM       shift, and go to state 43
+    REAL      shift, and go to state 44
+    BOOL      shift, and go to state 45
+    ID        shift, and go to state 46
+    '{'       shift, and go to state 47
+    '}'       shift, and go to state 197
+
+    stmt                go to state 106
+    unary_stmt          go to state 51
+    loop_stmt           go to state 52
+    if_block            go to state 53
+    conditional_stmt    go to state 54
+    return_stmt         go to state 55
+    decl_stmt           go to state 56
+    img_decl            go to state 57
+    gray_img_decl       go to state 58
+    vid_decl            go to state 59
+    gray_vid_decl       go to state 60
+    num_decl            go to state 61
+    bool_decl           go to state 62
+    real_decl           go to state 63
+    num_array_decl      go to state 64
+    real_array_decl     go to state 65
+    call_stmt           go to state 66
+    in_built_call_stmt  go to state 67
+    expr_stmt           go to state 68
+
+
+state 151
+
+   53 stmt: '{' stmt_list '}' . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 198
+
+
+state 152
+
+    4 func_body: '{' new_lines stmt_list '}' .
+
+    $default  reduce using rule 4 (func_body)
+
+
+state 153
+
+   67 else_if_block_list: ELSE_IF . '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+
+    '('  shift, and go to state 199
+
+
+state 154
+
+   65 else: ARROW . optional_new_lines func_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 200
+
+
+state 155
+
+   73 conditional_stmt: if_block optional_new_lines else . @2 new_lines
+
+    $default  reduce using rule 72 (@2)
+
+    @2  go to state 201
+
+
+state 156
+
+   66 else_if_block_list: else_if_block_list . optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+   69 conditional_stmt: if_block optional_new_lines else_if_block_list . optional_new_lines else @1 new_lines
+   71                 | if_block optional_new_lines else_if_block_list . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 202
+    optional_new_lines  go to state 203
+
+
+state 157
+
+  138 in_built_call_stmt: in_built_call_stmt DOT_OP ID . '(' arg_list ')'
+  139                   | in_built_call_stmt DOT_OP ID . '(' ')'
+
+    '('  shift, and go to state 204
+
+
+state 158
+
+   64 if_block: IF optional_new_lines '(' expr_pred . ')' optional_new_lines ARROW optional_new_lines func_body
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+    ')'        shift, and go to state 205
+
+
+state 159
+
+    5 new_lines: new_lines . NEWLINE
+   89 return_stmt: RETURN VOID empty_return new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 89 (return_stmt)
+
+
+state 160
+
+  146 expr_pred: '(' expr_pred ')' .
+
+    $default  reduce using rule 146 (expr_pred)
+
+
+state 161
+
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  145          | expr_pred LOG_OP expr_pred .
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    REL_OP  shift, and go to state 124
+
+    $default  reduce using rule 145 (expr_pred)
+
+
+state 162
+
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  144          | expr_pred REL_OP expr_pred .
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    $default  reduce using rule 144 (expr_pred)
+
+
+state 163
+
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  151          | expr_pred BINARY_OP expr_pred .
+  152          | expr_pred . UNARY_OP
+
+    LOG_OP  shift, and go to state 123
+    REL_OP  shift, and go to state 124
+
+    $default  reduce using rule 151 (expr_pred)
+
+
+state 164
+
+    5 new_lines: new_lines . NEWLINE
+   88 return_stmt: RETURN expr_pred empty_return new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 88 (return_stmt)
+
+
+state 165
+
+  111 num_decl: NUM . ID
+  112         | NUM . ID '=' expr_pred
+
+    ID  shift, and go to state 90
+
+
+state 166
+
+  115 real_decl: REAL . ID
+  116          | REAL . ID '=' expr_pred
+
+    ID  shift, and go to state 93
+
+
+state 167
+
+   62 loop_stmt: LOOP optional_new_lines '(' optional_expr_pred . ')' optional_new_lines loop_body
+
+    ')'  shift, and go to state 206
+
+
+state 168
+
+   63 loop_stmt: LOOP optional_new_lines '(' optional_num_data_decl . ';' optional_expr_pred ';' optional_expr_pred ')' optional_new_lines loop_body
+
+    ';'  shift, and go to state 207
+
+
+state 169
+
+   60 optional_num_data_decl: numeric_data_decl .
+
+    $default  reduce using rule 60 (optional_num_data_decl)
+
+
+state 170
+
+   84 numeric_data_decl: num_decl .
+
+    $default  reduce using rule 84 (numeric_data_decl)
+
+
+state 171
+
+   86 numeric_data_decl: bool_decl .
+
+    $default  reduce using rule 86 (numeric_data_decl)
+
+
+state 172
+
+   85 numeric_data_decl: real_decl .
+
+    $default  reduce using rule 85 (numeric_data_decl)
+
+
+state 173
+
+   58 optional_expr_pred: expr_pred .
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+
+    $default  reduce using rule 58 (optional_expr_pred)
+
+
+state 174
+
+   99 img_decl: IMG ID '<' NUM_LIT . ',' NUM_LIT '>' new_lines
+  100         | IMG ID '<' NUM_LIT . ',' NUM_LIT ',' NUM_LIT '>' new_lines
+
+    ','  shift, and go to state 208
+
+
+state 175
+
+  101 img_decl: IMG ID '<' PATH . '>' new_lines
+
+    '>'  shift, and go to state 209
+
+
+state 176
+
+  102 img_decl: IMG ID '=' expr_pred . new_lines
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    NEWLINE    shift, and go to state 6
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+
+    new_lines  go to state 210
+
+
+state 177
+
+  103 gray_img_decl: GRAY_IMG ID '<' NUM_LIT . ',' NUM_LIT '>' new_lines
+  104              | GRAY_IMG ID '<' NUM_LIT . ',' NUM_LIT ',' NUM_LIT '>' new_lines
+
+    ','  shift, and go to state 211
+
+
+state 178
+
+  105 gray_img_decl: GRAY_IMG ID '<' PATH . '>' new_lines
+
+    '>'  shift, and go to state 212
+
+
+state 179
+
+  106 gray_img_decl: GRAY_IMG ID '=' expr_pred . new_lines
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    NEWLINE    shift, and go to state 6
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+
+    new_lines  go to state 213
+
+
+state 180
+
+  107 vid_decl: VID ID '<' NUM_LIT . ',' NUM_LIT '>' new_lines
+  108         | VID ID '<' NUM_LIT . ',' NUM_LIT ',' NUM_LIT '>' new_lines
+
+    ','  shift, and go to state 214
+
+
+state 181
+
+  109 gray_vid_decl: GRAY_VID ID '<' NUM_LIT . ',' NUM_LIT '>' new_lines
+  110              | GRAY_VID ID '<' NUM_LIT . ',' NUM_LIT ',' NUM_LIT '>' new_lines
+
+    ','  shift, and go to state 215
+
+
+state 182
+
+  112 num_decl: NUM ID '=' expr_pred .
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+
+    $default  reduce using rule 112 (num_decl)
+
+
+state 183
+
+  157 array_element: '[' expr_pred ',' . expr_pred ']'
+  158              | '[' expr_pred ',' . expr_pred ',' expr_pred ']'
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 216
+
+
+state 184
+
+  156 array_element: '[' expr_pred ']' .
+
+    $default  reduce using rule 156 (array_element)
+
+
+state 185
+
+  118 num_array_decl: NUM array_element ID '=' . ID new_lines
+  119               | NUM array_element ID '=' . brak_pred new_lines
+
+    ID   shift, and go to state 217
+    '{'  shift, and go to state 218
+
+    brak_pred  go to state 219
+
+
+state 186
+
+    5 new_lines: new_lines . NEWLINE
+  117 num_array_decl: NUM array_element ID new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 117 (num_array_decl)
+
+
+state 187
+
+  116 real_decl: REAL ID '=' expr_pred .
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+
+    $default  reduce using rule 116 (real_decl)
+
+
+state 188
+
+  121 real_array_decl: REAL array_element ID '=' . ID new_lines
+  122                | REAL array_element ID '=' . brak_pred new_lines
+
+    ID   shift, and go to state 220
+    '{'  shift, and go to state 218
+
+    brak_pred  go to state 221
+
+
+state 189
+
+    5 new_lines: new_lines . NEWLINE
+  120 real_array_decl: REAL array_element ID new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 120 (real_array_decl)
+
+
+state 190
+
+  114 bool_decl: BOOL ID '=' expr_pred .
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+
+    $default  reduce using rule 114 (bool_decl)
+
+
+state 191
+
+  136 in_built_call_stmt: ID DOT_OP ID '(' . arg_list ')'
+  137                   | ID DOT_OP ID '(' . ')'
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+    ')'       shift, and go to state 222
+
+    call_stmt           go to state 82
+    arg_list            go to state 223
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 145
+
+
+state 192
+
+  132 call_stmt: ID '(' arg_list ')' .
+
+    $default  reduce using rule 132 (call_stmt)
+
+
+state 193
+
+  134 arg_list: arg_list ',' . expr_pred
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 224
+
+
+state 194
+
+    5 new_lines: new_lines . NEWLINE
+  154 expr_stmt: ID '=' expr_pred new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 154 (expr_stmt)
+
+
+state 195
+
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+  155 expr_stmt: ID array_element '=' expr_pred . new_lines
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    NEWLINE    shift, and go to state 6
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+
+    new_lines  go to state 225
+
+
+state 196
+
+    5 new_lines: new_lines . NEWLINE
+   54 stmt: '{' new_lines '}' new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 54 (stmt)
+
+
+state 197
+
+   52 stmt: '{' new_lines stmt_list '}' . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 226
+
+
+state 198
+
+    5 new_lines: new_lines . NEWLINE
+   53 stmt: '{' stmt_list '}' new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 53 (stmt)
+
+
+state 199
+
+   67 else_if_block_list: ELSE_IF '(' . expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 227
+
+
+state 200
+
+   65 else: ARROW optional_new_lines . func_body
+
+    '{'  shift, and go to state 32
+
+    func_body  go to state 228
+
+
+state 201
+
+   73 conditional_stmt: if_block optional_new_lines else @2 . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 229
+
+
+state 202
+
+    5 new_lines: new_lines . NEWLINE
+    8 optional_new_lines: new_lines .
+   71 conditional_stmt: if_block optional_new_lines else_if_block_list new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    ELSE_IF   reduce using rule 8 (optional_new_lines)
+    ARROW     reduce using rule 8 (optional_new_lines)
+    $default  reduce using rule 71 (conditional_stmt)
+
+
+state 203
+
+   66 else_if_block_list: else_if_block_list optional_new_lines . ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+   69 conditional_stmt: if_block optional_new_lines else_if_block_list optional_new_lines . else @1 new_lines
+
+    ELSE_IF  shift, and go to state 230
+    ARROW    shift, and go to state 154
+
+    else  go to state 231
+
+
+state 204
+
+  138 in_built_call_stmt: in_built_call_stmt DOT_OP ID '(' . arg_list ')'
+  139                   | in_built_call_stmt DOT_OP ID '(' . ')'
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+    ')'       shift, and go to state 232
+
+    call_stmt           go to state 82
+    arg_list            go to state 233
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 145
+
+
+state 205
+
+   64 if_block: IF optional_new_lines '(' expr_pred ')' . optional_new_lines ARROW optional_new_lines func_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 234
+
+
+state 206
+
+   62 loop_stmt: LOOP optional_new_lines '(' optional_expr_pred ')' . optional_new_lines loop_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 235
+
+
+state 207
+
+   63 loop_stmt: LOOP optional_new_lines '(' optional_num_data_decl ';' . optional_expr_pred ';' optional_expr_pred ')' optional_new_lines loop_body
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    $default  reduce using rule 59 (optional_expr_pred)
+
+    optional_expr_pred  go to state 236
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 173
+
+
+state 208
+
+   99 img_decl: IMG ID '<' NUM_LIT ',' . NUM_LIT '>' new_lines
+  100         | IMG ID '<' NUM_LIT ',' . NUM_LIT ',' NUM_LIT '>' new_lines
+
+    NUM_LIT  shift, and go to state 237
+
+
+state 209
+
+  101 img_decl: IMG ID '<' PATH '>' . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 238
+
+
+state 210
+
+    5 new_lines: new_lines . NEWLINE
+  102 img_decl: IMG ID '=' expr_pred new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 102 (img_decl)
+
+
+state 211
+
+  103 gray_img_decl: GRAY_IMG ID '<' NUM_LIT ',' . NUM_LIT '>' new_lines
+  104              | GRAY_IMG ID '<' NUM_LIT ',' . NUM_LIT ',' NUM_LIT '>' new_lines
+
+    NUM_LIT  shift, and go to state 239
+
+
+state 212
+
+  105 gray_img_decl: GRAY_IMG ID '<' PATH '>' . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 240
+
+
+state 213
+
+    5 new_lines: new_lines . NEWLINE
+  106 gray_img_decl: GRAY_IMG ID '=' expr_pred new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 106 (gray_img_decl)
+
+
+state 214
+
+  107 vid_decl: VID ID '<' NUM_LIT ',' . NUM_LIT '>' new_lines
+  108         | VID ID '<' NUM_LIT ',' . NUM_LIT ',' NUM_LIT '>' new_lines
+
+    NUM_LIT  shift, and go to state 241
+
+
+state 215
+
+  109 gray_vid_decl: GRAY_VID ID '<' NUM_LIT ',' . NUM_LIT '>' new_lines
+  110              | GRAY_VID ID '<' NUM_LIT ',' . NUM_LIT ',' NUM_LIT '>' new_lines
+
+    NUM_LIT  shift, and go to state 242
+
+
+state 216
+
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+  157 array_element: '[' expr_pred ',' expr_pred . ']'
+  158              | '[' expr_pred ',' expr_pred . ',' expr_pred ']'
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+    ','        shift, and go to state 243
+    ']'        shift, and go to state 244
+
+
+state 217
+
+  118 num_array_decl: NUM array_element ID '=' ID . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 245
+
+
+state 218
+
+  123 brak_pred: '{' . brak_pred_list '}'
+  124          | '{' . lit_list '}'
+
+    BOOL_LIT  shift, and go to state 246
+    NUM_LIT   shift, and go to state 247
+    REAL_LIT  shift, and go to state 248
+    '{'       shift, and go to state 218
+
+    brak_pred       go to state 249
+    brak_pred_list  go to state 250
+    lit_list        go to state 251
+    lit             go to state 252
+
+
+state 219
+
+  119 num_array_decl: NUM array_element ID '=' brak_pred . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 253
+
+
+state 220
+
+  121 real_array_decl: REAL array_element ID '=' ID . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 254
+
+
+state 221
+
+  122 real_array_decl: REAL array_element ID '=' brak_pred . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 255
+
+
+state 222
+
+  137 in_built_call_stmt: ID DOT_OP ID '(' ')' .
+
+    $default  reduce using rule 137 (in_built_call_stmt)
+
+
+state 223
+
+  134 arg_list: arg_list . ',' expr_pred
+  136 in_built_call_stmt: ID DOT_OP ID '(' arg_list . ')'
+
+    ')'  shift, and go to state 256
+    ','  shift, and go to state 193
+
+
+state 224
+
+  134 arg_list: arg_list ',' expr_pred .
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+
+    $default  reduce using rule 134 (arg_list)
+
+
+state 225
+
+    5 new_lines: new_lines . NEWLINE
+  155 expr_stmt: ID array_element '=' expr_pred new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 155 (expr_stmt)
+
+
+state 226
+
+    5 new_lines: new_lines . NEWLINE
+   52 stmt: '{' new_lines stmt_list '}' new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 52 (stmt)
+
+
+state 227
+
+   67 else_if_block_list: ELSE_IF '(' expr_pred . ')' optional_new_lines ARROW optional_new_lines func_body
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+    ')'        shift, and go to state 257
+
+
+state 228
+
+   65 else: ARROW optional_new_lines func_body .
+
+    $default  reduce using rule 65 (else)
+
+
+state 229
+
+    5 new_lines: new_lines . NEWLINE
+   73 conditional_stmt: if_block optional_new_lines else @2 new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 73 (conditional_stmt)
+
+
+state 230
+
+   66 else_if_block_list: else_if_block_list optional_new_lines ELSE_IF . '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+
+    '('  shift, and go to state 258
+
+
+state 231
+
+   69 conditional_stmt: if_block optional_new_lines else_if_block_list optional_new_lines else . @1 new_lines
+
+    $default  reduce using rule 68 (@1)
+
+    @1  go to state 259
+
+
+state 232
+
+  139 in_built_call_stmt: in_built_call_stmt DOT_OP ID '(' ')' .
+
+    $default  reduce using rule 139 (in_built_call_stmt)
+
+
+state 233
+
+  134 arg_list: arg_list . ',' expr_pred
+  138 in_built_call_stmt: in_built_call_stmt DOT_OP ID '(' arg_list . ')'
+
+    ')'  shift, and go to state 260
+    ','  shift, and go to state 193
+
+
+state 234
+
+   64 if_block: IF optional_new_lines '(' expr_pred ')' optional_new_lines . ARROW optional_new_lines func_body
+
+    ARROW  shift, and go to state 261
+
+
+state 235
+
+   62 loop_stmt: LOOP optional_new_lines '(' optional_expr_pred ')' optional_new_lines . loop_body
+
+    '{'  shift, and go to state 262
+
+    loop_body  go to state 263
+
+
+state 236
+
+   63 loop_stmt: LOOP optional_new_lines '(' optional_num_data_decl ';' optional_expr_pred . ';' optional_expr_pred ')' optional_new_lines loop_body
+
+    ';'  shift, and go to state 264
+
+
+state 237
+
+   99 img_decl: IMG ID '<' NUM_LIT ',' NUM_LIT . '>' new_lines
+  100         | IMG ID '<' NUM_LIT ',' NUM_LIT . ',' NUM_LIT '>' new_lines
+
+    ','  shift, and go to state 265
+    '>'  shift, and go to state 266
+
+
+state 238
+
+    5 new_lines: new_lines . NEWLINE
+  101 img_decl: IMG ID '<' PATH '>' new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 101 (img_decl)
+
+
+state 239
+
+  103 gray_img_decl: GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT . '>' new_lines
+  104              | GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT . ',' NUM_LIT '>' new_lines
+
+    ','  shift, and go to state 267
+    '>'  shift, and go to state 268
+
+
+state 240
+
+    5 new_lines: new_lines . NEWLINE
+  105 gray_img_decl: GRAY_IMG ID '<' PATH '>' new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 105 (gray_img_decl)
+
+
+state 241
+
+  107 vid_decl: VID ID '<' NUM_LIT ',' NUM_LIT . '>' new_lines
+  108         | VID ID '<' NUM_LIT ',' NUM_LIT . ',' NUM_LIT '>' new_lines
+
+    ','  shift, and go to state 269
+    '>'  shift, and go to state 270
+
+
+state 242
+
+  109 gray_vid_decl: GRAY_VID ID '<' NUM_LIT ',' NUM_LIT . '>' new_lines
+  110              | GRAY_VID ID '<' NUM_LIT ',' NUM_LIT . ',' NUM_LIT '>' new_lines
+
+    ','  shift, and go to state 271
+    '>'  shift, and go to state 272
+
+
+state 243
+
+  158 array_element: '[' expr_pred ',' expr_pred ',' . expr_pred ']'
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 273
+
+
+state 244
+
+  157 array_element: '[' expr_pred ',' expr_pred ']' .
+
+    $default  reduce using rule 157 (array_element)
+
+
+state 245
+
+    5 new_lines: new_lines . NEWLINE
+  118 num_array_decl: NUM array_element ID '=' ID new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 118 (num_array_decl)
+
+
+state 246
+
+  131 lit: BOOL_LIT .
+
+    $default  reduce using rule 131 (lit)
+
+
+state 247
+
+  129 lit: NUM_LIT .
+
+    $default  reduce using rule 129 (lit)
+
+
+state 248
+
+  130 lit: REAL_LIT .
+
+    $default  reduce using rule 130 (lit)
+
+
+state 249
+
+  126 brak_pred_list: brak_pred .
+
+    $default  reduce using rule 126 (brak_pred_list)
+
+
+state 250
+
+  123 brak_pred: '{' brak_pred_list . '}'
+  125 brak_pred_list: brak_pred_list . ',' brak_pred
+
+    '}'  shift, and go to state 274
+    ','  shift, and go to state 275
+
+
+state 251
+
+  124 brak_pred: '{' lit_list . '}'
+  127 lit_list: lit_list . ',' lit
+
+    '}'  shift, and go to state 276
+    ','  shift, and go to state 277
+
+
+state 252
+
+  128 lit_list: lit .
+
+    $default  reduce using rule 128 (lit_list)
+
+
+state 253
+
+    5 new_lines: new_lines . NEWLINE
+  119 num_array_decl: NUM array_element ID '=' brak_pred new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 119 (num_array_decl)
+
+
+state 254
+
+    5 new_lines: new_lines . NEWLINE
+  121 real_array_decl: REAL array_element ID '=' ID new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 121 (real_array_decl)
+
+
+state 255
+
+    5 new_lines: new_lines . NEWLINE
+  122 real_array_decl: REAL array_element ID '=' brak_pred new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 122 (real_array_decl)
+
+
+state 256
+
+  136 in_built_call_stmt: ID DOT_OP ID '(' arg_list ')' .
+
+    $default  reduce using rule 136 (in_built_call_stmt)
+
+
+state 257
+
+   67 else_if_block_list: ELSE_IF '(' expr_pred ')' . optional_new_lines ARROW optional_new_lines func_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 278
+
+
+state 258
+
+   66 else_if_block_list: else_if_block_list optional_new_lines ELSE_IF '(' . expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 279
+
+
+state 259
+
+   69 conditional_stmt: if_block optional_new_lines else_if_block_list optional_new_lines else @1 . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 280
+
+
+state 260
+
+  138 in_built_call_stmt: in_built_call_stmt DOT_OP ID '(' arg_list ')' .
+
+    $default  reduce using rule 138 (in_built_call_stmt)
+
+
+state 261
+
+   64 if_block: IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW . optional_new_lines func_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 281
+
+
+state 262
+
+   43 loop_body: '{' . loop_stmt_list '}'
+   44          | '{' . new_lines loop_stmt_list '}'
+
+    IF        shift, and go to state 282
+    RETURN    shift, and go to state 37
+    CONTINUE  shift, and go to state 283
+    BREAK     shift, and go to state 284
+    LOOP      shift, and go to state 38
+    IMG       shift, and go to state 39
+    GRAY_IMG  shift, and go to state 40
+    VID       shift, and go to state 41
+    GRAY_VID  shift, and go to state 42
+    NUM       shift, and go to state 43
+    REAL      shift, and go to state 44
+    BOOL      shift, and go to state 45
+    NEWLINE   shift, and go to state 6
+    ID        shift, and go to state 46
+    '{'       shift, and go to state 285
+
+    new_lines              go to state 286
+    l_stmt                 go to state 287
+    loop_stmt_list         go to state 288
+    unary_stmt             go to state 289
+    loop_stmt              go to state 290
+    loop_if_block          go to state 291
+    loop_conditional_stmt  go to state 292
+    return_stmt            go to state 293
+    decl_stmt              go to state 294
+    img_decl               go to state 57
+    gray_img_decl          go to state 58
+    vid_decl               go to state 59
+    gray_vid_decl          go to state 60
+    num_decl               go to state 61
+    bool_decl              go to state 62
+    real_decl              go to state 63
+    num_array_decl         go to state 64
+    real_array_decl        go to state 65
+    call_stmt              go to state 295
+    in_built_call_stmt     go to state 296
+    expr_stmt              go to state 297
+
+
+state 263
+
+   62 loop_stmt: LOOP optional_new_lines '(' optional_expr_pred ')' optional_new_lines loop_body .
+
+    $default  reduce using rule 62 (loop_stmt)
+
+
+state 264
+
+   63 loop_stmt: LOOP optional_new_lines '(' optional_num_data_decl ';' optional_expr_pred ';' . optional_expr_pred ')' optional_new_lines loop_body
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    $default  reduce using rule 59 (optional_expr_pred)
+
+    optional_expr_pred  go to state 298
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 173
+
+
+state 265
+
+  100 img_decl: IMG ID '<' NUM_LIT ',' NUM_LIT ',' . NUM_LIT '>' new_lines
+
+    NUM_LIT  shift, and go to state 299
+
+
+state 266
+
+   99 img_decl: IMG ID '<' NUM_LIT ',' NUM_LIT '>' . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 300
+
+
+state 267
+
+  104 gray_img_decl: GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT ',' . NUM_LIT '>' new_lines
+
+    NUM_LIT  shift, and go to state 301
+
+
+state 268
+
+  103 gray_img_decl: GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT '>' . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 302
+
+
+state 269
+
+  108 vid_decl: VID ID '<' NUM_LIT ',' NUM_LIT ',' . NUM_LIT '>' new_lines
+
+    NUM_LIT  shift, and go to state 303
+
+
+state 270
+
+  107 vid_decl: VID ID '<' NUM_LIT ',' NUM_LIT '>' . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 304
+
+
+state 271
+
+  110 gray_vid_decl: GRAY_VID ID '<' NUM_LIT ',' NUM_LIT ',' . NUM_LIT '>' new_lines
+
+    NUM_LIT  shift, and go to state 305
+
+
+state 272
+
+  109 gray_vid_decl: GRAY_VID ID '<' NUM_LIT ',' NUM_LIT '>' . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 306
+
+
+state 273
+
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+  158 array_element: '[' expr_pred ',' expr_pred ',' expr_pred . ']'
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+    ']'        shift, and go to state 307
+
+
+state 274
+
+  123 brak_pred: '{' brak_pred_list '}' .
+
+    $default  reduce using rule 123 (brak_pred)
+
+
+state 275
+
+  125 brak_pred_list: brak_pred_list ',' . brak_pred
+
+    '{'  shift, and go to state 218
+
+    brak_pred  go to state 308
+
+
+state 276
+
+  124 brak_pred: '{' lit_list '}' .
+
+    $default  reduce using rule 124 (brak_pred)
+
+
+state 277
+
+  127 lit_list: lit_list ',' . lit
+
+    BOOL_LIT  shift, and go to state 246
+    NUM_LIT   shift, and go to state 247
+    REAL_LIT  shift, and go to state 248
+
+    lit  go to state 309
+
+
+state 278
+
+   67 else_if_block_list: ELSE_IF '(' expr_pred ')' optional_new_lines . ARROW optional_new_lines func_body
+
+    ARROW  shift, and go to state 310
+
+
+state 279
+
+   66 else_if_block_list: else_if_block_list optional_new_lines ELSE_IF '(' expr_pred . ')' optional_new_lines ARROW optional_new_lines func_body
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+    ')'        shift, and go to state 311
+
+
+state 280
+
+    5 new_lines: new_lines . NEWLINE
+   69 conditional_stmt: if_block optional_new_lines else_if_block_list optional_new_lines else @1 new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 69 (conditional_stmt)
+
+
+state 281
+
+   64 if_block: IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines . func_body
+
+    '{'  shift, and go to state 32
+
+    func_body  go to state 312
+
+
+state 282
+
+   74 loop_if_block: IF . optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 313
+
+
+state 283
+
+   40 l_stmt: CONTINUE . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 314
+
+
+state 284
+
+   39 l_stmt: BREAK . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 315
+
+
+state 285
+
+   34 l_stmt: '{' . new_lines loop_stmt_list '}' new_lines
+   35       | '{' . loop_stmt_list '}' new_lines
+   36       | '{' . new_lines '}' new_lines
+   37       | '{' . '}' new_lines
+
+    IF        shift, and go to state 282
+    RETURN    shift, and go to state 37
+    CONTINUE  shift, and go to state 283
+    BREAK     shift, and go to state 284
+    LOOP      shift, and go to state 38
+    IMG       shift, and go to state 39
+    GRAY_IMG  shift, and go to state 40
+    VID       shift, and go to state 41
+    GRAY_VID  shift, and go to state 42
+    NUM       shift, and go to state 43
+    REAL      shift, and go to state 44
+    BOOL      shift, and go to state 45
+    NEWLINE   shift, and go to state 6
+    ID        shift, and go to state 46
+    '{'       shift, and go to state 285
+    '}'       shift, and go to state 316
+
+    new_lines              go to state 317
+    l_stmt                 go to state 287
+    loop_stmt_list         go to state 318
+    unary_stmt             go to state 289
+    loop_stmt              go to state 290
+    loop_if_block          go to state 291
+    loop_conditional_stmt  go to state 292
+    return_stmt            go to state 293
+    decl_stmt              go to state 294
+    img_decl               go to state 57
+    gray_img_decl          go to state 58
+    vid_decl               go to state 59
+    gray_vid_decl          go to state 60
+    num_decl               go to state 61
+    bool_decl              go to state 62
+    real_decl              go to state 63
+    num_array_decl         go to state 64
+    real_array_decl        go to state 65
+    call_stmt              go to state 295
+    in_built_call_stmt     go to state 296
+    expr_stmt              go to state 297
+
+
+state 286
+
+    5 new_lines: new_lines . NEWLINE
+   44 loop_body: '{' new_lines . loop_stmt_list '}'
+
+    IF        shift, and go to state 282
+    RETURN    shift, and go to state 37
+    CONTINUE  shift, and go to state 283
+    BREAK     shift, and go to state 284
+    LOOP      shift, and go to state 38
+    IMG       shift, and go to state 39
+    GRAY_IMG  shift, and go to state 40
+    VID       shift, and go to state 41
+    GRAY_VID  shift, and go to state 42
+    NUM       shift, and go to state 43
+    REAL      shift, and go to state 44
+    BOOL      shift, and go to state 45
+    NEWLINE   shift, and go to state 10
+    ID        shift, and go to state 46
+    '{'       shift, and go to state 285
+
+    l_stmt                 go to state 287
+    loop_stmt_list         go to state 319
+    unary_stmt             go to state 289
+    loop_stmt              go to state 290
+    loop_if_block          go to state 291
+    loop_conditional_stmt  go to state 292
+    return_stmt            go to state 293
+    decl_stmt              go to state 294
+    img_decl               go to state 57
+    gray_img_decl          go to state 58
+    vid_decl               go to state 59
+    gray_vid_decl          go to state 60
+    num_decl               go to state 61
+    bool_decl              go to state 62
+    real_decl              go to state 63
+    num_array_decl         go to state 64
+    real_array_decl        go to state 65
+    call_stmt              go to state 295
+    in_built_call_stmt     go to state 296
+    expr_stmt              go to state 297
+
+
+state 287
+
+   41 loop_stmt_list: l_stmt .
+
+    $default  reduce using rule 41 (loop_stmt_list)
+
+
+state 288
+
+   42 loop_stmt_list: loop_stmt_list . l_stmt
+   43 loop_body: '{' loop_stmt_list . '}'
+
+    IF        shift, and go to state 282
+    RETURN    shift, and go to state 37
+    CONTINUE  shift, and go to state 283
+    BREAK     shift, and go to state 284
+    LOOP      shift, and go to state 38
+    IMG       shift, and go to state 39
+    GRAY_IMG  shift, and go to state 40
+    VID       shift, and go to state 41
+    GRAY_VID  shift, and go to state 42
+    NUM       shift, and go to state 43
+    REAL      shift, and go to state 44
+    BOOL      shift, and go to state 45
+    ID        shift, and go to state 46
+    '{'       shift, and go to state 285
+    '}'       shift, and go to state 320
+
+    l_stmt                 go to state 321
+    unary_stmt             go to state 289
+    loop_stmt              go to state 290
+    loop_if_block          go to state 291
+    loop_conditional_stmt  go to state 292
+    return_stmt            go to state 293
+    decl_stmt              go to state 294
+    img_decl               go to state 57
+    gray_img_decl          go to state 58
+    vid_decl               go to state 59
+    gray_vid_decl          go to state 60
+    num_decl               go to state 61
+    bool_decl              go to state 62
+    real_decl              go to state 63
+    num_array_decl         go to state 64
+    real_array_decl        go to state 65
+    call_stmt              go to state 295
+    in_built_call_stmt     go to state 296
+    expr_stmt              go to state 297
+
+
+state 289
+
+   38 l_stmt: unary_stmt .
+
+    $default  reduce using rule 38 (l_stmt)
+
+
+state 290
+
+   33 l_stmt: loop_stmt . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 322
+
+
+state 291
+
+   79 loop_conditional_stmt: loop_if_block . optional_new_lines loop_else_if_block_list optional_new_lines loop_else @3 new_lines
+   80                      | loop_if_block . new_lines
+   81                      | loop_if_block . optional_new_lines loop_else_if_block_list new_lines
+   83                      | loop_if_block . optional_new_lines loop_else @4 new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 323
+    optional_new_lines  go to state 324
+
+
+state 292
+
+   28 l_stmt: loop_conditional_stmt .
+
+    $default  reduce using rule 28 (l_stmt)
+
+
+state 293
+
+   32 l_stmt: return_stmt .
+
+    $default  reduce using rule 32 (l_stmt)
+
+
+state 294
+
+   27 l_stmt: decl_stmt .
+
+    $default  reduce using rule 27 (l_stmt)
+
+
+state 295
+
+   29 l_stmt: call_stmt . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 325
+
+
+state 296
+
+   30 l_stmt: in_built_call_stmt . new_lines
+  138 in_built_call_stmt: in_built_call_stmt . DOT_OP ID '(' arg_list ')'
+  139                   | in_built_call_stmt . DOT_OP ID '(' ')'
+
+    DOT_OP   shift, and go to state 114
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 326
+
+
+state 297
+
+   31 l_stmt: expr_stmt .
+
+    $default  reduce using rule 31 (l_stmt)
+
+
+state 298
+
+   63 loop_stmt: LOOP optional_new_lines '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred . ')' optional_new_lines loop_body
+
+    ')'  shift, and go to state 327
+
+
+state 299
+
+  100 img_decl: IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT . '>' new_lines
+
+    '>'  shift, and go to state 328
+
+
+state 300
+
+    5 new_lines: new_lines . NEWLINE
+   99 img_decl: IMG ID '<' NUM_LIT ',' NUM_LIT '>' new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 99 (img_decl)
+
+
+state 301
+
+  104 gray_img_decl: GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT . '>' new_lines
+
+    '>'  shift, and go to state 329
+
+
+state 302
+
+    5 new_lines: new_lines . NEWLINE
+  103 gray_img_decl: GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT '>' new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 103 (gray_img_decl)
+
+
+state 303
+
+  108 vid_decl: VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT . '>' new_lines
+
+    '>'  shift, and go to state 330
+
+
+state 304
+
+    5 new_lines: new_lines . NEWLINE
+  107 vid_decl: VID ID '<' NUM_LIT ',' NUM_LIT '>' new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 107 (vid_decl)
+
+
+state 305
+
+  110 gray_vid_decl: GRAY_VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT . '>' new_lines
+
+    '>'  shift, and go to state 331
+
+
+state 306
+
+    5 new_lines: new_lines . NEWLINE
+  109 gray_vid_decl: GRAY_VID ID '<' NUM_LIT ',' NUM_LIT '>' new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 109 (gray_vid_decl)
+
+
+state 307
+
+  158 array_element: '[' expr_pred ',' expr_pred ',' expr_pred ']' .
+
+    $default  reduce using rule 158 (array_element)
+
+
+state 308
+
+  125 brak_pred_list: brak_pred_list ',' brak_pred .
+
+    $default  reduce using rule 125 (brak_pred_list)
+
+
+state 309
+
+  127 lit_list: lit_list ',' lit .
+
+    $default  reduce using rule 127 (lit_list)
+
+
+state 310
+
+   67 else_if_block_list: ELSE_IF '(' expr_pred ')' optional_new_lines ARROW . optional_new_lines func_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 332
+
+
+state 311
+
+   66 else_if_block_list: else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' . optional_new_lines ARROW optional_new_lines func_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 333
+
+
+state 312
+
+   64 if_block: IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body .
+
+    $default  reduce using rule 64 (if_block)
+
+
+state 313
+
+   74 loop_if_block: IF optional_new_lines . '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body
+
+    '('  shift, and go to state 334
+
+
+state 314
+
+    5 new_lines: new_lines . NEWLINE
+   40 l_stmt: CONTINUE new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 40 (l_stmt)
+
+
+state 315
+
+    5 new_lines: new_lines . NEWLINE
+   39 l_stmt: BREAK new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 39 (l_stmt)
+
+
+state 316
+
+   37 l_stmt: '{' '}' . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 335
+
+
+state 317
+
+    5 new_lines: new_lines . NEWLINE
+   34 l_stmt: '{' new_lines . loop_stmt_list '}' new_lines
+   36       | '{' new_lines . '}' new_lines
+
+    IF        shift, and go to state 282
+    RETURN    shift, and go to state 37
+    CONTINUE  shift, and go to state 283
+    BREAK     shift, and go to state 284
+    LOOP      shift, and go to state 38
+    IMG       shift, and go to state 39
+    GRAY_IMG  shift, and go to state 40
+    VID       shift, and go to state 41
+    GRAY_VID  shift, and go to state 42
+    NUM       shift, and go to state 43
+    REAL      shift, and go to state 44
+    BOOL      shift, and go to state 45
+    NEWLINE   shift, and go to state 10
+    ID        shift, and go to state 46
+    '{'       shift, and go to state 285
+    '}'       shift, and go to state 336
+
+    l_stmt                 go to state 287
+    loop_stmt_list         go to state 337
+    unary_stmt             go to state 289
+    loop_stmt              go to state 290
+    loop_if_block          go to state 291
+    loop_conditional_stmt  go to state 292
+    return_stmt            go to state 293
+    decl_stmt              go to state 294
+    img_decl               go to state 57
+    gray_img_decl          go to state 58
+    vid_decl               go to state 59
+    gray_vid_decl          go to state 60
+    num_decl               go to state 61
+    bool_decl              go to state 62
+    real_decl              go to state 63
+    num_array_decl         go to state 64
+    real_array_decl        go to state 65
+    call_stmt              go to state 295
+    in_built_call_stmt     go to state 296
+    expr_stmt              go to state 297
+
+
+state 318
+
+   35 l_stmt: '{' loop_stmt_list . '}' new_lines
+   42 loop_stmt_list: loop_stmt_list . l_stmt
+
+    IF        shift, and go to state 282
+    RETURN    shift, and go to state 37
+    CONTINUE  shift, and go to state 283
+    BREAK     shift, and go to state 284
+    LOOP      shift, and go to state 38
+    IMG       shift, and go to state 39
+    GRAY_IMG  shift, and go to state 40
+    VID       shift, and go to state 41
+    GRAY_VID  shift, and go to state 42
+    NUM       shift, and go to state 43
+    REAL      shift, and go to state 44
+    BOOL      shift, and go to state 45
+    ID        shift, and go to state 46
+    '{'       shift, and go to state 285
+    '}'       shift, and go to state 338
+
+    l_stmt                 go to state 321
+    unary_stmt             go to state 289
+    loop_stmt              go to state 290
+    loop_if_block          go to state 291
+    loop_conditional_stmt  go to state 292
+    return_stmt            go to state 293
+    decl_stmt              go to state 294
+    img_decl               go to state 57
+    gray_img_decl          go to state 58
+    vid_decl               go to state 59
+    gray_vid_decl          go to state 60
+    num_decl               go to state 61
+    bool_decl              go to state 62
+    real_decl              go to state 63
+    num_array_decl         go to state 64
+    real_array_decl        go to state 65
+    call_stmt              go to state 295
+    in_built_call_stmt     go to state 296
+    expr_stmt              go to state 297
+
+
+state 319
+
+   42 loop_stmt_list: loop_stmt_list . l_stmt
+   44 loop_body: '{' new_lines loop_stmt_list . '}'
+
+    IF        shift, and go to state 282
+    RETURN    shift, and go to state 37
+    CONTINUE  shift, and go to state 283
+    BREAK     shift, and go to state 284
+    LOOP      shift, and go to state 38
+    IMG       shift, and go to state 39
+    GRAY_IMG  shift, and go to state 40
+    VID       shift, and go to state 41
+    GRAY_VID  shift, and go to state 42
+    NUM       shift, and go to state 43
+    REAL      shift, and go to state 44
+    BOOL      shift, and go to state 45
+    ID        shift, and go to state 46
+    '{'       shift, and go to state 285
+    '}'       shift, and go to state 339
+
+    l_stmt                 go to state 321
+    unary_stmt             go to state 289
+    loop_stmt              go to state 290
+    loop_if_block          go to state 291
+    loop_conditional_stmt  go to state 292
+    return_stmt            go to state 293
+    decl_stmt              go to state 294
+    img_decl               go to state 57
+    gray_img_decl          go to state 58
+    vid_decl               go to state 59
+    gray_vid_decl          go to state 60
+    num_decl               go to state 61
+    bool_decl              go to state 62
+    real_decl              go to state 63
+    num_array_decl         go to state 64
+    real_array_decl        go to state 65
+    call_stmt              go to state 295
+    in_built_call_stmt     go to state 296
+    expr_stmt              go to state 297
+
+
+state 320
+
+   43 loop_body: '{' loop_stmt_list '}' .
+
+    $default  reduce using rule 43 (loop_body)
+
+
+state 321
+
+   42 loop_stmt_list: loop_stmt_list l_stmt .
+
+    $default  reduce using rule 42 (loop_stmt_list)
+
+
+state 322
+
+    5 new_lines: new_lines . NEWLINE
+   33 l_stmt: loop_stmt new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 33 (l_stmt)
+
+
+state 323
+
+    5 new_lines: new_lines . NEWLINE
+    8 optional_new_lines: new_lines .
+   80 loop_conditional_stmt: loop_if_block new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    ELSE_IF   reduce using rule 8 (optional_new_lines)
+    ARROW     reduce using rule 8 (optional_new_lines)
+    $default  reduce using rule 80 (loop_conditional_stmt)
+
+
+state 324
+
+   79 loop_conditional_stmt: loop_if_block optional_new_lines . loop_else_if_block_list optional_new_lines loop_else @3 new_lines
+   81                      | loop_if_block optional_new_lines . loop_else_if_block_list new_lines
+   83                      | loop_if_block optional_new_lines . loop_else @4 new_lines
+
+    ELSE_IF  shift, and go to state 340
+    ARROW    shift, and go to state 341
+
+    loop_else                go to state 342
+    loop_else_if_block_list  go to state 343
+
+
+state 325
+
+    5 new_lines: new_lines . NEWLINE
+   29 l_stmt: call_stmt new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 29 (l_stmt)
+
+
+state 326
+
+    5 new_lines: new_lines . NEWLINE
+   30 l_stmt: in_built_call_stmt new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 30 (l_stmt)
+
+
+state 327
+
+   63 loop_stmt: LOOP optional_new_lines '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' . optional_new_lines loop_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 344
+
+
+state 328
+
+  100 img_decl: IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 345
+
+
+state 329
+
+  104 gray_img_decl: GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 346
+
+
+state 330
+
+  108 vid_decl: VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 347
+
+
+state 331
+
+  110 gray_vid_decl: GRAY_VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 348
+
+
+state 332
+
+   67 else_if_block_list: ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines . func_body
+
+    '{'  shift, and go to state 32
+
+    func_body  go to state 349
+
+
+state 333
+
+   66 else_if_block_list: else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines . ARROW optional_new_lines func_body
+
+    ARROW  shift, and go to state 350
+
+
+state 334
+
+   74 loop_if_block: IF optional_new_lines '(' . expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 351
+
+
+state 335
+
+    5 new_lines: new_lines . NEWLINE
+   37 l_stmt: '{' '}' new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 37 (l_stmt)
+
+
+state 336
+
+   36 l_stmt: '{' new_lines '}' . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 352
+
+
+state 337
+
+   34 l_stmt: '{' new_lines loop_stmt_list . '}' new_lines
+   42 loop_stmt_list: loop_stmt_list . l_stmt
+
+    IF        shift, and go to state 282
+    RETURN    shift, and go to state 37
+    CONTINUE  shift, and go to state 283
+    BREAK     shift, and go to state 284
+    LOOP      shift, and go to state 38
+    IMG       shift, and go to state 39
+    GRAY_IMG  shift, and go to state 40
+    VID       shift, and go to state 41
+    GRAY_VID  shift, and go to state 42
+    NUM       shift, and go to state 43
+    REAL      shift, and go to state 44
+    BOOL      shift, and go to state 45
+    ID        shift, and go to state 46
+    '{'       shift, and go to state 285
+    '}'       shift, and go to state 353
+
+    l_stmt                 go to state 321
+    unary_stmt             go to state 289
+    loop_stmt              go to state 290
+    loop_if_block          go to state 291
+    loop_conditional_stmt  go to state 292
+    return_stmt            go to state 293
+    decl_stmt              go to state 294
+    img_decl               go to state 57
+    gray_img_decl          go to state 58
+    vid_decl               go to state 59
+    gray_vid_decl          go to state 60
+    num_decl               go to state 61
+    bool_decl              go to state 62
+    real_decl              go to state 63
+    num_array_decl         go to state 64
+    real_array_decl        go to state 65
+    call_stmt              go to state 295
+    in_built_call_stmt     go to state 296
+    expr_stmt              go to state 297
+
+
+state 338
+
+   35 l_stmt: '{' loop_stmt_list '}' . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 354
+
+
+state 339
+
+   44 loop_body: '{' new_lines loop_stmt_list '}' .
+
+    $default  reduce using rule 44 (loop_body)
+
+
+state 340
+
+   77 loop_else_if_block_list: ELSE_IF . '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body
+
+    '('  shift, and go to state 355
+
+
+state 341
+
+   75 loop_else: ARROW . optional_new_lines loop_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 356
+
+
+state 342
+
+   83 loop_conditional_stmt: loop_if_block optional_new_lines loop_else . @4 new_lines
+
+    $default  reduce using rule 82 (@4)
+
+    @4  go to state 357
+
+
+state 343
+
+   76 loop_else_if_block_list: loop_else_if_block_list . optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body
+   79 loop_conditional_stmt: loop_if_block optional_new_lines loop_else_if_block_list . optional_new_lines loop_else @3 new_lines
+   81                      | loop_if_block optional_new_lines loop_else_if_block_list . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 358
+    optional_new_lines  go to state 359
+
+
+state 344
+
+   63 loop_stmt: LOOP optional_new_lines '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' optional_new_lines . loop_body
+
+    '{'  shift, and go to state 262
+
+    loop_body  go to state 360
+
+
+state 345
+
+    5 new_lines: new_lines . NEWLINE
+  100 img_decl: IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 100 (img_decl)
+
+
+state 346
+
+    5 new_lines: new_lines . NEWLINE
+  104 gray_img_decl: GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 104 (gray_img_decl)
+
+
+state 347
+
+    5 new_lines: new_lines . NEWLINE
+  108 vid_decl: VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 108 (vid_decl)
+
+
+state 348
+
+    5 new_lines: new_lines . NEWLINE
+  110 gray_vid_decl: GRAY_VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 110 (gray_vid_decl)
+
+
+state 349
+
+   67 else_if_block_list: ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body .
+
+    $default  reduce using rule 67 (else_if_block_list)
+
+
+state 350
+
+   66 else_if_block_list: else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW . optional_new_lines func_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 361
+
+
+state 351
+
+   74 loop_if_block: IF optional_new_lines '(' expr_pred . ')' optional_new_lines ARROW optional_new_lines loop_body
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+    ')'        shift, and go to state 362
+
+
+state 352
+
+    5 new_lines: new_lines . NEWLINE
+   36 l_stmt: '{' new_lines '}' new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 36 (l_stmt)
+
+
+state 353
+
+   34 l_stmt: '{' new_lines loop_stmt_list '}' . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 363
+
+
+state 354
+
+    5 new_lines: new_lines . NEWLINE
+   35 l_stmt: '{' loop_stmt_list '}' new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 35 (l_stmt)
+
+
+state 355
+
+   77 loop_else_if_block_list: ELSE_IF '(' . expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 364
+
+
+state 356
+
+   75 loop_else: ARROW optional_new_lines . loop_body
+
+    '{'  shift, and go to state 262
+
+    loop_body  go to state 365
+
+
+state 357
+
+   83 loop_conditional_stmt: loop_if_block optional_new_lines loop_else @4 . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 366
+
+
+state 358
+
+    5 new_lines: new_lines . NEWLINE
+    8 optional_new_lines: new_lines .
+   81 loop_conditional_stmt: loop_if_block optional_new_lines loop_else_if_block_list new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    ELSE_IF   reduce using rule 8 (optional_new_lines)
+    ARROW     reduce using rule 8 (optional_new_lines)
+    $default  reduce using rule 81 (loop_conditional_stmt)
+
+
+state 359
+
+   76 loop_else_if_block_list: loop_else_if_block_list optional_new_lines . ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body
+   79 loop_conditional_stmt: loop_if_block optional_new_lines loop_else_if_block_list optional_new_lines . loop_else @3 new_lines
+
+    ELSE_IF  shift, and go to state 367
+    ARROW    shift, and go to state 341
+
+    loop_else  go to state 368
+
+
+state 360
+
+   63 loop_stmt: LOOP optional_new_lines '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' optional_new_lines loop_body .
+
+    $default  reduce using rule 63 (loop_stmt)
+
+
+state 361
+
+   66 else_if_block_list: else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines . func_body
+
+    '{'  shift, and go to state 32
+
+    func_body  go to state 369
+
+
+state 362
+
+   74 loop_if_block: IF optional_new_lines '(' expr_pred ')' . optional_new_lines ARROW optional_new_lines loop_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 370
+
+
+state 363
+
+    5 new_lines: new_lines . NEWLINE
+   34 l_stmt: '{' new_lines loop_stmt_list '}' new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 34 (l_stmt)
+
+
+state 364
+
+   77 loop_else_if_block_list: ELSE_IF '(' expr_pred . ')' optional_new_lines ARROW optional_new_lines loop_body
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+    ')'        shift, and go to state 371
+
+
+state 365
+
+   75 loop_else: ARROW optional_new_lines loop_body .
+
+    $default  reduce using rule 75 (loop_else)
+
+
+state 366
+
+    5 new_lines: new_lines . NEWLINE
+   83 loop_conditional_stmt: loop_if_block optional_new_lines loop_else @4 new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 83 (loop_conditional_stmt)
+
+
+state 367
+
+   76 loop_else_if_block_list: loop_else_if_block_list optional_new_lines ELSE_IF . '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body
+
+    '('  shift, and go to state 372
+
+
+state 368
+
+   79 loop_conditional_stmt: loop_if_block optional_new_lines loop_else_if_block_list optional_new_lines loop_else . @3 new_lines
+
+    $default  reduce using rule 78 (@3)
+
+    @3  go to state 373
+
+
+state 369
+
+   66 else_if_block_list: else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body .
+
+    $default  reduce using rule 66 (else_if_block_list)
+
+
+state 370
+
+   74 loop_if_block: IF optional_new_lines '(' expr_pred ')' optional_new_lines . ARROW optional_new_lines loop_body
+
+    ARROW  shift, and go to state 374
+
+
+state 371
+
+   77 loop_else_if_block_list: ELSE_IF '(' expr_pred ')' . optional_new_lines ARROW optional_new_lines loop_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 375
+
+
+state 372
+
+   76 loop_else_if_block_list: loop_else_if_block_list optional_new_lines ELSE_IF '(' . expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body
+
+    NEG_OP    shift, and go to state 74
+    BOOL_LIT  shift, and go to state 76
+    ID        shift, and go to state 77
+    NUM_LIT   shift, and go to state 78
+    REAL_LIT  shift, and go to state 79
+    INV_OP    shift, and go to state 80
+    '('       shift, and go to state 81
+
+    call_stmt           go to state 82
+    in_built_call_stmt  go to state 83
+    expr_pred           go to state 376
+
+
+state 373
+
+   79 loop_conditional_stmt: loop_if_block optional_new_lines loop_else_if_block_list optional_new_lines loop_else @3 . new_lines
+
+    NEWLINE  shift, and go to state 6
+
+    new_lines  go to state 377
+
+
+state 374
+
+   74 loop_if_block: IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW . optional_new_lines loop_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 378
+
+
+state 375
+
+   77 loop_else_if_block_list: ELSE_IF '(' expr_pred ')' optional_new_lines . ARROW optional_new_lines loop_body
+
+    ARROW  shift, and go to state 379
+
+
+state 376
+
+   76 loop_else_if_block_list: loop_else_if_block_list optional_new_lines ELSE_IF '(' expr_pred . ')' optional_new_lines ARROW optional_new_lines loop_body
+  144 expr_pred: expr_pred . REL_OP expr_pred
+  145          | expr_pred . LOG_OP expr_pred
+  151          | expr_pred . BINARY_OP expr_pred
+  152          | expr_pred . UNARY_OP
+
+    LOG_OP     shift, and go to state 123
+    REL_OP     shift, and go to state 124
+    BINARY_OP  shift, and go to state 125
+    UNARY_OP   shift, and go to state 126
+    ')'        shift, and go to state 380
+
+
+state 377
+
+    5 new_lines: new_lines . NEWLINE
+   79 loop_conditional_stmt: loop_if_block optional_new_lines loop_else_if_block_list optional_new_lines loop_else @3 new_lines .
+
+    NEWLINE  shift, and go to state 10
+
+    $default  reduce using rule 79 (loop_conditional_stmt)
+
+
+state 378
+
+   74 loop_if_block: IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines . loop_body
+
+    '{'  shift, and go to state 262
+
+    loop_body  go to state 381
+
+
+state 379
+
+   77 loop_else_if_block_list: ELSE_IF '(' expr_pred ')' optional_new_lines ARROW . optional_new_lines loop_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 382
+
+
+state 380
+
+   76 loop_else_if_block_list: loop_else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' . optional_new_lines ARROW optional_new_lines loop_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 383
+
+
+state 381
+
+   74 loop_if_block: IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body .
+
+    $default  reduce using rule 74 (loop_if_block)
+
+
+state 382
+
+   77 loop_else_if_block_list: ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines . loop_body
+
+    '{'  shift, and go to state 262
+
+    loop_body  go to state 384
+
+
+state 383
+
+   76 loop_else_if_block_list: loop_else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines . ARROW optional_new_lines loop_body
+
+    ARROW  shift, and go to state 385
+
+
+state 384
+
+   77 loop_else_if_block_list: ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body .
+
+    $default  reduce using rule 77 (loop_else_if_block_list)
+
+
+state 385
+
+   76 loop_else_if_block_list: loop_else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW . optional_new_lines loop_body
+
+    NEWLINE  shift, and go to state 6
+
+    $default  reduce using rule 7 (optional_new_lines)
+
+    new_lines           go to state 72
+    optional_new_lines  go to state 386
+
+
+state 386
+
+   76 loop_else_if_block_list: loop_else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines . loop_body
+
+    '{'  shift, and go to state 262
+
+    loop_body  go to state 387
+
+
+state 387
+
+   76 loop_else_if_block_list: loop_else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body .
+
+    $default  reduce using rule 76 (loop_else_if_block_list)

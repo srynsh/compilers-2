@@ -91,6 +91,30 @@ stmt_list : stmt
         | stmt_list stmt 
         ;
 
+l_stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
+        | loop_conditional_stmt /* 'new_lines' is included in conditional_stmt */
+        | call_stmt new_lines
+        | in_built_call_stmt new_lines
+        | expr_stmt /* 'new_lines' is included in expr_stmt */
+        | return_stmt /* 'new_lines' is included in expr_stmt */
+        | loop_stmt new_lines
+        | '{'new_lines loop_stmt_list '}' new_lines /* This allows nested scopes */
+        | '{' loop_stmt_list '}' new_lines /* This allows nested scopes */
+        | '{' new_lines '}' new_lines
+        | '{' '}' new_lines
+        | unary_stmt 
+        | BREAK new_lines
+        | CONTINUE new_lines
+        ;
+
+loop_stmt_list : l_stmt
+        | loop_stmt_list l_stmt
+        ;
+
+loop_body : '{' loop_stmt_list '}'
+        | '{' new_lines loop_stmt_list '}'
+        ;
+
 stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
         | conditional_stmt /* 'new_lines' is included in conditional_stmt */
         | call_stmt new_lines
@@ -102,7 +126,11 @@ stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
         | '{' stmt_list '}' new_lines /* This allows nested scopes */
         | '{' new_lines '}' new_lines
         | '{' '}' new_lines
+        | unary_stmt 
         ; 
+
+unary_stmt : ID UNARY_OP new_lines
+        ;
 
 optional_expr_pred : expr_pred
         | /* empty */
@@ -112,8 +140,8 @@ optional_num_data_decl : numeric_data_decl
         | /* empty */
         ;
 
-loop_stmt : LOOP optional_new_lines '(' optional_expr_pred ')' optional_new_lines func_body {fprintf(fparser, "loop");}
-        | LOOP optional_new_lines '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' optional_new_lines func_body {fprintf(fparser, "loop");}
+loop_stmt : LOOP optional_new_lines '(' optional_expr_pred ')' optional_new_lines loop_body {fprintf(fparser, "loop");}
+        | LOOP optional_new_lines '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' optional_new_lines loop_body {fprintf(fparser, "loop");}
         ;
 
 if_block : IF optional_new_lines '(' expr_pred')' optional_new_lines ARROW optional_new_lines func_body 
@@ -130,6 +158,22 @@ conditional_stmt : if_block optional_new_lines else_if_block_list optional_new_l
                 | if_block new_lines {fprintf(fparser, "conditional\n");}
                 | if_block optional_new_lines else_if_block_list new_lines {fprintf(fparser, "conditional\n");}
                 | if_block optional_new_lines else {fprintf(fparser, "conditional\n");} new_lines
+                ;
+
+loop_if_block : IF optional_new_lines '(' expr_pred')' optional_new_lines ARROW optional_new_lines loop_body 
+        ;
+
+loop_else : ARROW optional_new_lines loop_body
+        ;
+
+loop_else_if_block_list : loop_else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body
+        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body 
+        ;
+
+loop_conditional_stmt : loop_if_block optional_new_lines loop_else_if_block_list optional_new_lines loop_else { fprintf(fparser, "conditional\n");} new_lines
+                | loop_if_block new_lines {fprintf(fparser, "conditional\n");}
+                | loop_if_block optional_new_lines loop_else_if_block_list new_lines {fprintf(fparser, "conditional\n");}
+                | loop_if_block optional_new_lines loop_else {fprintf(fparser, "conditional\n");} new_lines
                 ;
 
 numeric_data_decl : num_decl
