@@ -38,9 +38,13 @@ ink main() -> void {
 %left LOG_OP
 %left REL_OP
 
-/* %nonassoc IF
-%nonassoc ELSE_IF */
-%right IF ELSE_IF ARROW
+%nonassoc IF
+%nonassoc ELSE_IF
+%nonassoc SHORT_IF
+%nonassoc LONG_IF
+// %right IF
+// %right ELSE_IF
+// %right NEWLINE
 
 %%
 
@@ -93,7 +97,7 @@ stmt_list : stmt
         ;
 
 stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
-        | conditional_stmt new_lines
+        | conditional_stmt
         | call_stmt new_lines
         | in_built_call_stmt new_lines
         | expr_stmt /* 'new_lines' is included in expr_stmt */
@@ -113,28 +117,23 @@ optional_num_data_decl : numeric_data_decl
         | /* empty */
         ;
 
-loop_stmt : LOOP '(' optional_expr_pred ')' func_body {fprintf(fparser, "loop\n");}
-        | LOOP '(' optional_expr_pred ')' new_lines func_body {fprintf(fparser, "loop\n");}
-        | LOOP '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' func_body {fprintf(fparser, "loop\n");}
-        | LOOP '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' new_lines func_body {fprintf(fparser, "loop\n");}
+loop_stmt : LOOP optional_new_lines '(' optional_expr_pred ')' optional_new_lines func_body {fprintf(fparser, "loop\n");}
+        | LOOP optional_new_lines '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' optional_new_lines func_body {fprintf(fparser, "loop\n");}
         ;
 
-if_block : IF '(' expr_pred')' ARROW func_body
-        | IF '(' expr_pred')' ARROW new_lines func_body
-        | IF '(' expr_pred')' new_lines ARROW func_body
-        | IF '(' expr_pred')' new_lines ARROW new_lines func_body
+if_block : IF '(' expr_pred')' optional_new_lines ARROW optional_new_lines func_body 
         ;
 
 else : ARROW optional_new_lines func_body
         ;
 
 else_block : else
-        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body else_block
-        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body 
+        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body optional_new_lines else_block // %prec LONG_IF
+        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body // %prec SHORT_IF
         ;
 
-conditional_stmt : if_block else_block {fprintf(fparser, "conditional\n");}
-                | if_block {fprintf(fparser, "conditional\n");}
+conditional_stmt : if_block optional_new_lines else_block new_lines {fprintf(fparser, "conditional\n");} %prec ELSE_IF
+                | if_block new_lines {fprintf(fparser, "conditional\n");} %prec IF
                 ;
 
 numeric_data_decl : num_decl
