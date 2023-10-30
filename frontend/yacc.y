@@ -80,7 +80,7 @@ l_stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
         | '{'new_lines loop_stmt_list '}' new_lines /* This allows nested scopes */
         | '{' new_lines '}' new_lines
         | '{' '}' new_lines
-        | unary_stmt 
+        | unary_stmt  /* 'new_lines' is included in expr_stmt */
         | BREAK new_lines
         | CONTINUE new_lines
         ;
@@ -102,7 +102,7 @@ stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
         | '{'new_lines stmt_list '}' new_lines /* This allows nested scopes */
         | '{' new_lines '}' new_lines
         | '{' '}' new_lines
-        | unary_stmt 
+        | unary_stmt  /* 'new_lines' is included in expr_stmt */
         ; 
 
 unary_stmt : ID UNARY_OP new_lines

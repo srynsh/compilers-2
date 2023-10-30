@@ -91,7 +91,7 @@ ArtC++ is compiled to C++, ensuring that the code is fast and efficient.
     \hline
     continue & return & ink & void & bool\\
     \hline
-    true & false & & &\\
+    true & false & vid & gray\_vid &\\
     \hline
    \end{tabular}
 
@@ -143,8 +143,8 @@ ArtC++ is compiled to C++, ensuring that the code is fast and efficient.
   \hline
   \texttt{vid} & video, an array of images with a fps\\
   \texttt{gray\_vid} & grayscale video, an array of gray\_images with a fps\\
-  \texttt{num[]} & array of integers\\
-  \texttt{real[]} & array of real numbers\\
+  \texttt{num[]} & array of integers (1D, 2D or 3D)\\
+  \texttt{real[]} & array of real numbers (1D, 2D or 3D)\\
   \hline
  \end{tabular}
 
@@ -160,7 +160,6 @@ ArtC++ is compiled to C++, ensuring that the code is fast and efficient.
   \texttt{+} & \texttt{a + b} & Here, \texttt{a} and \texttt{b} are either numbers (or reals), or have to be of the same image datatype (RGB or Grayscale). The image shapes have to broadcastable. If a value exceeds 255, it is clipped back to 255. In addition to this, \texttt{a} and \texttt{b} can be videos (of the same datatype and fps). If this is done, the frames are concatenated.\\ \hline
   \texttt{-} & \texttt{a - b} & The operands are the same as for \texttt{+}. If a pixel value goes below 0, it is clipped back to 0.\\ \hline
   \texttt{*} & \texttt{a * b} & The operands and behaviour are similar to \texttt{+} \\ \hline
-  \texttt{@} & \texttt{a @ b} & \texttt{@} is used for convolutions. \texttt{a} is an image or a grayscale image. \texttt{b} can be a image array of size 3 (this outputs an RGB image) or a single image (this outputs a grayscale image). The number of channels (color dimensions) in the right operand should equal the channels in the left operand. \\ \hline
   \texttt{\^} & \texttt{a \^\ b} & \texttt{\^} is used for XORing two images. \\ \hline 
   \hline
   \multicolumn{3}{|c|}{Unary Arithmetic} \\
@@ -189,24 +188,40 @@ ArtC++ is compiled to C++, ensuring that the code is fast and efficient.
         
         \item Numbers:
             \begin{itemize}
+              \item \texttt{num num\_name} 
+              \begin{itemize}
+                \item Declares a 32 bit integer without initializing it.
+              \end{itemize}
               \item \texttt{num num\_name = value} 
               \begin{itemize}
                 \item Here, \texttt{value} is a 32 bit integer. 
               \end{itemize}
-              \item \texttt{real real\_name = value} 
+              \item \texttt{num[x] array\_name}
               \begin{itemize}
-                \item Here, \texttt{value} is a 32 bit floating point value.
+                \item Declares an array of integers of size \texttt{x}. The array elements are initialized to 0.
               \end{itemize}
-              \item \texttt{num[] array\_name = []} 
+              \item \texttt{num[x] array\_name = array\_2}
               \begin{itemize}
-                \item Declaring an array results in \texttt{array\_name} being associated with an empty list. The list can be populated with \texttt{nums} using operators and methods like \texttt{.append()} (see below).
+                \item Declares an array of integers of size \texttt{x}. The array elements are initialized to the values in \texttt{array\_2}. \texttt{array\_2} must be an array of integers of size \texttt{x}.
               \end{itemize}
-              \item \texttt{real[] array\_name = []} 
+              \item \texttt{num[x] array\_name = \{a, b, c, ...\}}   
               \begin{itemize}
-                \item Declaring an array results in \texttt{array\_name} being associated with an empty list. The list can be populated with \texttt{reals} using operators and methods like \texttt{.append()} (see below).
+                \item Declares an array of integers of size \texttt{x}. The array elements are initialized to the values in the curly braces. The number of elements in the curly braces must be equal to \texttt{x}.
+              \end{itemize}      
+              \item \texttt{num[x, y] array\_name}
+              \begin{itemize}
+                \item Declares a 2D array of integers of size \texttt{x} $\times$ \texttt{y}. The array elements are initialized to 0.
+              \end{itemize}
+              \item \texttt{num[x, y] array\_name = array\_2}
+              \begin{itemize}
+                \item Declares a 2D array of integers of size \texttt{x} $\times$ \texttt{y}. The array elements are initialized to the values in \texttt{array\_2}. \texttt{array\_2} must be a 2D array of integers of size \texttt{x} $\times$ \texttt{y}.
+              \end{itemize}
+              \item \texttt{num[x, y] array\_name = \{\{a, b, c, ...\} , \{...\}, ...\}}
+              \begin{itemize}
+                \item Declares a 2D array of integers of size \texttt{x} $\times$ \texttt{y}. The array elements are initialized to the values in the curly braces. There must be \texttt{x} curly braces, each containing \texttt{y} elements.
               \end{itemize}
             \end{itemize}
-
+            3D arrays, and arrays for floating point numbers are defined similarly.
 
         \item RGB Images: 
             \begin{itemize}
@@ -263,7 +278,6 @@ ArtC++ is compiled to C++, ensuring that the code is fast and efficient.
   # a,b,c are images/gray_images
   a = b + c
   b = (a + c)/2
-  a = a @ b * ~c #* if one operand of @ is gray and the other is RGB, casting to RGB takes place *#
 
   a = a or a and b # a, b are real numbers
   b = a++
@@ -275,7 +289,6 @@ ArtC++ is compiled to C++, ensuring that the code is fast and efficient.
 
   \begin{lstlisting}[language=Python]
   a = b + c # a is a vid but b is an img
-  a = a @ b * ~c # b has 2 frames
 
   b = a++ # a is a bool
   a[2] = b[5] - i*i  # b is a vid and a in a num/real array
@@ -319,20 +332,15 @@ ArtC++ is compiled to C++, ensuring that the code is fast and efficient.
 
     Conditional statements will follow the following syntax:-
     \begin{lstlisting}[language=Python]
-  presuming (expression)
-  {
+  $(expression) -> {
       statements
-  } 
-  otherwise presuming (expression)
-  {
+  } $$(expression) -> {
       statements
-  }
-  otherwise
-  {
+  } -> {
       statements
   }\end{lstlisting}
 
-    The "presuming otherwise" and "otherwise" parts of the conditional statement are optional.
+  The first expression is evaluated, and if it is true, the statements in the first block are executed. If it is false, the next expression is evaluated, and so on. If all the expressions are false, the statements in the last block are executed. The last block is optional. 
 
 \section{Programming Constructs}
     \subsection{Functions}
@@ -340,13 +348,20 @@ ArtC++ is compiled to C++, ensuring that the code is fast and efficient.
           
           \begin{tabular}{ |p{4cm}|p{5cm}|p{7cm}|  }
             \hline
-            \textbf{Method} & \textbf{Example} & \textbf{Description}\\ 
+            \textbf{Action} & \textbf{Example} & \textbf{Description}\\ 
             \hline
-            \texttt{blur()} & \texttt{a.blur()} & Adds blur to the image (or blurs every frame of the video) \\ \hline
-            \texttt{noise()} & \texttt{a.noise()} & Adds random gaussian noise to the image (or adds noise to every frame of the video) \\ \hline
-            \texttt{gray()} & \texttt{a.gray()} & Converts the image to grayscale and changes the shape (or convert the video to grayscale. Only works on RGB images or videos) \\ \hline
-            \texttt{vflip()}, \texttt{hflip()} & \texttt{a.vflip()} or \texttt{a.hflip()}& Flips the image vertically or horizontally (or every frame of the video) \\ \hline
-            \texttt{get()}, \texttt{set()} & \texttt{a.get(x, y, c)} or \texttt{a.set(x, y, color\_hex)} & Gets the pixel value at (x, y, c) or sets the pixel value at (x, y) to the specified color \\ \hline
+            \texttt{blur} & \texttt{a.blur(5)} & Adds a box blur to the image (or blurs every frame of the video). The argument to the method determines the kernel size; the higher it is, the blurrier the image.\\ \hline
+            \texttt{sharpen} & \texttt{a.sharpen(20)} & Sharpens the image or frames of the video using the formula \texttt{new\_image = 2* old\_image - blurred\_image}. Increasing the parameter increases the sharpness\\ \hline
+            \texttt{sobel filter} & \texttt{a.sobel()} & Uses the sobel operator to find horizontal and vertical edges in the image\\ \hline
+            \texttt{transpose} & \texttt{a.T()} & Finds the transpose of the image (equivalent to a 90 degree clockwise rotation)\\ \hline
+            \texttt{flipping} & \texttt{a.vflip()} or \texttt{a.hflip()}& Flips the image vertically or horizontally (or every frame of the video) \\ \hline
+            \texttt{pixelate} & \texttt{a.pixelate(5)} & Makes the image pixelated, by taking the max value in a grid. The parameter determines the degree of pixelation\\ \hline
+            \texttt{invert} & \texttt{a.invert()} & Inverts the colors of the image \\ \hline
+            \texttt{noise} & \texttt{a.noise(15)} & Adds random gaussian noise to the image. The parameter governs the variance of the normal distribution \\ \hline
+            \texttt{black and white} & \texttt{a.bnw(100)} & Converts the grayscale image \texttt{a} to a black and white image, based on some controllable brightness threshold \\ \hline
+            \texttt{pixel manipulation} & \texttt{a.get(x, y, c)} or \texttt{a.set(x, y, color\_hex)} & Gets the pixel value at (x, y, c) or sets the pixel value at (x, y) to the specified color \\ \hline
+            \texttt{convolution} & \texttt{a.convolve(f1, f2, f3)} or \texttt{a.convolve(f1)} & This allows the user to implement custom filters. The filter must be a 2 or 3 dimensional array, depending on whether the image is grayscale or RGB. Based on the number 
+            of filters (1 or 3), the output is either a grayscale image or an RGB image. \\ \hline
            \end{tabular}
 
           \subsubsection{Displaying Images and Videos}
@@ -409,6 +424,14 @@ Functions are provided with a comma separated list of parameters, just like in C
   }
   \end{lstlisting}
 
+  \subsubsection{Operations on Images}
+  ArtC++ overloads several operators to allow for easy manipulation of images. Standard operators like \texttt{+}, \texttt{-}, \texttt{*} and \texttt{/} are supported. The "square root" of images can also be taken. However, consider:
+  \begin{lstlisting}[language=Python]
+    a = sqrt(b*b + c*c)\end{lstlisting}
+  If an overflow happens, and values are clipped to 255, the result might not be what is expected, as all the values of the result will be less than $\sqrt{255}$.  A similar problem occurs with statements like $a = \frac{b + c}{2}$. To avoid this,
+  the implementation allows for overflows, and \textit{only} clips the values on assignment, loading, or displaying. This ensures that the result of the above statements are correct and consistent with what is expected.
+
+
     \subsection{Slicing}
   We allow the slicing of videos. This returns a new video with the specified frames. The syntax is as follows :-
   \begin{lstlisting}[language=Python]
@@ -419,6 +442,70 @@ Functions are provided with a comma separated list of parameters, just like in C
 
 
 \bibliographystyle{abbrv}
+
+\section{Language Style}
+Our language enforces the use of new lines, in an attempt to stick with the Python aphorism: \texttt{Beautiful is better than ugly}.
+
+A newline must follow every statement, including declaration statements, call statements (user-defined and inbuilt), expression statements, return statements,
+unary statements, and nested scopes. This helps make the code more readable. In addition to this, newlines must follow a loop block, and a conditional block. Within the conditional block, it isn't necessary to have a newline after a closing curly brace following the body of the conditional.
+valid examples are: 
+\begin{lstlisting}[language=Python]
+  # valid if statement
+  $ (i1) -> { 
+			i2 = i3
+	} 
+
+  <statement>
+
+  
+  # another valid if statement 
+  $ 
+
+  (i1)
+    ->
+  {
+    <statements>
+  } 
+  <statement>
+
+  # a third valid conditional block
+
+  $ (i1) -> { 
+    <statements>
+  } $$ (i2) -> {
+    <more statements>
+  } -> {
+    <even more statements>
+  }
+  
+  # a fourth valid conditonal block
+
+  $ (i1) -> { 
+      <statements>
+  } 
+  $$ (i2) -> {
+      <more statements> 
+  }
+  -> {
+      <even more statements>
+  } \end{lstlisting}
+
+Some invalid examples are:
+\begin{lstlisting}[language=Python]
+# invalid if statement
+$ (i1) -> { <statement>
+
+}
+
+# invalid if statement 2
+$ (i1) -> {
+  <statements> 
+} $$ (i2) -> {
+  <more statements>
+} -> {
+  <even more statements>
+} <statement> #(no newline after closing curly brace)
+\end{lstlisting}
 
 
 % TODO: Change sample programs
