@@ -40,7 +40,7 @@ path ['][a-zA-Z0-9_\/\.\~]+[']
 
     if (!block_comment) {
         fprintf(fparser,"%s", yytext);
-        fprintf(ftoken,"newline: \\n\n", yytext);
+        fprintf(ftoken,"newline: \\n\n");
         return NEWLINE;
     }
 }

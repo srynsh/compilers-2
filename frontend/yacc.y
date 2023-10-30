@@ -39,7 +39,7 @@ ink main() -> void {
 %left REL_OP
 
 %nonassoc IF
-%nonassoc IF_ELSE
+%nonassoc ELSE_IF
 
 
 %%
@@ -132,7 +132,7 @@ else_block : else_body
         | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body optional_new_lines else_block
         ;
 
-conditional_stmt : if_block else_block %prec IF_ELSE {fprintf(fparser, "conditional\n");}
+conditional_stmt : if_block else_block %prec ELSE_IF {fprintf(fparser, "conditional\n");}
                 | if_block  %prec IF {fprintf(fparser, "conditional\n");}
                 ;
 
