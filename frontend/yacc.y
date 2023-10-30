@@ -38,6 +38,10 @@ ink main() -> void {
 %left LOG_OP
 %left REL_OP
 
+%nonassoc IF
+%nonassoc IF_ELSE
+
+
 %%
 
 program : program function new_lines
@@ -115,14 +119,21 @@ loop_stmt : LOOP '(' optional_expr_pred ')' func_body {fprintf(fparser, "loop\n"
         | LOOP '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' new_lines func_body {fprintf(fparser, "loop\n");}
         ;
 
-ELSE_IF_LIST : ELSE_IF_LIST optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
-        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
+if_block : IF '(' expr_pred')' ARROW func_body
+        | IF '(' expr_pred')' ARROW new_lines func_body
+        | IF '(' expr_pred')' new_lines ARROW func_body
+        | IF '(' expr_pred')' new_lines ARROW new_lines func_body
         ;
 
-conditional_stmt : IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body optional_new_lines ELSE_IF_LIST optional_new_lines ARROW func_body {fprintf(fparser, "conditional\n");}
-                 | IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body optional_new_lines ARROW optional_new_lines func_body {fprintf(fparser, "conditional\n");}
-                // | IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body {fprintf(fparser, "conditional\n");}
-                // | IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body optional_new_lines ELSE_IF_LIST {fprintf(fparser, "conditional\n");}
+else_body : ARROW optional_new_lines func_body
+        ;
+
+else_block : else_body
+        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body optional_new_lines else_block
+        ;
+
+conditional_stmt : if_block else_block %prec IF_ELSE {fprintf(fparser, "conditional\n");}
+                | if_block  %prec IF {fprintf(fparser, "conditional\n");}
                 ;
 
 numeric_data_decl : num_decl
