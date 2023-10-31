@@ -93,8 +93,8 @@ loop_stmt_list : loop_stmt
 loop_body : '{' new_lines loop_stmt_list '}'
         ;
 
-loop_block : LOOP optional_new_lines '(' optional_expr_pred ')' optional_new_lines loop_body {fprintf(fparser, "loop");}
-        | LOOP optional_new_lines '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' optional_new_lines loop_body {fprintf(fparser, "loop");}
+loop_block : LOOP optional_new_lines '(' optional_loop_expr ')' optional_new_lines loop_body {fprintf(fparser, "loop");}
+        | LOOP optional_new_lines '(' optional_loop_decl ';' optional_loop_expr ';' optional_loop_expr ')' optional_new_lines loop_body {fprintf(fparser, "loop");}
         ;
 
 stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
@@ -113,11 +113,11 @@ stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
 unary_stmt : ID UNARY_OP new_lines
         ;
 
-optional_expr_pred : expr_pred
+optional_loop_expr : expr_pred
         | /* empty */
         ;
 
-optional_num_data_decl : numeric_data_decl 
+optional_loop_decl : expr_or_decl_stmt 
         | /* empty */
         ;
 
@@ -154,7 +154,7 @@ loop_conditional_stmt : loop_if_block optional_new_lines loop_else_if_block_list
                 | loop_if_block optional_new_lines loop_else {fprintf(fparser, "conditional\n");} new_lines
                 ;
 
-numeric_data_decl : num_decl
+expr_or_decl_stmt : num_decl
         | real_decl
         | bool_decl
         | img_decl  
@@ -166,11 +166,11 @@ numeric_data_decl : num_decl
         | loop_expr_stmt
         ;
 
-empty_return : /* empty */ {fprintf(fparser, "return");}
+print_return : /* empty */ {fprintf(fparser, "return");}
         ;
 
-return_stmt : RETURN expr_pred empty_return new_lines
-        | RETURN VOID empty_return new_lines 
+return_stmt : RETURN expr_pred print_return new_lines
+        | RETURN VOID print_return new_lines 
         ;
 
 decl_stmt : img_decl  new_lines
@@ -227,18 +227,18 @@ real_array_decl : REAL array_element ID
                 ;
 
 brak_pred : '{' brak_pred_list '}'
-          | '{' lit_list '}'
+          | '{' const_list '}'
           ;
 
 brak_pred_list : brak_pred_list ',' brak_pred
                | brak_pred
                ;
 
-lit_list : lit_list ',' lit
-         | lit
+const_list : const_list ',' const
+         | const
          ;
         
-lit : NUM_CONST
+const : NUM_CONST
     | REAL_CONST
     | BOOL_CONST
     ;
