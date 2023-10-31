@@ -12,7 +12,7 @@ extern int lineno;
 
 %}
 
-number [-]?[1-9][0-9]*|0
+number [-]?[1-9][0-9]*|0|0[xX][0-9a-fA-F]+
 real_number {number}(\.[0-9]+)?
 identifiers [_a-zA-Z][a-zA-Z0-9_]*
 keywords "img"|"gray_img"|"vid"|"gray_vid"|"num"|"real"|"spool"|"break"|"continue"|"return"|"ink"|"void"|"bool"|"true"|"false"
