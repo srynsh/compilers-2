@@ -12,8 +12,8 @@
 
 %token IF ELSE_IF RETURN CONTINUE BREAK LOOP INK
 %token ARROW DOT_OP LOG_OP REL_OP NEG_OP
-%token IMG GRAY_IMG VID GRAY_VID NUM REAL VOID BOOL BOOL_LIT NEWLINE
-%token ID NUM_LIT REAL_LIT PATH BINARY_OP UNARY_OP INV_OP 
+%token IMG GRAY_IMG VID GRAY_VID NUM REAL VOID BOOL BOOL_CONST NEWLINE
+%token ID NUM_CONST REAL_CONST PATH BINARY_OP UNARY_OP INV_OP 
 %start program
 
 %left DOT_OP
@@ -175,24 +175,24 @@ decl_stmt : img_decl
         | real_array_decl
         ;
 
-img_decl : IMG ID '<' NUM_LIT ',' NUM_LIT  '>' new_lines
-        | IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+img_decl : IMG ID '<' NUM_CONST ',' NUM_CONST  '>' new_lines
+        | IMG ID '<' NUM_CONST ',' NUM_CONST ',' NUM_CONST '>' new_lines
         | IMG ID '<' PATH '>' new_lines
         | IMG ID '=' expr_pred new_lines
         ; 
 
-gray_img_decl : GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
-        | GRAY_IMG ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+gray_img_decl : GRAY_IMG ID '<' NUM_CONST ',' NUM_CONST '>' new_lines
+        | GRAY_IMG ID '<' NUM_CONST ',' NUM_CONST ',' NUM_CONST '>' new_lines
         | GRAY_IMG ID '<' PATH '>' new_lines
         | GRAY_IMG ID '=' expr_pred new_lines
         ;
 
-vid_decl : VID ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
-        | VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+vid_decl : VID ID '<' NUM_CONST ',' NUM_CONST '>' new_lines
+        | VID ID '<' NUM_CONST ',' NUM_CONST ',' NUM_CONST '>' new_lines
         ;
 
-gray_vid_decl : GRAY_VID ID '<' NUM_LIT ',' NUM_LIT '>' new_lines
-        | GRAY_VID ID '<' NUM_LIT ',' NUM_LIT ',' NUM_LIT '>' new_lines
+gray_vid_decl : GRAY_VID ID '<' NUM_CONST ',' NUM_CONST '>' new_lines
+        | GRAY_VID ID '<' NUM_CONST ',' NUM_CONST ',' NUM_CONST '>' new_lines
         ;
 
 num_decl : NUM ID
@@ -229,9 +229,9 @@ lit_list : lit_list ',' lit
          | lit
          ;
         
-lit : NUM_LIT
-    | REAL_LIT
-    | BOOL_LIT
+lit : NUM_CONST
+    | REAL_CONST
+    | BOOL_CONST
     ;
 
 
@@ -250,9 +250,9 @@ in_built_call_stmt : ID DOT_OP ID '(' arg_list ')'
         ;
 
 expr_pred : ID 
-        | NUM_LIT
-        | REAL_LIT
-        | BOOL_LIT
+        | NUM_CONST
+        | REAL_CONST
+        | BOOL_CONST
         | expr_pred REL_OP expr_pred
         | expr_pred LOG_OP expr_pred
         | '(' expr_pred ')'

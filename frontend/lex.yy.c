@@ -882,7 +882,7 @@ YY_RULE_SETUP
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"constant: %s\n", yytext);
-    return NUM_LIT;
+    return NUM_CONST;
 }
 	YY_BREAK
 case 8:
@@ -891,7 +891,7 @@ YY_RULE_SETUP
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"constant: %s\n", yytext);
-    return REAL_LIT;
+    return REAL_CONST;
 }
 	YY_BREAK
 case 9:
@@ -927,8 +927,8 @@ YY_RULE_SETUP
     else if (strcmp(yytext,"real")==0) return REAL;
     else if (strcmp(yytext,"void")==0) return VOID;
     else if (strcmp(yytext,"bool")==0) return BOOL;
-    else if (strcmp(yytext,"true")==0) return BOOL_LIT;
-    else if (strcmp(yytext,"false")==0) return BOOL_LIT;
+    else if (strcmp(yytext,"true")==0) return BOOL_CONST;
+    else if (strcmp(yytext,"false")==0) return BOOL_CONST;
     else if (strcmp(yytext,"ink")==0){
         return INK;
     }
