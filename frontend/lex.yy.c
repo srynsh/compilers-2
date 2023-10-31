@@ -529,10 +529,8 @@ extern FILE* ftoken; // Output file for tokens
 extern FILE* fparser; // Output file for parser
 extern int lineno;
 
-int inline_comment = 0;
-int block_comment = 0;
-#line 534 "lex.yy.c"
-#line 535 "lex.yy.c"
+#line 532 "lex.yy.c"
+#line 533 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -749,10 +747,10 @@ YY_DECL
 		}
 
 	{
-#line 34 "lex.l"
+#line 32 "lex.l"
 
 
-#line 755 "lex.yy.c"
+#line 753 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -812,7 +810,7 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 36 "lex.l"
+#line 34 "lex.l"
 {
     lineno++;
     fprintf(fparser,"%s", yytext);
@@ -822,7 +820,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 43 "lex.l"
+#line 41 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"operator: %s\n", yytext);
@@ -842,14 +840,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 60 "lex.l"
+#line 58 "lex.l"
 {
     fprintf(fparser, "%s", yytext);
 }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 64 "lex.l"
+#line 62 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"access_operator: %s\n", yytext);
@@ -858,7 +856,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 70 "lex.l"
+#line 68 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"logical_operator: %s\n", yytext);
@@ -868,7 +866,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 77 "lex.l"
+#line 75 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"relational_operator: %s\n", yytext);
@@ -879,7 +877,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 85 "lex.l"
+#line 83 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"constant: %s\n", yytext);
@@ -888,7 +886,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 91 "lex.l"
+#line 89 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"constant: %s\n", yytext);
@@ -897,7 +895,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 97 "lex.l"
+#line 95 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"operator: %s\n", yytext);
@@ -906,7 +904,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 103 "lex.l"
+#line 101 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"path: %s\n", yytext);
@@ -915,7 +913,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 109 "lex.l"
+#line 107 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"keyword: %s\n", yytext);
@@ -941,7 +939,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 132 "lex.l"
+#line 130 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"keyword: %s\n", yytext);
@@ -951,7 +949,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 139 "lex.l"
+#line 137 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"ID: %s\n", yytext);
@@ -961,14 +959,14 @@ YY_RULE_SETUP
 case 14:
 /* rule 14 can match eol */
 YY_RULE_SETUP
-#line 145 "lex.l"
+#line 143 "lex.l"
 {
     // fprintf(fparser,"%s", yytext);
 }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 149 "lex.l"
+#line 147 "lex.l"
 {
     fprintf(ftoken, "punctuation: %s\n", yytext);
     fprintf(fparser, "%s", yytext);
@@ -977,10 +975,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 154 "lex.l"
+#line 152 "lex.l"
 ECHO;
 	YY_BREAK
-#line 983 "lex.yy.c"
+#line 981 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1985,5 +1983,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 154 "lex.l"
+#line 152 "lex.l"
 

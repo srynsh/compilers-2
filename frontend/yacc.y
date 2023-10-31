@@ -117,7 +117,7 @@ optional_expr_pred : expr_pred
         | /* empty */
         ;
 
-optional_num_data_decl : numeric_data_decl
+optional_num_data_decl : numeric_data_decl 
         | /* empty */
         ;
 
@@ -157,6 +157,13 @@ loop_conditional_stmt : loop_if_block optional_new_lines loop_else_if_block_list
 numeric_data_decl : num_decl
         | real_decl
         | bool_decl
+        | img_decl  
+        | gray_img_decl 
+        | vid_decl 
+        | gray_vid_decl  
+        | num_array_decl 
+        | real_array_decl 
+        | loop_expr_stmt
         ;
 
 empty_return : /* empty */ {fprintf(fparser, "return");}
@@ -166,35 +173,35 @@ return_stmt : RETURN expr_pred empty_return new_lines
         | RETURN VOID empty_return new_lines 
         ;
 
-decl_stmt : img_decl 
-        | gray_img_decl
-        | vid_decl
-        | gray_vid_decl
+decl_stmt : img_decl  new_lines
+        | gray_img_decl new_lines
+        | vid_decl new_lines
+        | gray_vid_decl  new_lines
         | num_decl new_lines
         | bool_decl new_lines
         | real_decl new_lines 
-        | num_array_decl
-        | real_array_decl
+        | num_array_decl new_lines
+        | real_array_decl new_lines
         ;
 
-img_decl : IMG ID '<' NUM_CONST ',' NUM_CONST  '>' new_lines
-        | IMG ID '<' NUM_CONST ',' NUM_CONST ',' NUM_CONST '>' new_lines
-        | IMG ID '<' PATH '>' new_lines
-        | IMG ID '=' expr_pred new_lines
+img_decl : IMG ID '<' NUM_CONST ',' NUM_CONST  '>' 
+        | IMG ID '<' NUM_CONST ',' NUM_CONST ',' NUM_CONST '>' 
+        | IMG ID '<' PATH '>' 
+        | IMG ID '=' expr_pred 
         ; 
 
-gray_img_decl : GRAY_IMG ID '<' NUM_CONST ',' NUM_CONST '>' new_lines
-        | GRAY_IMG ID '<' NUM_CONST ',' NUM_CONST ',' NUM_CONST '>' new_lines
-        | GRAY_IMG ID '<' PATH '>' new_lines
-        | GRAY_IMG ID '=' expr_pred new_lines
+gray_img_decl : GRAY_IMG ID '<' NUM_CONST ',' NUM_CONST '>' 
+        | GRAY_IMG ID '<' NUM_CONST ',' NUM_CONST ',' NUM_CONST '>' 
+        | GRAY_IMG ID '<' PATH '>' 
+        | GRAY_IMG ID '=' expr_pred 
         ;
 
-vid_decl : VID ID '<' NUM_CONST ',' NUM_CONST '>' new_lines
-        | VID ID '<' NUM_CONST ',' NUM_CONST ',' NUM_CONST '>' new_lines
+vid_decl : VID ID '<' NUM_CONST ',' NUM_CONST '>' 
+        | VID ID '<' NUM_CONST ',' NUM_CONST ',' NUM_CONST '>' 
         ;
 
-gray_vid_decl : GRAY_VID ID '<' NUM_CONST ',' NUM_CONST '>' new_lines
-        | GRAY_VID ID '<' NUM_CONST ',' NUM_CONST ',' NUM_CONST '>' new_lines
+gray_vid_decl : GRAY_VID ID '<' NUM_CONST ',' NUM_CONST '>' 
+        | GRAY_VID ID '<' NUM_CONST ',' NUM_CONST ',' NUM_CONST '>' 
         ;
 
 num_decl : NUM ID
@@ -209,14 +216,14 @@ real_decl : REAL ID
         | REAL ID '=' expr_pred
         ;
 
-num_array_decl : NUM array_element ID new_lines
-                | NUM array_element ID '=' ID new_lines   
-                | NUM array_element ID '=' brak_pred new_lines
+num_array_decl : NUM array_element ID 
+                | NUM array_element ID '=' ID    
+                | NUM array_element ID '=' brak_pred 
                 ;
 
-real_array_decl : REAL array_element ID new_lines
-                | REAL array_element ID '=' ID new_lines
-                | REAL array_element ID '=' brak_pred new_lines 
+real_array_decl : REAL array_element ID 
+                | REAL array_element ID '=' ID 
+                | REAL array_element ID '=' brak_pred  
                 ;
 
 brak_pred : '{' brak_pred_list '}'
@@ -270,6 +277,10 @@ expr_pred : ID
 
 expr_stmt : ID '=' expr_pred new_lines
         | ID array_element '=' expr_pred new_lines
+        ;
+
+loop_expr_stmt : ID '=' expr_pred 
+        | ID array_element '=' expr_pred 
         ;
 
 array_element : '[' expr_pred ']'
