@@ -10,8 +10,6 @@ extern FILE* ftoken; // Output file for tokens
 extern FILE* fparser; // Output file for parser
 extern int lineno;
 
-int inline_comment = 0;
-int block_comment = 0;
 %}
 
 number [-]?[1-9][0-9]*|0
@@ -85,13 +83,13 @@ path ['][a-zA-Z0-9_\/\.\~]+[']
 {number} {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"constant: %s\n", yytext);
-    return NUM_LIT;
+    return NUM_CONST;
 }
 
 {real_number} {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"constant: %s\n", yytext);
-    return REAL_LIT;
+    return REAL_CONST;
 }
 
 {arrow} {
@@ -118,8 +116,8 @@ path ['][a-zA-Z0-9_\/\.\~]+[']
     else if (strcmp(yytext,"real")==0) return REAL;
     else if (strcmp(yytext,"void")==0) return VOID;
     else if (strcmp(yytext,"bool")==0) return BOOL;
-    else if (strcmp(yytext,"true")==0) return BOOL_LIT;
-    else if (strcmp(yytext,"false")==0) return BOOL_LIT;
+    else if (strcmp(yytext,"true")==0) return BOOL_CONST;
+    else if (strcmp(yytext,"false")==0) return BOOL_CONST;
     else if (strcmp(yytext,"ink")==0){
         return INK;
     }
