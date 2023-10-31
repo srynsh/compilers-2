@@ -75,8 +75,8 @@ path ['][a-zA-Z0-9_\/\.\~]+[']
 {relational_operator} {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"relational_operator: %s\n", yytext);
-    if (strcmp(yytext, "<")==0) return *yytext;
-    else if (strcmp(yytext, ">")==0) return *yytext;
+    if (strcmp(yytext, "<")==0) return LT;
+    else if (strcmp(yytext, ">")==0) return GT;
     return REL_OP;
 }
 

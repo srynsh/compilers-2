@@ -248,9 +248,13 @@ call_stmt : ID '(' arg_list ')'
         | ID '(' ')' 
         ;
 
-arg_list : arg_list ',' expr_pred
-        | expr_pred
+arg_list : arg_list ',' arg
+        | arg
         ;
+
+arg : expr_pred
+    | PATH
+    ;
 
 in_built_call_stmt : ID DOT_OP ID '(' arg_list ')'
         | ID DOT_OP ID '(' ')'
