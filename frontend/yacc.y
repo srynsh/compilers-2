@@ -11,7 +11,7 @@
 %}
 
 %token IF ELSE_IF RETURN CONTINUE BREAK LOOP INK
-%token ARROW DOT_OP LOG_OP REL_OP NEG_OP
+%token ARROW DOT_OP LOG_OP REL_OP GT LT NEG_OP
 %token IMG GRAY_IMG VID GRAY_VID NUM REAL VOID BOOL BOOL_CONST NEWLINE
 %token ID NUM_CONST REAL_CONST PATH BINARY_OP UNARY_OP INV_OP 
 %start S
@@ -20,8 +20,8 @@
 %left UNARY_OP
 %right INV_OP NEG_OP
 %left BINARY_OP
-%left LOG_OP
-%left REL_OP
+%left LOG_OP 
+%left REL_OP GT LT
 
 %%
 S : optional_new_lines program
@@ -184,24 +184,24 @@ decl_stmt : img_decl  new_lines
         | real_array_decl new_lines
         ;
 
-img_decl : IMG ID '<' NUM_CONST ',' NUM_CONST  '>' 
-        | IMG ID '<' NUM_CONST ',' NUM_CONST ',' NUM_CONST '>' 
-        | IMG ID '<' PATH '>' 
+img_decl : IMG ID LT NUM_CONST ',' NUM_CONST  GT 
+        | IMG ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT 
+        | IMG ID LT PATH GT 
         | IMG ID '=' expr_pred 
         ; 
 
-gray_img_decl : GRAY_IMG ID '<' NUM_CONST ',' NUM_CONST '>' 
-        | GRAY_IMG ID '<' NUM_CONST ',' NUM_CONST ',' NUM_CONST '>' 
-        | GRAY_IMG ID '<' PATH '>' 
+gray_img_decl : GRAY_IMG ID LT NUM_CONST ',' NUM_CONST GT 
+        | GRAY_IMG ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT 
+        | GRAY_IMG ID LT PATH GT 
         | GRAY_IMG ID '=' expr_pred 
         ;
 
-vid_decl : VID ID '<' NUM_CONST ',' NUM_CONST '>' 
-        | VID ID '<' NUM_CONST ',' NUM_CONST ',' NUM_CONST '>' 
+vid_decl : VID ID LT NUM_CONST ',' NUM_CONST GT 
+        | VID ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT 
         ;
 
-gray_vid_decl : GRAY_VID ID '<' NUM_CONST ',' NUM_CONST '>' 
-        | GRAY_VID ID '<' NUM_CONST ',' NUM_CONST ',' NUM_CONST '>' 
+gray_vid_decl : GRAY_VID ID LT NUM_CONST ',' NUM_CONST GT 
+        | GRAY_VID ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT 
         ;
 
 num_decl : NUM ID
@@ -263,6 +263,8 @@ expr_pred : ID
         | REAL_CONST
         | BOOL_CONST
         | expr_pred REL_OP expr_pred
+        | expr_pred LT expr_pred
+        | expr_pred GT expr_pred
         | expr_pred LOG_OP expr_pred
         | '(' expr_pred ')'
         | NEG_OP expr_pred

@@ -18,4 +18,4 @@ lex.yy.c: y.tab.h lex.l
 
 
 clean:
-	rm output y.tab.h y.tab.c lex.yy.c
+	rm output y.tab.h y.tab.c lex.yy.c y.output parsed.txt token.txt
