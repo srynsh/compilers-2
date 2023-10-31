@@ -1,3 +1,5 @@
+
+
 ink _func1(img gray, gray_img blablablabla) -> img 
 
 { 
@@ -11,7 +13,9 @@ ink _func1(img gray, gray_img blablablabla) -> img
 		lol = lol
 		break
 	}
+	spool (i[0] = 0;;) {
 
+	}
 	spool ( num i = 0; i23n32.catastrophe(iwf, eeer,er ,terretrte) + (i1 + i2) * (i3 - i4) / (i5 ^ i6) / ((xyz or be) and ~~i1.catastrophe2().cat()); ) 
 
 	{
@@ -27,7 +31,7 @@ ink _func1(img gray, gray_img blablablabla) -> img
 	}
 
 	#* ancd *#
-	#* *#
+	#*
 
 	abcd
 	andfe

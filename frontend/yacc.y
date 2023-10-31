@@ -14,7 +14,7 @@
 %token ARROW DOT_OP LOG_OP REL_OP NEG_OP
 %token IMG GRAY_IMG VID GRAY_VID NUM REAL VOID BOOL BOOL_LIT NEWLINE
 %token ID NUM_LIT REAL_LIT PATH BINARY_OP UNARY_OP INV_OP 
-%start program
+%start S
 
 %left DOT_OP
 %left UNARY_OP
@@ -24,6 +24,7 @@
 %left REL_OP
 
 %%
+S : optional_new_lines program
 
 program : function new_lines program
         | function optional_new_lines
@@ -118,6 +119,7 @@ optional_num_data_decl : numeric_data_decl
 
 loop_stmt : LOOP optional_new_lines '(' optional_expr_pred ')' optional_new_lines loop_body {fprintf(fparser, "loop");}
         | LOOP optional_new_lines '(' optional_num_data_decl ';' optional_expr_pred ';' optional_expr_pred ')' optional_new_lines loop_body {fprintf(fparser, "loop");}
+        | 
         ;
 
 if_block : IF optional_new_lines '(' expr_pred')' optional_new_lines ARROW optional_new_lines func_body 
