@@ -1,0 +1,39 @@
+# This program has no errors
+# Some Basic language features
+
+ink main()->void {
+    num _int
+    num a = 2
+    num b = 8
+    num height = 90
+    real frac_8
+    real _238
+    bool __val__ = true
+
+    _int = 8 * (9 + 23) / 10
+
+    frac_8 = 8 / 43
+
+    _238 = _int >= 1 and __val__    # In-line comment test #1
+
+    $ (a >= 5 or b <= 2) -> {  # In-line comment test #2
+        __val__ = false
+    }
+    $$ (!a) -> {
+        a = 10
+    }
+    ->
+    {
+        _238 = (0.238 * 5 + 1) / 77
+    }
+
+    #* Multi-line
+       Comment
+       Test #1 *#
+
+       #* Multi-line
+       #* Comment 
+       Test #2 *#
+
+    return void
+}
