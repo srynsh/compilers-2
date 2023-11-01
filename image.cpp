@@ -1,10 +1,10 @@
 #include <_types/_uint8_t.h>
 #include <bits/stdc++.h>
 #include <cstdio>
-#include "kernel.h"
-#include "load_bmp.h"
+#include "headers/kernel.h"
+#include "headers/load_bmp.h"
 
-/* To run: g++ --std=c++11 -o image kernel.cpp image.cpp */
+/* To run: g++ --std=c++11 -o image headers/kernel.cpp headers/load_bmp.cpp image.cpp */
 
 using namespace std;
 
@@ -280,6 +280,7 @@ class gray_image {
             h = img.get_height();
             w = img.get_width();
 
+
             gray = (int **)malloc(w * sizeof(int *));
 
             for (int i=0; i<w; i++) {
@@ -288,7 +289,14 @@ class gray_image {
 
             for(int i=0; i<w; i++) {
                 for(int j=0; j<h; j++) {
-                    gray[i][j] = img.get_pixel(i, j);
+                    // gray[i][j] = img.get_pixel(i, j);
+                    int pixel = img.get_pixel(i, j);
+                    if (pixel < 0) {
+                        pixel = 0; // clip to 0 if value is negative
+                    } else if (pixel > 255) {
+                        pixel = 255; // clip to 255 if value exceeds 255
+                    }
+                    gray[i][j] = pixel;
                 }
             }
         }
@@ -330,7 +338,7 @@ class gray_image {
 
             assert(x >= 0 && x < w);
             assert(y >= 0 && y < h);
-            assert(color >= 0 && color <= 255);
+            // assert(color >= 0 && color <= 255);
 
             gray[x][y] = color;
         }
@@ -411,6 +419,17 @@ class gray_image {
             canvas = (unsigned char *)malloc(3*w*h);
             memset(canvas,0,3*w*h);
 
+            // Clip all values to 0-255
+            for(int i=0; i<w; i++) {
+                for(int j=0; j<h; j++) {
+                    if (gray[i][j] < 0) {
+                        gray[i][j] = 0; // clip to 0 if value is negative
+                    } else if (gray[i][j] > 255) {
+                        gray[i][j] = 255; // clip to 255 if value exceeds 255
+                    }
+                }
+            }
+
             for(int i=0; i<w; i++) {
                 for(int j=0; j<h; j++) {
                     int x=i; int y=(h-1)-j;
@@ -473,9 +492,9 @@ class gray_image {
             for (int i=0; i<w; i++) {
                 for (int j=0; j<h; j++) {
                     int val = gray[i][j] - img.get_pixel(i, j); 
-                    if (val < 0) {
-                        val = 0; // clip to 0 if value is negative
-                    }
+                    // if (val < 0) {
+                    //     val = 0; // clip to 0 if value is negative
+                    // }
                     new_img.set_pixel(i, j, val);
                 }
             }
@@ -498,9 +517,9 @@ class gray_image {
             for (int i=0; i<w; i++) {
                 for (int j=0; j<h; j++) {
                     int val = gray[i][j] + img.get_pixel(i, j); 
-                    if (val > 255) {
-                        val = 255; // clip to 255 if value exceeds 255
-                    }
+                    // if (val > 255) {
+                    //     val = 255; // clip to 255 if value exceeds 255
+                    // }
                     new_img.set_pixel(i, j, val);
                 }
             }
@@ -557,7 +576,13 @@ class gray_image {
 
             for(int i=0; i<w; i++) {
                 for(int j=0; j<h; j++) {
-                    gray[i][j] = img.get_pixel(i, j);
+                    int pixel = img.get_pixel(i, j);
+                    if (pixel < 0) {
+                        pixel = 0; // clip to 0 if value is negative
+                    } else if (pixel > 255) {
+                        pixel = 255; // clip to 255 if value exceeds 255
+                    }
+                    gray[i][j] = pixel;
                 }
             }
 
@@ -579,9 +604,9 @@ class gray_image {
             for (int i=0; i<w; i++) {
                 for (int j=0; j<h; j++) {
                     int val = gray[i][j] * img.get_pixel(i, j); 
-                    if (val > 255) {
-                        val = 255; // clip to 255 if value exceeds 255
-                    }
+                    // if (val > 255) {
+                    //     val = 255; // clip to 255 if value exceeds 255
+                    // }
                     new_img.set_pixel(i, j, val);
                 }
             }
@@ -761,11 +786,11 @@ class gray_image {
             for (int i=0; i<w; i++) {
                 for (int j=0; j<h; j++) {
                     int val = gray[i][j] + distribution(generator);
-                    if (val < 0) {
-                        val = 0; // clip to 0 if value is negative
-                    } else if (val > 255) {
-                        val = 255; // clip to 255 if value exceeds 255
-                    }
+                    // if (val < 0) {
+                    //     val = 0; // clip to 0 if value is negative
+                    // } else if (val > 255) {
+                    //     val = 255; // clip to 255 if value exceeds 255
+                    // }
                     new_img.set_pixel(i, j, val);
                 }
             }
@@ -878,11 +903,11 @@ gray_image conv(gray_image &img, vector< vector<float> > kernel, int stride, flo
                 }
             }
 
-            if (sum < 0) {
-                sum = 0; // clip to 0 if value is negative
-            } else if (sum > 255) {
-                sum = 255; // clip to 255 if value exceeds 255
-            }
+            // if (sum < 0) {
+            //     sum = 0; // clip to 0 if value is negative
+            // } else if (sum > 255) {
+            //     sum = 255; // clip to 255 if value exceeds 255
+            // }
 
             new_img.set_pixel(i, j, (int)sum);
         }
@@ -905,11 +930,11 @@ gray_image to_gray_image(vector< vector<float> > vec) {
 
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
-            if(vec[i][j] < 0) {
-                vec[i][j] = 0; // clip to 0 if value is negative
-            } else if (vec[i][j] > 255) {
-                vec[i][j] = 255; // clip to 255 if value exceeds 255
-            }
+            // if(vec[i][j] < 0) {
+            //     vec[i][j] = 0; // clip to 0 if value is negative
+            // } else if (vec[i][j] > 255) {
+            //     vec[i][j] = 255; // clip to 255 if value exceeds 255
+            // }
             img.set_pixel(i, j, (int)vec[i][j]);
         }
     }
@@ -939,7 +964,7 @@ gray_image to_gray_image(vector< vector<float> > vec) {
 
 // Check filters and functions
 int main() {
-    // gray_image img("./in.bmp");
+    // gray_image img("./images/inputs/in.bmp");
     // gray_image new_img = img.blur(5);
     // gray_image new_img2 = img.sharpen(20);
     // gray_image new_img3 = img.sobel();
@@ -950,27 +975,28 @@ int main() {
     // gray_image new_img8 = img.invert();
     // gray_image new_img9 = img.noise(15);
     // gray_image new_img10 = img.bnw();
-    // img.frame("./outputs/output_orig.bmp");
-    // new_img.frame("./outputs/output_blur.bmp");
-    // new_img2.frame("./outputs/output_sharpen.bmp");
-    // new_img3.frame("./outputs/output_sobel.bmp");
-    // new_img4.frame("./outputs/output_hflip.bmp");
-    // new_img5.frame("./outputs/output_vflip.bmp");
-    // new_img6.frame("./outputs/output_transpose.bmp");
-    // new_img7.frame("./outputs/output_pixelate.bmp");
-    // new_img8.frame("./outputs/output_invert.bmp");
-    // new_img9.frame("./outputs/output_noise.bmp");
-    // new_img10.frame("./outputs/output_bnw.bmp");
 
-    image i1(100, 200, 0xa3c511);
-    vector<int> v;
-    v.push_back(0);
-    v.push_back(0);
-    v.push_back(50);
+    // img.frame("./images/outputs/output_orig.bmp");
+    // new_img.frame("./images/outputs/output_blur.bmp");
+    // new_img2.frame("./images/outputs/output_sharpen.bmp");
+    // new_img3.frame("./images/outputs/output_sobel.bmp");
+    // new_img4.frame("./images/outputs/output_hflip.bmp");
+    // new_img5.frame("./images/outputs/output_vflip.bmp");
+    // new_img6.frame("./images/outputs/output_transpose.bmp");
+    // new_img7.frame("./images/outputs/output_pixelate.bmp");
+    // new_img8.frame("./images/outputs/output_invert.bmp");
+    // new_img9.frame("./images/outputs/output_noise.bmp");
+    // new_img10.frame("./images/outputs/output_bnw.bmp");
 
-    i1.draw("circle", v);
-    i1.frame("./out.bmp");
-    i1.load("./images/inputs/snail.bmp");
-    i1.frame("./out2.bmp");
+    // image i1(100, 200, 0xa3c511);
+    // vector<int> v;
+    // v.push_back(0);
+    // v.push_back(0);
+    // v.push_back(50);
+
+    // i1.draw("circle", v);
+    // i1.frame("./images/outputs/out.bmp");
+    // i1.load("./images/inputs/snail.bmp");
+    // i1.frame("./images/outputs/out2.bmp");
     return 0;
 }
