@@ -37,10 +37,10 @@ int rows;
 int cols;
 
 void RGB_Allocate(unsigned char**& dude, int rows, int cols) {
-    dude = new uint8_t*[rows];
+    dude = new uint8_t*[cols];
      
-    for (int i = 0; i < rows; i++) {
-        dude[i] = new uint8_t[cols];
+    for (int i = 0; i < cols; i++) {
+        dude[i] = new uint8_t[rows];
     }
 }
 
@@ -81,13 +81,13 @@ void GetPixlesFromBMP24(unsigned char** reds, unsigned char** greens, unsigned c
             for (int k = 0; k < 3; k++) {
                 switch (k) {
                     case 0:
-                        reds[i][j] = FileReadBuffer[end - count++];
+                        reds[j][i] = FileReadBuffer[end - count++];
                         break;
                     case 1:
-                        greens[i][j] = FileReadBuffer[end - count++];
+                        greens[j][i] = FileReadBuffer[end - count++];
                         break;
                     case 2:
-                        blues[i][j] = FileReadBuffer[end - count++];
+                        blues[j][i] = FileReadBuffer[end - count++];
                         break;
                 }
             }
@@ -112,13 +112,13 @@ void WriteOutBmp24(char* FileBuffer, const char* NameOfFileToCreate, int BufferS
             for (int k = 0; k < 3; k++) {
                 switch (k) {
                     case 0: //reds
-                        FileBuffer[BufferSize - count] = reds[i][j];
+                        FileBuffer[BufferSize - count] = reds[j][i];
                         break;
                     case 1: //green
-                        FileBuffer[BufferSize - count] = greens[i][j];
+                        FileBuffer[BufferSize - count] = greens[j][i];
                         break;
                     case 2: //blue
-                        FileBuffer[BufferSize - count] = blues[i][j];
+                        FileBuffer[BufferSize - count] = blues[j][i];
                         break;
                 }
 

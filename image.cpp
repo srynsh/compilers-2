@@ -1,6 +1,8 @@
 #include <_types/_uint8_t.h>
 #include <bits/stdc++.h>
 #include <cstdio>
+#include <malloc/_malloc.h>
+#include <vector>
 #include "headers/kernel.h"
 #include "headers/load_bmp.h"
 
@@ -17,10 +19,16 @@ gray_image to_gray_image(vector< vector<float> > vec);
 
 #define MAX_SIZE 2000
 
+void swap(int &a, int &b) {
+    int temp = a;
+    a = b;
+    b = temp;
+}
+
 class image {
     private:
-        int w;
         int h;
+        int w;
 
         uint8_t **red;
         uint8_t **green;
@@ -28,6 +36,16 @@ class image {
         int buffer_size;
         char* FileBuffer;
         bool made;
+
+        void flip() {
+            for (int i=0; i<w; i++) {
+                for (int j=0; j<h/2; j++) {
+                    swap(red[i][j], red[i][h-1-j]);
+                    swap(green[i][j], green[i][h-1-j]);
+                    swap(blue[i][j], blue[i][h-1-j]);
+                }
+            }
+        }
 
     public:
         image(int h, int w, int color) {
@@ -42,18 +60,18 @@ class image {
             this->h = h;
             this->w = w;
 
-            red = new uint8_t*[h];
-            green = new uint8_t*[h];
-            blue = new uint8_t*[h];
+            red = new uint8_t*[w];
+            green = new uint8_t*[w];
+            blue = new uint8_t*[w];
 
-            for (int i=0; i<h; i++) {
-                red[i] = new uint8_t[w];
-                green[i] = new uint8_t[w];
-                blue[i] = new uint8_t[w];
+            for (int i=0; i<w; i++) {
+                red[i] = new uint8_t[h];
+                green[i] = new uint8_t[h];
+                blue[i] = new uint8_t[h];
             }
 
-            for(int i=0; i<h; i++) {
-                for(int j=0; j<w; j++) {
+            for(int i=0; i<w; i++) {
+                for(int j=0; j<h; j++) {
                     red[i][j] = red_c;
                     green[i][j] = green_c;
                     blue[i][j] = blue_c;
@@ -70,7 +88,7 @@ class image {
 
         void load(string filename, bool init=false) {
             if (!init) {    
-                for (int i=0; i<h; i++) {
+                for (int i=0; i<w; i++) {
                     delete [] red[i];
                     delete [] green[i];
                     delete [] blue[i];
@@ -79,6 +97,10 @@ class image {
                 delete [] red;
                 delete [] green;
                 delete [] blue; 
+
+                if (!made) {
+                    delete FileBuffer;
+                }
             }    
 
             if (!FillAndAllocate(FileBuffer, filename.c_str(), h, w, buffer_size)) {
@@ -92,14 +114,21 @@ class image {
             GetPixlesFromBMP24( red,  green, blue, buffer_size, h, w, FileBuffer);
 
             made = 0;
+            flip();
         }
 
         void frame(string filename) {
+            
             if (made) {
+                flip();
                 frame_self(filename);
+                flip();
             } else {
+                flip();
                 frame_pre(filename);
+                flip();
             }
+            // flip();
         }
 
         void frame_self(string filename) {
@@ -112,9 +141,9 @@ class image {
             for(int i=0; i<h; i++) {
                 for(int j=0; j<w; j++) {
                     int x=i; int y=j;
-                    canvas[(y+x*w)*3+0] = (unsigned char)(red[i][j]);
-                    canvas[(y+x*w)*3+1] = (unsigned char)(red[i][j]);
-                    canvas[(y+x*w)*3+2] = (unsigned char)(red[i][j]);
+                    canvas[(y+x*w)*3+0] = (unsigned char)(blue[j][i]);
+                    canvas[(y+x*w)*3+1] = (unsigned char)(green[j][i]);
+                    canvas[(y+x*w)*3+2] = (unsigned char)(red[j][i]);
                 } 
             }
 
@@ -164,13 +193,15 @@ class image {
                 int cy = params[1];
                 bool fill = params[3];
 
-                for (int y=0; y<w; y++) {
-                    for (int x=0; x<h; x++) {
+                cout << cx << " " << cy << " " << r << endl;
+
+                for (int y=0; y<h; y++) {
+                    for (int x=0; x<w; x++) {
                         
                         if ((x-cx)*(x-cx) + (y-cy)*(y-cy) <= r*r) {
-                            red[x][y] = 0;
-                            green[x][y] = 0;
-                            blue[x][y] = 0;
+                            red[x][y] = 120;
+                            green[x][y] = 120;
+                            blue[x][y] = 120;
                         }
                     }
                 }
@@ -195,15 +226,15 @@ class image {
         }
 
         int get_height() {
-            return w;
-        }
-
-        int get_width() {
             return h;
         }
 
+        int get_width() {
+            return w;
+        }
+
         ~image() {
-            for (int i=0; i<h; i++) {
+            for (int i=0; i<w; i++) {
                 delete [] red[i];
                 delete [] green[i];
                 delete [] blue[i];
@@ -212,6 +243,18 @@ class image {
             delete [] red;
             delete [] green;
             delete [] blue;
+
+            if (!made) {
+                delete FileBuffer;
+            }
+        }
+
+        void test() {
+            blue[0][0] = 0;
+            green[0][0] = 0;
+            red[0][0] = 0;
+            blue[0][1] = 255;
+            red[1][0] = 255;
         }
 };
 
@@ -942,28 +985,30 @@ gray_image to_gray_image(vector< vector<float> > vec) {
     return img;
 }
 
-// int main() {
-//     // image img(200, 100, 0xffffff);
-//     // img.frame("test.bmp");
-//     // int h = img.get_height();
-//     // int w = img.get_width();
-//     // vector<int> v;
-//     // v.push_back(10);
-//     // v.push_back(w/5);
-//     // v.push_back(h/2);
-//     // cout << "h: " << h << endl;
-//     // cout << "w: " << w << endl;
-//     // img.draw("circle", v);
-//     // img.frame("test2.bmp");
-//     // img.load("./test2.bmp");
-//     // img.frame("test3.bmp");
-//     gray_image img("./input.bmp");
-//     img.frame("./output.bmp");
-//     return 0;
-// }
-
 // Check filters and functions
 int main() {
+    vector<int> v;
+    v.push_back(15);
+    v.push_back(0);
+    v.push_back(50);
+    image i1(200, 100, 0);
+    i1.test();
+    i1.draw("circle", v);
+    i1.frame("./images/outputs/out.bmp");
+    i1.load("./images/inputs/snail.bmp");
+    cout << i1.get_height() << endl;
+    cout << i1.get_width() << endl;
+    i1.draw("circle", v);
+    i1.test();
+    i1.frame("./images/outputs/out1.bmp");
+    // i1.load("./images/inputs/snail.bmp");
+    // i1.draw("circle", v);
+    // i1.frame("./images/outputs/out2.bmp");
+    // i1.load("./images/outputs/out.bmp");
+    // i1.frame("./images/outputs/out3.bmp");
+    return 0;
+}
+
     // gray_image img("./images/inputs/in.bmp");
     // gray_image new_img = img.blur(5);
     // gray_image new_img2 = img.sharpen(20);
@@ -987,16 +1032,3 @@ int main() {
     // new_img8.frame("./images/outputs/output_invert.bmp");
     // new_img9.frame("./images/outputs/output_noise.bmp");
     // new_img10.frame("./images/outputs/output_bnw.bmp");
-
-    // image i1(100, 200, 0xa3c511);
-    // vector<int> v;
-    // v.push_back(0);
-    // v.push_back(0);
-    // v.push_back(50);
-
-    // i1.draw("circle", v);
-    // i1.frame("./images/outputs/out.bmp");
-    // i1.load("./images/inputs/snail.bmp");
-    // i1.frame("./images/outputs/out2.bmp");
-    return 0;
-}
