@@ -61,7 +61,7 @@ ink main() -> gray_vid {
 
 		{
 			return foo
-return		}conditional
+		}conditional
 
 
 		$ (i1) -> { 

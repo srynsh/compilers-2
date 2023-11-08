@@ -524,16 +524,11 @@ char *yytext;
 #line 4 "lex.l"
 #include "y.tab.h"
 #include <bits/stdc++.h>
-// #include <stdio.h>
-// #include <string.h>
-// #include <stdlib.h>
-// #include <stdbool.h>
 extern FILE* ftoken; // Output file for tokens
 extern FILE* fparser; // Output file for parser
 extern int lineno;
-
-#line 535 "lex.yy.c"
-#line 536 "lex.yy.c"
+#line 530 "lex.yy.c"
+#line 531 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -750,10 +745,10 @@ YY_DECL
 		}
 
 	{
-#line 33 "lex.l"
+#line 28 "lex.l"
 
 
-#line 756 "lex.yy.c"
+#line 751 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -813,7 +808,7 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 35 "lex.l"
+#line 30 "lex.l"
 {
     lineno++;
     fprintf(fparser,"%s", yytext);
@@ -823,7 +818,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 42 "lex.l"
+#line 37 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"operator: %s\n", yytext);
@@ -843,14 +838,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 59 "lex.l"
+#line 54 "lex.l"
 {
     fprintf(fparser, "%s", yytext);
 }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 63 "lex.l"
+#line 58 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"access_operator: %s\n", yytext);
@@ -859,7 +854,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 69 "lex.l"
+#line 64 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"logical_operator: %s\n", yytext);
@@ -869,7 +864,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 76 "lex.l"
+#line 71 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"relational_operator: %s\n", yytext);
@@ -880,25 +875,27 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 84 "lex.l"
+#line 79 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"constant: %s\n", yytext);
+    yylval.ival = atoi(yytext);
     return NUM_CONST;
 }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 90 "lex.l"
+#line 86 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"constant: %s\n", yytext);
+    yylval.fval = atof(yytext);
     return REAL_CONST;
 }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 96 "lex.l"
+#line 93 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"operator: %s\n", yytext);
@@ -907,7 +904,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 102 "lex.l"
+#line 99 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"path: %s\n", yytext);
@@ -916,7 +913,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 108 "lex.l"
+#line 105 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"keyword: %s\n", yytext);
@@ -929,11 +926,13 @@ YY_RULE_SETUP
     else if (strcmp(yytext,"real")==0) return REAL;
     else if (strcmp(yytext,"void")==0) return VOID;
     else if (strcmp(yytext,"bool")==0) return BOOL;
-    else if (strcmp(yytext,"true")==0) return BOOL_CONST;
-    else if (strcmp(yytext,"false")==0) return BOOL_CONST;
-    else if (strcmp(yytext,"ink")==0){
-        return INK;
-    }
+    else if (strcmp(yytext,"true")==0) {
+        yylval.bval = true;
+        return BOOL_CONST;
+    } else if (strcmp(yytext,"false")==0) {
+        yylval.bval = false;
+        return BOOL_CONST;
+    } else if (strcmp(yytext,"ink")==0) return INK;
     else if (strcmp(yytext,"spool")==0) return LOOP;
     else if (strcmp(yytext,"break")==0) return BREAK;
     else if (strcmp(yytext,"continue")==0) return CONTINUE;
@@ -942,7 +941,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 131 "lex.l"
+#line 130 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"keyword: %s\n", yytext);
@@ -952,24 +951,26 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 138 "lex.l"
+#line 137 "lex.l"
 {
     fprintf(fparser,"%s", yytext);
     fprintf(ftoken,"ID: %s\n", yytext);
+    auto sval_temp = new std::string(yytext);
+    yylval.sval = sval_temp;
     return ID;
 }
 	YY_BREAK
 case 14:
 /* rule 14 can match eol */
 YY_RULE_SETUP
-#line 144 "lex.l"
+#line 145 "lex.l"
 {
     // fprintf(fparser,"%s", yytext);
 }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 148 "lex.l"
+#line 149 "lex.l"
 {
     fprintf(ftoken, "punctuation: %s\n", yytext);
     fprintf(fparser, "%s", yytext);
@@ -978,10 +979,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 153 "lex.l"
+#line 154 "lex.l"
 ECHO;
 	YY_BREAK
-#line 984 "lex.yy.c"
+#line 985 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1986,5 +1987,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 153 "lex.l"
+#line 154 "lex.l"
 
