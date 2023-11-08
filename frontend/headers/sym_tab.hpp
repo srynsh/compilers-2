@@ -81,7 +81,7 @@ class function_record {
     private:
         std::string name; // function name
         ELETYPE return_type;
-        std::unordered_map<std::string, data_record*> parameter_list;
+        std::vector<std::pair<std::string, data_record*>> parameter_list;
 
     public:
         function_record(){}
@@ -109,7 +109,7 @@ class symbol_table_function {
         symbol_table_function(){}
 
         void add_function_record(std::string name, ELETYPE return_type); 
-        void add_parameter(std::string name, ELETYPE return_type, std::vector<std::pair<std::string, type_info*> > *par_vec);
+        void add_function_record(std::string name, ELETYPE return_type, std::vector<std::pair<std::string, type_info*> > *par_vec);
         function_record* get_function(std::string name);
 
         std::string get_current_func_name(){ return current_func_name; };

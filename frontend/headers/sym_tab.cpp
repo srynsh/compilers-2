@@ -113,21 +113,22 @@ std::string function_record::get_name() {
 }
 
 data_record* function_record::get_parameter(std::string name) {
-    if (this->parameter_list.find(name) != this->parameter_list.end()) {
-        return this->parameter_list[name];
-    } else {
-        return nullptr;
+    for (auto i : this->parameter_list) {
+        if (i.first == name) {
+            return i.second;
+        }
     }
+    return nullptr;
 }
 
 void function_record::add_parameter(std::string* name, TYPE type, ELETYPE ele_type, std::vector<int> *dim_list) {
     data_record* new_record = new data_record(*(name), type, ele_type, *(dim_list), 1);
-    this->parameter_list[*(name)] = new_record;
+    this->parameter_list.push_back(std::make_pair(*(name), new_record));
 }
 
 void function_record::add_parameter(std::string* name, TYPE type, ELETYPE ele_type) {
     data_record* new_record = new data_record(*(name), type, ele_type, 1);
-    this->parameter_list[*(name)] = new_record;
+    this->parameter_list.push_back(std::make_pair(*(name), new_record));
 }
 
 // void function_record::add_parameter(std::vector<std::string> &names, std::vector<TYPE> &types, std::vector<ELETYPE> &ele_types, std::vector<std::vector<int> > &dim_lists){
@@ -158,18 +159,30 @@ void function_record::print() {
 ------------------------------------------------------------ */
 
 void symbol_table_function::add_function_record(std::string name, ELETYPE return_type) {
+
+    // Check if main function is already defined
+    if (name == "main") {
+        if (this->function_list.find(name) != this->function_list.end()) {
+            yyerror("main function is already defined");
+        }
+    }
+
     function_record* new_record = new function_record(name, return_type);
     this->function_list[name] = new_record;
     this->current_func_name = name;
     this->current_return_type = return_type;
 }
 
-void function_record::add_parameter(std::vector<std::pair<std::string, type_info*> > *par_vec) {
+void symbol_table_function::add_function_record(std::string name, ELETYPE return_type, std::vector<std::pair<std::string, type_info*> > *par_vec) {
+    function_record* new_record = new function_record(name, return_type);
+    this->function_list[name] = new_record;
+    this->current_func_name = name;
+    this->current_return_type = return_type;
     for (auto i : *(par_vec)) {
         if (i.second-> type == TYPE::ARRAY) 
-            function_record::add_parameter(&(i.first), i.second->type, i.second->eleType, i.second->dim_list);
+            new_record->add_parameter(&(i.first), i.second->type, i.second->eleType, i.second->dim_list);
         else 
-            function_record::add_parameter(&(i.first), i.second->type, i.second->eleType);
+            new_record->add_parameter(&(i.first), i.second->type, i.second->eleType);
     }
 }
 

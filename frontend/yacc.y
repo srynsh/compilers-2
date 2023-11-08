@@ -102,14 +102,7 @@ function_definition
     : INK ID  '(' par_list ')' ARROW RET_TYPE 
         {
             std::string func_name = *$2;
-            SymbolTableFunction->add_function_record(func_name, $7->eleType);
-            function_record* func = SymbolTableFunction->get_function(func_name);
-            // for (auto p : *$4){
-            //     if (p.second->type == TYPE::ARRAY)
-            //         func->add_parameter(&(p.first), p.second->type, p.second->eleType, p.second->dim_list);
-            //     else
-            //         func->add_parameter(&(p.first), p.second->type, p.second->eleType);
-            // }
+            SymbolTableFunction->add_function_record(func_name, $7->eleType, $4);
         }
     | INK ID  '(' ')' ARROW RET_TYPE 
         {
@@ -252,8 +245,9 @@ num_decl : NUM id_list
 bool_decl : BOOL id_list
         {
             std::vector<std::string> *p = $2;
+            struct type_info* t = $1;
             for (auto q : *p){
-                SymbolTableVariable->add_variable(q, TYPE::SIMPLE, ELETYPE::ELE_BOOL, current_scope);
+                SymbolTableVariable->add_variable(q, t->type, t->eleType, current_scope);
             }
         }
         | BOOL ID '=' expr_pred
@@ -262,8 +256,9 @@ bool_decl : BOOL id_list
 real_decl : REAL id_list
         {
             std::vector<std::string> *p = $2;
+            struct type_info* t = $1;
             for (auto q : *p){
-                SymbolTableVariable->add_variable(q, TYPE::SIMPLE, ELETYPE::ELE_REAL, current_scope);
+                SymbolTableVariable->add_variable(q, t->type, t->eleType, current_scope);
             }
         }
         | REAL ID '=' expr_pred
@@ -272,11 +267,12 @@ real_decl : REAL id_list
 num_array_decl : 
     NUM array_element id_list
     {
-        std::vector<std::string> *p = $3;
-        std::vector<int> *q = $2;
-        for (auto r : *p){
-            SymbolTableVariable->add_variable(r, TYPE::ARRAY, ELETYPE::ELE_NUM, current_scope, q);
-        }
+        // std::vector<std::string> *p = $3;
+        // std::vector<int> *q = $2;
+        // struct type_info* t = $1;
+        // for (auto r : *p){
+        //     SymbolTableVariable->add_variable(r, TYPE::ARRAY, t->eleType, q, current_scope);
+        // }
     }
     | NUM array_element ID '=' ID    
     | NUM array_element ID '=' brak_pred 
@@ -485,7 +481,11 @@ set_scope_outside_function : /* empty */ {current_scope = 0;}
 increment_scope : /* empty */ {current_scope++;}
     ;
 
-decrement_scope : /* empty */ {current_scope--;}
+decrement_scope : /* empty */ 
+    {
+        SymbolTableVariable->delete_variable(current_scope);
+        current_scope--;
+    }
     ;
 
 %%
