@@ -19,19 +19,24 @@
     int ival;
     float fval;
     bool bval;
-    ELE_TYPE etype;
+    struct type_info* tval;
     std::string* sval;
+    std::vector<int> dim_list;
+    std::vector<std::string> id_list;
 }
 
+%type <dim_list> brak
+%type <tval> datatype
 
-%token<sval> ID 
+
+%token <sval> ID 
 
 /* Literals */
-%token<fval> REAL_CONST
-%token<ival> NUM_CONST
-%token<bval> BOOL_CONST
+%token <fval> REAL_CONST
+%token <ival> NUM_CONST
+%token <bval> BOOL_CONST
 
-%token<etype> IMG GRAY_IMG VID GRAY_VID NUM REAL VOID BOOL /* Datatypes */
+%token <tval> IMG GRAY_IMG VID GRAY_VID NUM REAL VOID BOOL /* Datatypes */
 %token IF ELSE_IF RETURN CONTINUE BREAK LOOP INK /* Control flow keywords */
 %token ARROW DOT_OP LOG_OP REL_OP GT LT NEG_OP /* Operators */
 %token NEWLINE
@@ -72,32 +77,38 @@ optional_new_lines : /* empty */
  * Functions
  *------------------------------------------------------------------------*/
 
-function : function_definition optional_new_lines func_body
+function : function_definition optional_new_lines func_body 
         ;
 
 function_definition 
     : INK ID '(' par_list ')' ARROW RET_TYPE 
         {
-            SymbolTableFunction->add_function($2, $7);
+            std::string func_name = *$2;
+            SymbolTableFunction->add_function(func_name, $7);
         }
     | INK ID '(' ')' ARROW RET_TYPE 
         {
-            SymbolTableFunction->add_function($2, $6);
+            std::string func_name = *$2;
+            SymbolTableFunction->add_function(func_name, $6);
         }
     ;
 
-par_list : par_list ',' par
+par_list : par_list ',' par 
         | par
         ;
 
-func_body : '{' new_lines stmt_list '}'
+func_body : '{' set_scope_function new_lines stmt_list '}' set_scope_outside_function
         ;
 
 RET_TYPE : datatype 
         | VOID
         ;
 
-par : datatype ID
+par : datatype ID 
+    {
+        function_record* func = SymbolTableFunction->get_function(SymbolTableFunction->get_current_func_name());
+        func->add_parameter($2,$1->type, $1->eleType, $1->dim_list);
+    }
     ;
 
 datatype : IMG 
@@ -107,6 +118,13 @@ datatype : IMG
         | NUM 
         | REAL
         | BOOL
+        | NUM brak      { struct type_info* t = $1; t->dim_list = $2; $$ = t;}
+        | REAL brak     { struct type_info* t = $1; t->dim_list = $2; $$ = t;}
+        ;
+
+brak : '[' ']'                  {$$ = std::vector<int>(1, -1);}
+        | '[' ',' ']'           {$$ = std::vector<int>(2, -1);}
+        | '[' ',' ',' ']'       {$$ = std::vector<int>(3, -1);}
         ;
 
 ///////////////////////////////////////////////////////////////////
@@ -124,8 +142,8 @@ stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
         | expr_stmt /* 'new_lines' is included in expr_stmt */
         | return_stmt /* 'new_lines' is included in expr_stmt */
         | loop_block new_lines
-        | '{'new_lines stmt_list '}' new_lines /* This allows nested scopes */
-        | '{' new_lines '}' new_lines
+        | '{'increment_scope new_lines stmt_list '}' decrement_scope new_lines /* This allows nested scopes */
+        | '{' increment_scope new_lines '}' decrement_scope new_lines
         | '{' '}' new_lines
         | unary_stmt  /* 'new_lines' is included in expr_stmt */
         ; 
@@ -249,7 +267,7 @@ optional_loop_decl : expr_or_decl_stmt
         | /* empty */
         ;
 
-loop_body : '{' new_lines loop_stmt_list '}'
+loop_body : '{' increment_scope new_lines loop_stmt_list '}' decrement_scope
         ;
 
 loop_stmt_list : loop_stmt
@@ -263,8 +281,8 @@ loop_stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
         | expr_stmt /* 'new_lines' is included in expr_stmt */
         | return_stmt /* 'new_lines' is included in expr_stmt */
         | loop_block new_lines
-        | '{'new_lines loop_stmt_list '}' new_lines /* This allows nested scopes */
-        | '{' new_lines '}' new_lines
+        | '{' increment_scope new_lines loop_stmt_list '}' decrement_scope new_lines /* This allows nested scopes */
+        | '{' increment_scope new_lines '}' decrement_scope new_lines
         | '{' '}' new_lines
         | unary_stmt  /* 'new_lines' is included in expr_stmt */
         | BREAK new_lines
@@ -356,19 +374,37 @@ arg : expr_pred
  * ----------------------------------------------------------------------- */
 
 unary_stmt : ID UNARY_OP new_lines
-            ;
+    ;
 
 return_stmt : RETURN expr_pred new_lines
-        | RETURN VOID new_lines 
-        ;
+    | RETURN VOID new_lines 
+    ;
+
+/* -----------------------------------------------------------------------
+ * Useful Actions
+ * ----------------------------------------------------------------------- */
+
+set_scope_function : {current_scope = 2;}
+    ;
+
+set_scope_outside_function : {current_scope = 0;}
+    ;
+
+increment_scope : {current_scope++;}
+    ;
+
+decrement_scope : {current_scope--;}
+    ;
 
 %%
 
-int yywrap(){ return 1;}
+int yywrap(){ 
+    return 1;
+}
 void yyerror(char* s){ 
-        printf("Error at line %d\n", lineno);
-        fprintf(fparser, " : invalid statement");
-        exit(1);
+    printf("Error at line %d\n", lineno);
+    fprintf(fparser, " : invalid statement");
+    exit(1);
 }
 
 int main(int argc, char* argv[]){
