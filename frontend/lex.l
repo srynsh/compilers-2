@@ -2,10 +2,11 @@
 
 %{
 #include "y.tab.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdbool.h>
+#include <bits/stdc++.h>
+// #include <stdio.h>
+// #include <string.h>
+// #include <stdlib.h>
+// #include <stdbool.h>
 extern FILE* ftoken; // Output file for tokens
 extern FILE* fparser; // Output file for parser
 extern int lineno;

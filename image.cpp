@@ -3,8 +3,8 @@
 #include <cstdio>
 #include <malloc/_malloc.h>
 #include <vector>
-#include "headers/kernel.h"
-#include "headers/load_bmp.h"
+#include "./frontend/headers/kernel.hpp"
+#include "./frontend/headers/load_bmp.hpp"
 
 /* To run: g++ --std=c++11 -o image headers/kernel.cpp headers/load_bmp.cpp image.cpp */
 
@@ -985,7 +985,7 @@ gray_image to_gray_image(vector< vector<float> > vec) {
     return img;
 }
 
-// Check filters and functions
+// // Check filters and functions
 int main() {
     vector<int> v;
     v.push_back(15);
@@ -995,11 +995,12 @@ int main() {
     i1.test();
     i1.draw("circle", v);
     i1.frame("./images/outputs/out.bmp");
-    i1.load("./images/inputs/snail.bmp");
+    i1.load("./images/inputs/lena.bmp");
     cout << i1.get_height() << endl;
     cout << i1.get_width() << endl;
-    i1.draw("circle", v);
-    i1.test();
+    // i1.draw("circle", v);
+    // i1.test();
+    cout << "hello\n";
     i1.frame("./images/outputs/out1.bmp");
     // i1.load("./images/inputs/snail.bmp");
     // i1.draw("circle", v);
@@ -1009,26 +1010,28 @@ int main() {
     return 0;
 }
 
-    // gray_image img("./images/inputs/in.bmp");
-    // gray_image new_img = img.blur(5);
-    // gray_image new_img2 = img.sharpen(20);
-    // gray_image new_img3 = img.sobel();
-    // gray_image new_img4 = img.hflip();
-    // gray_image new_img5 = img.vflip();
-    // gray_image new_img6 = img.T();
-    // gray_image new_img7 = img.pixelate(5);
-    // gray_image new_img8 = img.invert();
-    // gray_image new_img9 = img.noise(15);
-    // gray_image new_img10 = img.bnw();
+// int main(){
+//     gray_image img("./images/inputs/snail.bmp");
+//     gray_image new_img = img.blur(5);
+//     gray_image new_img2 = img.sharpen(20);
+//     gray_image new_img3 = img.sobel();
+//     gray_image new_img4 = img.hflip();
+//     gray_image new_img5 = img.vflip();
+//     gray_image new_img6 = img.T();
+//     gray_image new_img7 = img.pixelate(5);
+//     gray_image new_img8 = img.invert();
+//     gray_image new_img9 = img.noise(15);
+//     gray_image new_img10 = img.bnw();
 
-    // img.frame("./images/outputs/output_orig.bmp");
-    // new_img.frame("./images/outputs/output_blur.bmp");
-    // new_img2.frame("./images/outputs/output_sharpen.bmp");
-    // new_img3.frame("./images/outputs/output_sobel.bmp");
-    // new_img4.frame("./images/outputs/output_hflip.bmp");
-    // new_img5.frame("./images/outputs/output_vflip.bmp");
-    // new_img6.frame("./images/outputs/output_transpose.bmp");
-    // new_img7.frame("./images/outputs/output_pixelate.bmp");
-    // new_img8.frame("./images/outputs/output_invert.bmp");
-    // new_img9.frame("./images/outputs/output_noise.bmp");
-    // new_img10.frame("./images/outputs/output_bnw.bmp");
+//     img.frame("./images/outputs/output_orig.bmp");
+//     new_img.frame("./images/outputs/output_blur.bmp");
+//     new_img2.frame("./images/outputs/output_sharpen.bmp");
+//     new_img3.frame("./images/outputs/output_sobel.bmp");
+//     new_img4.frame("./images/outputs/output_hflip.bmp");
+//     new_img5.frame("./images/outputs/output_vflip.bmp");
+//     new_img6.frame("./images/outputs/output_transpose.bmp");
+//     new_img7.frame("./images/outputs/output_pixelate.bmp");
+//     new_img8.frame("./images/outputs/output_invert.bmp");
+//     new_img9.frame("./images/outputs/output_noise.bmp");
+//     new_img10.frame("./images/outputs/output_bnw.bmp");
+// }

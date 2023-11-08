@@ -2,8 +2,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-#ifndef LOAD_BMP_H
-#define LOAD_BMP_H
+#ifndef LOAD_BMP_HPP
+#define LOAD_BMP_HPP
 
 // #pragma pack(1)
 #pragma pack(push, 1) 
@@ -18,4 +18,4 @@ void WriteOutBmp24(char* FileBuffer, const char* NameOfFileToCreate, int BufferS
 
 #pragma pack(pop) 
 
-#endif
+#endif // LOAD_BMP_HPP

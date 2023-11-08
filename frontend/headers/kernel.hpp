@@ -2,8 +2,8 @@
 
 using namespace std;
 
-#ifndef KERNEL_H
-#define KERNEL_H
+#ifndef KERNEL_HPP
+#define KERNEL_HPP
 
 vector<vector<float>> operator+(vector<vector<float>> const& vec1, vector<vector<float>> const& vec2);
 vector<vector<float>> operator-(vector<vector<float>> const& vec1, vector<vector<float>> const& vec2);
@@ -15,4 +15,4 @@ vector<float> string_to_vec1d(string s);
 vector<vector<float>> string_to_vec2d(string s);
 vector<vector<vector<float>>> string_to_vec3d(string s);
 
-#endif
+#endif // KERNEL_HPP

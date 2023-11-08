@@ -1,8 +1,9 @@
 %{
-    #include <stdio.h>
-    #include <stdlib.h>
+//     #include <stdio.h>
+//     #include <stdlib.h>
+    #include <bits/stdc++.h>
     #include "lex.yy.c"
-    #include <string.h>
+//     #include <string.h>
     int yylex (void);
     FILE* ftoken, *fparser;
     int lineno = 1; 
@@ -305,8 +306,6 @@ void yyerror(char* s){
 }
 
 int main(int argc, char* argv[]){
-
-
     ftoken = fopen("token.txt", "w");
     fparser = fopen("parsed.txt", "w");
     yyparse();
