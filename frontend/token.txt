@@ -181,7 +181,7 @@ punctuation: }
 newline: \n
 newline: \n
 keyword: ink
-ID: main
+ID: main1
 punctuation: (
 punctuation: )
 operator: ->
@@ -450,11 +450,11 @@ punctuation: }
 newline: \n
 newline: \n
 keyword: ink
-ID: main
+ID: main1
 punctuation: (
 punctuation: )
 operator: ->
-keyword: gray_vid
+keyword: void
 punctuation: {
 newline: \n
 keyword: num

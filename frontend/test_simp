@@ -1,0 +1,3 @@
+ink main(num a) -> void {
+    return void
+}

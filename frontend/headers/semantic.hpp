@@ -7,7 +7,7 @@
 struct type_info{
     TYPE type;
     ELETYPE eleType;
-    std::vector<int> dimlist;
+    std::vector<int>* dim_list;
 };
 
 #endif // SEMANTIC_HPP

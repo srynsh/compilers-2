@@ -7,7 +7,7 @@
     int yylex (void);
     FILE* ftoken, *fparser;
     int lineno = 1; 
-    void yyerror (char*);
+    void yyerror (const char*);
     
     symbol_table_function* SymbolTableFunction = new symbol_table_function();
     symbol_table_variable* SymbolTableVariable = new symbol_table_variable();
@@ -21,15 +21,20 @@
     bool bval;
     struct type_info* tval;
     std::string* sval;
-    std::vector<int> dim_list;
-    std::vector<std::string> id_list;
+    std::vector<int> *dim_list;
+    std::vector<std::string> *id_vec;
+
+    std::vector<std::pair<std::string, type_info*>> *par_vec;
+
 }
 
 %type <dim_list> brak
 %type <tval> datatype
 %type <tval> RET_TYPE
+%type <par_vec> par_list par
+%type <id_vec> id_list
 
-%token <sval> ID 
+%token <sval> ID /* Identifiers */
 
 /* Literals */
 %token <fval> REAL_CONST
@@ -66,7 +71,7 @@ S :
             yyerror("last function is not main");
             exit(1);
         }
-        if (last_ret_type != ELETYPE::VOID){
+        if (last_ret_type != ELETYPE::ELE_VOID){
             yyerror("last function does not return void");
             exit(1);
         }
@@ -75,7 +80,7 @@ S :
 
 program : function new_lines program
         | function optional_new_lines
-        ;
+        ;/* empty */ 
 
 
 new_lines : new_lines NEWLINE
@@ -94,45 +99,72 @@ function : function_definition optional_new_lines func_body
         ;
 
 function_definition 
-    : INK ID '(' par_list ')' ARROW RET_TYPE 
+    : INK ID  '(' par_list ')' ARROW RET_TYPE 
         {
             std::string func_name = *$2;
-            SymbolTableFunction->add_function(func_name, $7->eleType);
+            SymbolTableFunction->add_function_record(func_name, $7->eleType);
+            function_record* func = SymbolTableFunction->get_function(func_name);
+            // for (auto p : *$4){
+            //     if (p.second->type == TYPE::ARRAY)
+            //         func->add_parameter(&(p.first), p.second->type, p.second->eleType, p.second->dim_list);
+            //     else
+            //         func->add_parameter(&(p.first), p.second->type, p.second->eleType);
+            // }
         }
-    | INK ID '(' ')' ARROW RET_TYPE 
+    | INK ID  '(' ')' ARROW RET_TYPE 
         {
             std::string func_name = *$2;
-            SymbolTableFunction->add_function(func_name, $6->eleType);
+            SymbolTableFunction->add_function_record(func_name, $6->eleType);
         }
     ;
 
-par_list : par_list ',' par 
-        | par
-        ;
+par_list : 
+    par_list ',' par 
+        {
+            std::vector<std::pair<std::string, type_info*>> *p = $1;
+            std::vector<std::pair<std::string, type_info*>> *q = $3;
+            p->insert(p->end(), q->begin(), q->end());
+            $$ = p;
+        }
+    | par
+    ;
 
 func_body : '{' set_scope_function new_lines stmt_list '}' set_scope_outside_function
         ;
 
 /* Only simple types are returned */
 RET_TYPE : datatype 
-        | VOID
+        | VOID 
         ;
 
 par : 
     datatype ID 
         {
-            function_record* func = SymbolTableFunction->get_function(SymbolTableFunction->get_current_func_name());
-            func->add_parameter($2,$1->type, $1->eleType, $1->dim_list);
+        //     function_record* func = SymbolTableFunction->get_function(SymbolTableFunction->get_current_func_name());
+        //     func->add_parameter($2,$1->type, $1->eleType);
+            std::pair<std::string, type_info*> *p = new std::pair<std::string, type_info*>(*$2, $1);
+            $$ = new std::vector<std::pair<std::string, type_info*>>(1, *p);
         }
     | NUM brak ID
         { 
-            function_record* func = SymbolTableFunction->get_function(SymbolTableFunction->get_current_func_name());
-            func->add_parameter($3, TYPE::ARRAY, $1->eleType, $2);
+        //     function_record* func = SymbolTableFunction->get_function(SymbolTableFunction->get_current_func_name());
+        //     func->add_parameter($3, TYPE::ARRAY, $1->eleType, $2);
+            struct type_info* t = $1;
+            t->type = TYPE::ARRAY;
+            t->dim_list = $2;
+            std::pair<std::string, type_info*> *p = new std::pair<std::string, type_info*>(*$3, t);
+            $$ = new std::vector<std::pair<std::string, type_info*>>(1, *p);
+        
         }
     | REAL brak ID   
         { 
-            function_record* func = SymbolTableFunction->get_function(SymbolTableFunction->get_current_func_name());
-            func->add_parameter($3, TYPE::ARRAY, $1->eleType, $2);
+        //     function_record* func = SymbolTableFunction->get_function(SymbolTableFunction->get_current_func_name());
+        //     func->add_parameter($3, TYPE::ARRAY, $1->eleType, $2);
+            struct type_info* t = $1;
+            t->type = TYPE::ARRAY;
+            t->dim_list = $2;
+            std::pair<std::string, type_info*> *p = new std::pair<std::string, type_info*>(*$3, t);
+            $$ = new std::vector<std::pair<std::string, type_info*>>(1, *p);
         }
     ;
 
@@ -145,9 +177,9 @@ datatype : IMG
         | BOOL
         ;
 
-brak : '[' ']'                  {$$ = std::vector<int>(1, -1);}
-        | '[' ',' ']'           {$$ = std::vector<int>(2, -1);}
-        | '[' ',' ',' ']'       {$$ = std::vector<int>(3, -1);}
+brak : '[' ']'                  {$$ = new std::vector<int>(1, -1);}
+        | '[' ',' ']'           {$$ = new std::vector<int>(2, -1);}
+        | '[' ',' ',' ']'       {$$ = new std::vector<int>(3, -1);}
         ;
 
 ///////////////////////////////////////////////////////////////////
@@ -158,17 +190,17 @@ stmt_list : stmt
         | stmt_list stmt 
         ;
 
-stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
-        | conditional_stmt /* 'new_lines' is included in conditional_stmt */
+stmt : decl_stmt /* new_lines is included in expr_stmt */
+        | conditional_stmt /* new_lines is included in conditional_stmt */
         | call_stmt new_lines
         | in_built_call_stmt new_lines
-        | expr_stmt /* 'new_lines' is included in expr_stmt */
-        | return_stmt /* 'new_lines' is included in expr_stmt */
+        | expr_stmt /* new_lines is included in expr_stmt */
+        | return_stmt /* new_lines is included in expr_stmt */
         | loop_block new_lines
         | '{'increment_scope new_lines stmt_list '}' decrement_scope new_lines /* This allows nested scopes */
         | '{' increment_scope new_lines '}' decrement_scope new_lines
         | '{' '}' new_lines
-        | unary_stmt  /* 'new_lines' is included in expr_stmt */
+        | unary_stmt  /* new_lines is included in expr_stmt */
         ; 
 
 /*------------------------------------------------------------------------
@@ -207,20 +239,47 @@ gray_vid_decl : GRAY_VID ID LT NUM_CONST ',' NUM_CONST GT
         ;
 
 num_decl : NUM id_list
+        {
+            std::vector<std::string> *p = $2;
+            struct type_info* t = $1;
+            for (auto q : *p){
+                SymbolTableVariable->add_variable(q, t->type, t->eleType, current_scope);
+            }
+        }
         | NUM ID '=' expr_pred
         ;
 
 bool_decl : BOOL id_list
+        {
+            std::vector<std::string> *p = $2;
+            for (auto q : *p){
+                SymbolTableVariable->add_variable(q, TYPE::SIMPLE, ELETYPE::ELE_BOOL, current_scope);
+            }
+        }
         | BOOL ID '=' expr_pred
         ;
 
 real_decl : REAL id_list
+        {
+            std::vector<std::string> *p = $2;
+            for (auto q : *p){
+                SymbolTableVariable->add_variable(q, TYPE::SIMPLE, ELETYPE::ELE_REAL, current_scope);
+            }
+        }
         | REAL ID '=' expr_pred
         ;
 
-num_array_decl : NUM array_element id_list
-                | NUM array_element ID '=' ID    
-                | NUM array_element ID '=' brak_pred 
+num_array_decl : 
+    NUM array_element id_list
+    {
+        std::vector<std::string> *p = $3;
+        std::vector<int> *q = $2;
+        for (auto r : *p){
+            SymbolTableVariable->add_variable(r, TYPE::ARRAY, ELETYPE::ELE_NUM, current_scope, q);
+        }
+    }
+    | NUM array_element ID '=' ID    
+    | NUM array_element ID '=' brak_pred 
                 ;
 
 real_array_decl : REAL array_element id_list
@@ -251,7 +310,17 @@ const : NUM_CONST
     ;
 
 id_list : id_list ',' ID
-        | ID
+        {
+            std::vector<std::string> *p = $1;
+            std::string *q = $3;
+            p->push_back(*q);
+            $$ = p;
+        }
+        | ID 
+        {
+            std::vector<std::string> *p = new std::vector<std::string>(1, *$1);
+            $$ = p;
+        }
         ;
 
 /*------------------------------------------------------------------------
@@ -297,17 +366,17 @@ loop_stmt_list : loop_stmt
         | loop_stmt_list loop_stmt
         ;
         
-loop_stmt : decl_stmt /* 'new_lines' is included in expr_stmt */
-        | loop_conditional_stmt /* 'new_lines' is included in conditional_stmt */
+loop_stmt : decl_stmt /* new_lines is included in expr_stmt */
+        | loop_conditional_stmt /* new_lines is included in conditional_stmt */
         | call_stmt new_lines
         | in_built_call_stmt new_lines
-        | expr_stmt /* 'new_lines' is included in expr_stmt */
-        | return_stmt /* 'new_lines' is included in expr_stmt */
+        | expr_stmt /* new_lines is included in expr_stmt */
+        | return_stmt /* new_lines is included in expr_stmt */
         | loop_block new_lines
         | '{' increment_scope new_lines loop_stmt_list '}' decrement_scope new_lines /* This allows nested scopes */
         | '{' increment_scope new_lines '}' decrement_scope new_lines
         | '{' '}' new_lines
-        | unary_stmt  /* 'new_lines' is included in expr_stmt */
+        | unary_stmt  /* new_lines is included in expr_stmt */
         | BREAK new_lines
         | CONTINUE new_lines
         ;
@@ -407,16 +476,16 @@ return_stmt : RETURN expr_pred new_lines
  * Useful Actions
  * ----------------------------------------------------------------------- */
 
-set_scope_function : {current_scope = 2;}
+set_scope_function : /* empty */ {current_scope = 2;}
     ;
 
-set_scope_outside_function : {current_scope = 0;}
+set_scope_outside_function : /* empty */ {current_scope = 0;}
     ;
 
-increment_scope : {current_scope++;}
+increment_scope : /* empty */ {current_scope++;}
     ;
 
-decrement_scope : {current_scope--;}
+decrement_scope : /* empty */ {current_scope--;}
     ;
 
 %%
@@ -425,7 +494,7 @@ int yywrap(){
     return 1;
 }
 void yyerror(const char* s){ 
-    printf("Error at line %d\n", lineno);
+    printf("Error at line %d %s\n", lineno, s);
     fprintf(fparser, " : invalid statement");
     exit(1);
 }

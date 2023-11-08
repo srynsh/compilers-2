@@ -112,43 +112,43 @@ path ['][a-zA-Z0-9_\/\.\~]+[']
     tinfo->type = TYPE::SIMPLE;
 
     if (strcmp(yytext,"img")==0) {
-        // yylval.etype = ELE_TYPE::ELE_IMG;
-        tinfo->eleType = ELE_TYPE::ELE_IMG;
+        tinfo->eleType = ELETYPE::ELE_IMG;
+        yylval.tval = tinfo;
         return IMG;
     }
     else if (strcmp(yytext,"gray_img")==0) {
-        // yylval.etype = ELE_TYPE::ELE_GRAY_IMG;
-        tinfo->eleType = ELE_TYPE::ELE_GRAY_IMG;
+        tinfo->eleType = ELETYPE::ELE_GRAY_IMG;
+        yylval.tval = tinfo;
         return GRAY_IMG;
     }
     else if (strcmp(yytext,"vid")==0) {
-        // yylval.etype = ELE_TYPE::ELE_VID;
-        tinfo->eleType = ELE_TYPE::ELE_VID;
+        tinfo->eleType = ELETYPE::ELE_VID;
+        yylval.tval = tinfo;
         return VID;
     }
     else if (strcmp(yytext,"gray_vid")==0) {
-        // yylval.etype = ELE_TYPE::ELE_GRAY_VID;
-        tinfo->eleType = ELE_TYPE::ELE_GRAY_VID;
+        tinfo->eleType = ELETYPE::ELE_GRAY_VID;
+        yylval.tval = tinfo;
         return GRAY_VID;
     }
     else if (strcmp(yytext,"num")==0) {
-        // yylval.etype = ELE_TYPE::ELE_NUM;
-        tinfo->eleType = ELE_TYPE::ELE_NUM;
+        tinfo->eleType = ELETYPE::ELE_NUM;
+        yylval.tval = tinfo;
         return NUM;
     }
     else if (strcmp(yytext,"real")==0) {
-        // yylval.etype = ELE_TYPE::ELE_REAL;
-        tinfo->eleType = ELE_TYPE::ELE_REAL;
+        tinfo->eleType = ELETYPE::ELE_REAL;
+        yylval.tval = tinfo;
         return REAL;
     }
     else if (strcmp(yytext,"void")==0) {
-        // yylval.etype = ELE_TYPE::ELE_VOID;
-        tinfo->eleType = ELE_TYPE::ELE_VOID;
+        tinfo->eleType = ELETYPE::ELE_VOID;
+        yylval.tval = tinfo;
         return VOID;
     }
     else if (strcmp(yytext,"bool")==0) {
-        // yylval.etype = ELE_TYPE::ELE_BOOL;
-        tinfo->eleType = ELE_TYPE::ELE_BOOL;
+        tinfo->eleType = ELETYPE::ELE_BOOL;
+        yylval.tval = tinfo;
         return BOOL;
     }
     else if (strcmp(yytext,"true")==0) {

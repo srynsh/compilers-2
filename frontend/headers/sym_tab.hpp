@@ -3,6 +3,13 @@
 
 #include <bits/stdc++.h>
 
+/*------------------------------------------------------------------------*
+ * Type Information                                                       *
+ *------------------------------------------------------------------------*/
+
+ /* Forward declaration */
+struct type_info;
+
 /// @brief  Class used for identifier type in identifier table
 enum class TYPE{
     SIMPLE,
@@ -22,7 +29,7 @@ enum class ELETYPE{
 };
 
 /*------------------------------------------------------------------------*
- * Symbol Table                                                           *
+ * Symbol Table for Variables                                             *
  *------------------------------------------------------------------------*/
 
 /// @brief Entry in the symbol table for identifier
@@ -32,19 +39,19 @@ class data_record {
         std::string name;
         TYPE type; // simple or array
         ELETYPE ele_type;
-        std::vector<int> dimlist; 
+        std::vector<int> dim_list; 
         int scope; // scope of the identifier 0 for globals, 1 for parameters etc.
     
     public:
         data_record(){}
-        data_record(std::string name, TYPE type, ELETYPE ele_type, std::vector<int>& dimlist, int scope);
+        data_record(std::string name, TYPE type, ELETYPE ele_type, std::vector<int>& dim_list, int scope);
+        data_record(std::string name, TYPE type, ELETYPE ele_type, int scope);
         std::string get_name();
         TYPE get_type();
         ELETYPE get_ele_type();
-        std::vector<int> get_dimlist();
+        std::vector<int> get_dim_list();
         int get_scope();
         void print();
-        ~data_record();
 };
 
 class symbol_table_variable {
@@ -55,15 +62,20 @@ class symbol_table_variable {
     public:
         symbol_table_variable(){}
 
-        void add_variable(std::string name, TYPE type, ELETYPE ele_type, std::vector<int>& dimlist, int scope);
-        void add_variable(std::vector<std::string>& names, std::vector<TYPE>& types, std::vector<ELETYPE>& ele_types, std::vector<std::vector<int>>& dimlists, int scope);
+        void add_variable(std::string name, TYPE type, ELETYPE ele_type, std::vector<int>& dim_list, int scope);
+        void add_variable(std::string name, TYPE type, ELETYPE ele_type, int scope);
+        void add_variable(std::vector<std::string>& names, std::vector<TYPE>& types, std::vector<ELETYPE>& ele_types, std::vector<std::vector<int> >& dim_lists, int scope);
         data_record* get_variable(std::string name, int scope);  
         void delete_variable(int scope);
 
         ~symbol_table_variable();
 };
 
-/// @brief Symbol table for functions
+/*------------------------------------------------------------------------*
+ * Symbol Table for Functions                                             *
+ *------------------------------------------------------------------------*/
+
+/// @brief Entry in the symbol table for function
 class function_record {
 
     private:
@@ -79,8 +91,9 @@ class function_record {
         ELETYPE get_return_type();
         data_record* get_parameter(std::string name);
 
-        void add_parameter(std::string name, TYPE type, ELETYPE ele_type, std::vector<int>& dimlist);
-        void add_parameter(std::vector<std::string>& names, std::vector<TYPE>& types, std::vector<ELETYPE>& ele_types, std::vector<std::vector<int> >& dimlists);
+        void add_parameter(std::string* name, TYPE type, ELETYPE ele_type, std::vector<int>*dim_list);
+        void add_parameter(std::string* name, TYPE type, ELETYPE ele_type);
+        // void add_parameter(std::vector<std::string>& names, std::vector<TYPE>& types, std::vector<ELETYPE>& ele_types, std::vector<std::vector<int>>& dim_lists);
         void print();
 };
 
@@ -95,7 +108,8 @@ class symbol_table_function {
     public:
         symbol_table_function(){}
 
-        void add_function(std::string name, ELETYPE return_type);
+        void add_function_record(std::string name, ELETYPE return_type); 
+        void add_parameter(std::string name, ELETYPE return_type, std::vector<std::pair<std::string, type_info*> > *par_vec);
         function_record* get_function(std::string name);
 
         std::string get_current_func_name(){ return current_func_name; };

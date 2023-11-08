@@ -1,18 +1,20 @@
 #include <bits/stdc++.h>
 #include "sym_tab.hpp"
+#include "semantic.hpp"
+
+extern void yyerror(const char *s);
 
 /* ---------------------------------------------------------- 
  * Symbol Table Entry for variables
 ------------------------------------------------------------ */
 
-data_record::data_record(std::string name, TYPE type, ELETYPE ele_type, std::vector<int>& dimlist, int scope)
-    : name(name), type(type), ele_type(ele_type), dimlist(dimlist), scope(scope)
+data_record::data_record(std::string name, TYPE type, ELETYPE ele_type, std::vector<int>& dim_list, int scope)
+    : name(name), type(type), ele_type(ele_type), dim_list(dim_list), scope(scope)
 {}
 
-data_record::~data_record() {
-    this->dimlist.clear();
-    
-}
+data_record::data_record(std::string name, TYPE type, ELETYPE ele_type, int scope)
+    : name(name), type(type), ele_type(ele_type), scope(scope)
+{}
 
 std::string data_record::get_name() {
     return this->name;
@@ -26,8 +28,8 @@ ELETYPE data_record::get_ele_type() {
     return this->ele_type;
 }
 
-std::vector<int> data_record::get_dimlist() {
-    return this->dimlist;
+std::vector<int> data_record::get_dim_list() {
+    return this->dim_list;
 }
 
 int data_record::get_scope() {
@@ -38,9 +40,9 @@ void data_record::print() {
     std::cout << "Name: " << this->name << std::endl;
     std::cout << "Type: " << (this->type == TYPE::SIMPLE ? "SIMPLE" : "ARRAY") << std::endl;
     std::cout << "Element Type: " << (this->ele_type == ELETYPE::ELE_NUM ? "NUM" : (this->ele_type == ELETYPE::ELE_REAL ? "REAL" : (this->ele_type == ELETYPE::ELE_BOOL ? "BOOL" : (this->ele_type == ELETYPE::ELE_IMG ? "IMG" : (this->ele_type == ELETYPE::ELE_GRAY_IMG ? "GRAY_IMG" : (this->ele_type == ELETYPE::ELE_VID ? "VID" : "GRAY_VID")))))) << std::endl;
-    std::cout << "Dimlist: ";
+    std::cout << "dim_list: ";
 
-    for (auto i : this->dimlist) {
+    for (auto i : this->dim_list) {
         std::cout << i << " ";
     }
 
@@ -51,16 +53,21 @@ void data_record::print() {
  * Symbol Table for variables
 ------------------------------------------------------------ */
 
-void symbol_table_variable::add_variable(std::string name, TYPE type, ELETYPE ele_type, std::vector<int> &dimlist, int scope) {
-    data_record* new_record = new data_record(name, type, ele_type, dimlist, scope);
+void symbol_table_variable::add_variable(std::string name, TYPE type, ELETYPE ele_type, std::vector<int> &dim_list, int scope) {
+    data_record* new_record = new data_record(name, type, ele_type, dim_list, scope);
     this->variable_list[name + " " + std::to_string(scope)] = new_record;
 }
 
-void symbol_table_variable::add_variable(std::vector<std::string> &names, std::vector<TYPE> &types, std::vector<ELETYPE> &ele_types, std::vector<std::vector<int>> &dimlists, int scope) {
-    assert (names.size() == types.size() && types.size() == ele_types.size() && ele_types.size() == dimlists.size());
+void symbol_table_variable::add_variable(std::string name, TYPE type, ELETYPE ele_type, int scope) {
+    data_record* new_record = new data_record(name, type, ele_type, scope);
+    this->variable_list[name + " " + std::to_string(scope)] = new_record;
+}
+
+void symbol_table_variable::add_variable(std::vector<std::string> &names, std::vector<TYPE> &types, std::vector<ELETYPE> &ele_types, std::vector<std::vector<int> > &dim_lists, int scope) {
+    assert (names.size() == types.size() && types.size() == ele_types.size() && ele_types.size() == dim_lists.size());
 
     for(int i = 0; i < names.size(); i++) {
-        data_record* new_record = new data_record(names[i], types[i], ele_types[i], dimlists[i], scope);
+        data_record* new_record = new data_record(names[i], types[i], ele_types[i], dim_lists[i], scope);
         this->variable_list[names[i] + " " + std::to_string(scope)] = new_record;
     }
 
@@ -113,20 +120,25 @@ data_record* function_record::get_parameter(std::string name) {
     }
 }
 
-void function_record::add_parameter(std::string name, TYPE type, ELETYPE ele_type, std::vector<int> &dimlist) {
-    data_record* new_record = new data_record(name, type, ele_type, dimlist, 1);
-    this->parameter_list[name] = new_record;
+void function_record::add_parameter(std::string* name, TYPE type, ELETYPE ele_type, std::vector<int> *dim_list) {
+    data_record* new_record = new data_record(*(name), type, ele_type, *(dim_list), 1);
+    this->parameter_list[*(name)] = new_record;
 }
 
-void function_record::add_parameter(std::vector<std::string> &names, std::vector<TYPE> &types, std::vector<ELETYPE> &ele_types, std::vector<std::vector<int> > &dimlists){
-    assert (names.size() == types.size() && types.size() == ele_types.size() && ele_types.size() == dimlists.size());
-
-    for (int i = 0; i < names.size(); i++) {
-        data_record* new_record = new data_record(names[i], types[i], ele_types[i], dimlists[i], 1);
-        this->parameter_list[names[i]] = new_record;
-    }
-
+void function_record::add_parameter(std::string* name, TYPE type, ELETYPE ele_type) {
+    data_record* new_record = new data_record(*(name), type, ele_type, 1);
+    this->parameter_list[*(name)] = new_record;
 }
+
+// void function_record::add_parameter(std::vector<std::string> &names, std::vector<TYPE> &types, std::vector<ELETYPE> &ele_types, std::vector<std::vector<int> > &dim_lists){
+//     assert (names.size() == types.size() && types.size() == ele_types.size() && ele_types.size() == dim_lists.size());
+
+//     for (int i = 0; i < names.size(); i++) {
+//         data_record* new_record = new data_record(names[i], types[i], ele_types[i], dim_lists[i], 1);
+//         this->parameter_list[names[i]] = new_record;
+//     }
+
+// }
 
 void function_record::print() {
     std::cout << "Name: " << this->name << std::endl;
@@ -145,12 +157,22 @@ void function_record::print() {
  * Symbol Table for functions
 ------------------------------------------------------------ */
 
-void symbol_table_function::add_function(std::string name, ELETYPE return_type) {
+void symbol_table_function::add_function_record(std::string name, ELETYPE return_type) {
     function_record* new_record = new function_record(name, return_type);
     this->function_list[name] = new_record;
     this->current_func_name = name;
     this->current_return_type = return_type;
 }
+
+void function_record::add_parameter(std::vector<std::pair<std::string, type_info*> > *par_vec) {
+    for (auto i : *(par_vec)) {
+        if (i.second-> type == TYPE::ARRAY) 
+            function_record::add_parameter(&(i.first), i.second->type, i.second->eleType, i.second->dim_list);
+        else 
+            function_record::add_parameter(&(i.first), i.second->type, i.second->eleType);
+    }
+}
+
 
 function_record* symbol_table_function::get_function(std::string name) {
     if (this->function_list.find(name) != this->function_list.end()) {
