@@ -40,7 +40,7 @@ ink _func1(img gray, gray_img blablablabla) -> img
 	#return void
 } 
 
-ink main() -> gray_vid {
+ink main1() -> gray_vid {
 	num [ 2, 5,    7] lol = { { {1, 2, 3}, {4, 5, 6} }, { {7, 8, 9}, {10, 11, 12} } }
 	img i1 <2 , 3  ,4   >
 	img i1 <1,      6>

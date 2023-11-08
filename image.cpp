@@ -1,7 +1,8 @@
-#include <_types/_uint8_t.h>
+// #include <_types/_uint8_t.h>
 #include <bits/stdc++.h>
 #include <cstdio>
-#include <malloc/_malloc.h>
+// #include <malloc/_malloc.h>
+#include <malloc.h>
 #include <vector>
 #include "./frontend/headers/kernel.hpp"
 #include "./frontend/headers/load_bmp.hpp"
@@ -985,23 +986,46 @@ gray_image to_gray_image(vector< vector<float> > vec) {
     return img;
 }
 
+float return_parabola_point(float x){
+    return ((-x*x + 40*x - 400)/16)+65;
+}
+
 // // Check filters and functions
 int main() {
-    vector<int> v;
-    v.push_back(15);
-    v.push_back(0);
-    v.push_back(50);
-    image i1(200, 100, 0);
-    i1.test();
-    i1.draw("circle", v);
-    i1.frame("./images/outputs/out.bmp");
-    i1.load("./images/inputs/lena.bmp");
-    cout << i1.get_height() << endl;
-    cout << i1.get_width() << endl;
+    // vector<int> v;
+    // v.push_back(15);
+    // v.push_back(0);
+    // v.push_back(50);
+    // image i1(200, 100, 0);
+    // i1.test();
+    // i1.draw("circle", v);
+    // i1.frame("./images/outputs/out.bmp");
+    // i1.load("./images/inputs/snail.bmp");
+    // cout << i1.get_height() << endl;
+    // cout << i1.get_width() << endl;
     // i1.draw("circle", v);
     // i1.test();
-    cout << "hello\n";
-    i1.frame("./images/outputs/out1.bmp");
+    // i1.frame("./images/outputs/out1.bmp");
+
+    vector<int> pos;
+    pos.push_back(0);
+    pos.push_back(40);
+    pos.push_back(10);
+    // make the circle bounce around
+    for (int i=0; i<116; i++) {
+        pos[0] = i;
+        if (return_parabola_point(i)<0){
+            pos[1] = return_parabola_point(i-64);
+        } else {
+            pos[1] = return_parabola_point(i);
+        }
+        image i1(200, 200, 0);
+        i1.draw("circle", pos);
+        i1.frame("../images/outputs/vid/" + to_string(i) + ".bmp");
+    }
+
+
+
     // i1.load("./images/inputs/snail.bmp");
     // i1.draw("circle", v);
     // i1.frame("./images/outputs/out2.bmp");

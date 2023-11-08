@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
+#include <ncurses.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -8,7 +10,7 @@ int main(){
 
     ifstream ifs;
     ofstream ofs;
-    char input[80] = "in.bmp";
+    char input[80] = "./images/inputs/in.bmp";
     char output[80] = "output.txt";
 
     ifs.open(input, ios::binary);
@@ -95,19 +97,42 @@ int main(){
 
 
     // decreased the height of image shown on terminal by 4
-    for (int i = rows; i> 0; i-=4)
+    // for (int i = rows; i> 0; i-=4)
+    // {
+    //     for (int j = columns; j > 0; j --)
+    //     {
+    //         if ((i-3) * columns + j < 0)
+    //             break;
+
+    //         avgR = (R_arr[i * columns + j] + R_arr[(i - 1) * columns + j] + R_arr[(i - 2) * columns + j] + R_arr[(i - 3) * columns + j]) / 4;
+    //         avgG = (G_arr[i * columns + j] + G_arr[(i - 1) * columns + j] + G_arr[(i - 2) * columns + j] + G_arr[(i - 3) * columns + j]) / 4;
+    //         avgB = (B_arr[i * columns + j] + B_arr[(i - 1) * columns + j] + B_arr[(i - 2) * columns + j] + B_arr[(i - 3) * columns + j]) / 4;
+
+    //         printf("\e[48;2;%d;%d;%dm \e[0m", avgR, avgG, avgB);
+    //     }
+    // }
+
+
+
+
+    // use ncurses to clear the screen 5 times and run a command "tiv -h 1000 -w 1000 ./images/inputs/in.bmp"
+
+    // initscr();
+    string path = "";
+    for(int i=0; i<116; i++)
     {
-        for (int j = columns; j > 0; j --)
-        {
-            if ((i-3) * columns + j < 0)
-                break;
-
-            avgR = (R_arr[i * columns + j] + R_arr[(i - 1) * columns + j] + R_arr[(i - 2) * columns + j] + R_arr[(i - 3) * columns + j]) / 4;
-            avgG = (G_arr[i * columns + j] + G_arr[(i - 1) * columns + j] + G_arr[(i - 2) * columns + j] + G_arr[(i - 3) * columns + j]) / 4;
-            avgB = (B_arr[i * columns + j] + B_arr[(i - 1) * columns + j] + B_arr[(i - 2) * columns + j] + B_arr[(i - 3) * columns + j]) / 4;
-
-            printf("\e[48;2;%d;%d;%dm \e[0m", avgR, avgG, avgB);
-        }
+        system("clear");
+        path = "./images/outputs/vid/" + to_string(i) + ".bmp";
+        system(("tiv -h 1000 -w 1000 " + path).c_str());
+        usleep(100000);
     }
+    // system("tiv -h 1500 -w 1000 ./images/inputs/blackbuck.bmp");
+
+    // endwin();
+
+    ifs.close();
+    ofs.close();
+
+    return 0;
 
 }

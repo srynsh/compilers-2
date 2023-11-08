@@ -1,8 +1,10 @@
 /* Definitions */
 
 %{
-#include "y.tab.h"
 #include <bits/stdc++.h>
+#include "y.tab.h"
+#include "headers/sym_tab.hpp"
+#include "headers/semantic.hpp"
 extern FILE* ftoken; // Output file for tokens
 extern FILE* fparser; // Output file for parser
 extern int lineno;
@@ -107,46 +109,46 @@ path ['][a-zA-Z0-9_\/\.\~]+[']
     fprintf(ftoken,"keyword: %s\n", yytext);
 
     struct type_info* tinfo = new struct type_info;
-    type_info->type = TYPE::SIMPLE;
+    tinfo->type = TYPE::SIMPLE;
 
     if (strcmp(yytext,"img")==0) {
         // yylval.etype = ELE_TYPE::ELE_IMG;
-        type_info->eleType = ELE_TYPE::ELE_IMG;
+        tinfo->eleType = ELE_TYPE::ELE_IMG;
         return IMG;
     }
     else if (strcmp(yytext,"gray_img")==0) {
         // yylval.etype = ELE_TYPE::ELE_GRAY_IMG;
-        type_info->eleType = ELE_TYPE::ELE_GRAY_IMG;
+        tinfo->eleType = ELE_TYPE::ELE_GRAY_IMG;
         return GRAY_IMG;
     }
     else if (strcmp(yytext,"vid")==0) {
         // yylval.etype = ELE_TYPE::ELE_VID;
-        type_info->eleType = ELE_TYPE::ELE_VID;
+        tinfo->eleType = ELE_TYPE::ELE_VID;
         return VID;
     }
     else if (strcmp(yytext,"gray_vid")==0) {
         // yylval.etype = ELE_TYPE::ELE_GRAY_VID;
-        type_info->eleType = ELE_TYPE::ELE_GRAY_VID;
+        tinfo->eleType = ELE_TYPE::ELE_GRAY_VID;
         return GRAY_VID;
     }
     else if (strcmp(yytext,"num")==0) {
         // yylval.etype = ELE_TYPE::ELE_NUM;
-        type_info->eleType = ELE_TYPE::ELE_NUM;
+        tinfo->eleType = ELE_TYPE::ELE_NUM;
         return NUM;
     }
     else if (strcmp(yytext,"real")==0) {
         // yylval.etype = ELE_TYPE::ELE_REAL;
-        type_info->eleType = ELE_TYPE::ELE_REAL;
+        tinfo->eleType = ELE_TYPE::ELE_REAL;
         return REAL;
     }
     else if (strcmp(yytext,"void")==0) {
         // yylval.etype = ELE_TYPE::ELE_VOID;
-        type_info->eleType = ELE_TYPE::ELE_VOID;
+        tinfo->eleType = ELE_TYPE::ELE_VOID;
         return VOID;
     }
     else if (strcmp(yytext,"bool")==0) {
         // yylval.etype = ELE_TYPE::ELE_BOOL;
-        type_info->eleType = ELE_TYPE::ELE_BOOL;
+        tinfo->eleType = ELE_TYPE::ELE_BOOL;
         return BOOL;
     }
     else if (strcmp(yytext,"true")==0) {

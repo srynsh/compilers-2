@@ -27,7 +27,7 @@
 
 %type <dim_list> brak
 %type <tval> datatype
-
+%type <tval> RET_TYPE
 
 %token <sval> ID 
 
@@ -57,7 +57,20 @@
  * Main Program Structure
  *------------------------------------------------------------------------*/
 
-S : optional_new_lines program
+S : 
+    optional_new_lines program
+    {
+        std::string last_func = SymbolTableFunction->get_current_func_name();
+        ELETYPE last_ret_type = SymbolTableFunction->get_current_return_type();
+        if (last_func != "main"){
+            yyerror("last function is not main");
+            exit(1);
+        }
+        if (last_ret_type != ELETYPE::VOID){
+            yyerror("last function does not return void");
+            exit(1);
+        }
+    }
     ;
 
 program : function new_lines program
@@ -84,12 +97,12 @@ function_definition
     : INK ID '(' par_list ')' ARROW RET_TYPE 
         {
             std::string func_name = *$2;
-            SymbolTableFunction->add_function(func_name, $7);
+            SymbolTableFunction->add_function(func_name, $7->eleType);
         }
     | INK ID '(' ')' ARROW RET_TYPE 
         {
             std::string func_name = *$2;
-            SymbolTableFunction->add_function(func_name, $6);
+            SymbolTableFunction->add_function(func_name, $6->eleType);
         }
     ;
 
@@ -100,15 +113,27 @@ par_list : par_list ',' par
 func_body : '{' set_scope_function new_lines stmt_list '}' set_scope_outside_function
         ;
 
+/* Only simple types are returned */
 RET_TYPE : datatype 
         | VOID
         ;
 
-par : datatype ID 
-    {
-        function_record* func = SymbolTableFunction->get_function(SymbolTableFunction->get_current_func_name());
-        func->add_parameter($2,$1->type, $1->eleType, $1->dim_list);
-    }
+par : 
+    datatype ID 
+        {
+            function_record* func = SymbolTableFunction->get_function(SymbolTableFunction->get_current_func_name());
+            func->add_parameter($2,$1->type, $1->eleType, $1->dim_list);
+        }
+    | NUM brak ID
+        { 
+            function_record* func = SymbolTableFunction->get_function(SymbolTableFunction->get_current_func_name());
+            func->add_parameter($3, TYPE::ARRAY, $1->eleType, $2);
+        }
+    | REAL brak ID   
+        { 
+            function_record* func = SymbolTableFunction->get_function(SymbolTableFunction->get_current_func_name());
+            func->add_parameter($3, TYPE::ARRAY, $1->eleType, $2);
+        }
     ;
 
 datatype : IMG 
@@ -118,8 +143,6 @@ datatype : IMG
         | NUM 
         | REAL
         | BOOL
-        | NUM brak      { struct type_info* t = $1; t->dim_list = $2; $$ = t;}
-        | REAL brak     { struct type_info* t = $1; t->dim_list = $2; $$ = t;}
         ;
 
 brak : '[' ']'                  {$$ = std::vector<int>(1, -1);}
@@ -401,7 +424,7 @@ decrement_scope : {current_scope--;}
 int yywrap(){ 
     return 1;
 }
-void yyerror(char* s){ 
+void yyerror(const char* s){ 
     printf("Error at line %d\n", lineno);
     fprintf(fparser, " : invalid statement");
     exit(1);
