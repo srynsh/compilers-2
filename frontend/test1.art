@@ -12,11 +12,11 @@ ink _func1(img gray, gray_img blablablabla) -> img
 		real lol
 		lol = lol
 		break
-	}loop
+	}
 
 	spool (i[0] = 0;;) {
 		i = 0
-	}loop 
+	} 
 
 	real iwf, eeer, er ,terretrte, i1, i2, i3, i4, i5, i6, xyz, be
 
@@ -33,7 +33,7 @@ ink _func1(img gray, gray_img blablablabla) -> img
 			}
 			
 		} 
-	}conditionalloop
+	}
 } 
 
 ink main1() -> gray_vid {
@@ -64,11 +64,11 @@ ink main1() -> gray_vid {
 			lol = kg
 		}
 
-		$conditional (i1) -> { 
+		$ (i1) -> { 
 			i2 = i3
 		 }
 
-		{conditional
+		{
 			i++
 		}
 			
@@ -76,12 +76,12 @@ ink main1() -> gray_vid {
 		{
 			i = s
 		}
-}conditional
+}
 
 ink main(num suryaansh) -> void {
 	num [ 2, 5,    7] lol = { { {1, 2, 3}, {4, 5, 6} }, { {7, 8, 9}, {10, 11, 12} } }
-	
-	
+	# img i1 <2 , 3  ,4   >
+	# img i1 <1,      6>
 	img i1 <'~/.D/hello/a.bmp'>
 
 	
@@ -99,6 +99,6 @@ ink main(num suryaansh) -> void {
   {
     i++
   }
-}conditional
+}
 
 

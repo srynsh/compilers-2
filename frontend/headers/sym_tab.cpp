@@ -1,5 +1,7 @@
 #include <bits/stdc++.h>
 #include <iostream>
+#include <vector>
+#include <tuple>
 #include "sym_tab.hpp"
 #include "semantic.hpp"
 
@@ -55,27 +57,56 @@ void data_record::print() {
 ------------------------------------------------------------ */
 
 void symbol_table_variable::add_variable(std::string name, TYPE type, ELETYPE ele_type, std::vector<int> &dim_list, int scope) {
+    for (auto x : this->variable_list) {
+        if (x->get_name() == name && (x->get_scope() == scope || x->get_scope() == 1)) {
+            std::string err = "Variable " + name + " already declared";
+            yyerror(err.c_str());
+            exit(1);
+        }
+    }
+    
     data_record* new_record = new data_record(name, type, ele_type, dim_list, scope);
     this->variable_list.push_back(new_record);
-    std::cout<<"add "<<scope<<" "<<name<<std::endl;
 }
 
 void symbol_table_variable::add_variable(std::string name, TYPE type, ELETYPE ele_type, int scope) {
+    for (auto x : this->variable_list) {
+        if (x->get_name() == name && (x->get_scope() == scope || x->get_scope() == 1)) {
+            std::string err = "Variable " + name + " already declared";
+            yyerror(err.c_str());
+            exit(1);
+        }
+    }
+
     data_record* new_record = new data_record(name, type, ele_type, scope);
     this->variable_list.push_back(new_record);
-    std::cout<<"add "<<scope<<" "<<name<<std::endl;
 }
 
 void symbol_table_variable::add_variable(std::vector<std::string> &names, TYPE type, ELETYPE ele_type, std::vector<int> &dim_lists, int scope) {
     for (auto i : names) {
+        for (auto x : this->variable_list) {
+            if (x->get_name() == i && (x->get_scope() == scope || x->get_scope() == 1)) {
+                std::string err = "Variable " + i + " already declared";
+                yyerror(err.c_str());
+                exit(1);
+            }
+        }
+
         data_record* new_record = new data_record(i, type, ele_type, dim_lists, scope);
         this->variable_list.push_back(new_record);
     }
-
 }
 
 void symbol_table_variable::add_variable(std::vector<std::string> &names, TYPE type, ELETYPE ele_type, int scope) {
     for (auto i : names) {
+        for (auto x : this->variable_list) {
+            if (x->get_name() == i && (x->get_scope() == scope || x->get_scope() == 1)) {
+                std::string err = "Variable " + i + " already declared";
+                yyerror(err.c_str());
+                exit(1);
+            }
+        }
+
         data_record* new_record = new data_record(i, type, ele_type, scope);
         this->variable_list.push_back(new_record);
     }
@@ -94,7 +125,7 @@ void symbol_table_variable::add_variable(std::vector<std::pair<std::string, type
 data_record* symbol_table_variable::get_variable(std::string name, int scope) {
     data_record* res = nullptr;
     bool flag = false;
-    std::cout<<"get "<<scope<<" "<<name<<std::endl;
+    // std::cout<<"get "<<scope<<" "<<name<<std::endl;
     for (auto i : this->variable_list) {
         if (i->get_name() == name && i->get_scope() <= scope) {
             if (flag && res->get_scope() < i->get_scope()) {
@@ -116,7 +147,7 @@ data_record* symbol_table_variable::get_variable(std::string name, int scope) {
 }
 
 void symbol_table_variable::print() {
-    std::cout << "Variables: " << std::endl;
+    // std::cout << "Variables: " << std::endl;
     for (auto i : this->variable_list) {
         i->print();
     }
@@ -163,27 +194,21 @@ data_record* function_record::get_parameter(std::string name) {
     return nullptr;
 }
 
+std::vector<std::pair<std::string, data_record*> > function_record::get_parameter_list() {
+    return this->parameter_list;
+}
+
 void function_record::add_parameter(std::string* name, TYPE type, ELETYPE ele_type, std::vector<int> *dim_list) {
     data_record* new_record = new data_record(*(name), type, ele_type, *(dim_list), 1);
     this->parameter_list.push_back(std::make_pair(*(name), new_record));
-    std::cout << "add parameter " << *(name) << std::endl;
+    // std::cout << "add parameter " << *(name) << std::endl;
 }
 
 void function_record::add_parameter(std::string* name, TYPE type, ELETYPE ele_type) {
     data_record* new_record = new data_record(*(name), type, ele_type, 1);
     this->parameter_list.push_back(std::make_pair(*(name), new_record));
-    std::cout << "add parameter " << *(name) << std::endl;
+    // std::cout << "add parameter " << *(name) << std::endl;
 }
-
-// void function_record::add_parameter(std::vector<std::string> &names, std::vector<TYPE> &types, std::vector<ELETYPE> &ele_types, std::vector<std::vector<int> > &dim_lists){
-//     assert (names.size() == types.size() && types.size() == ele_types.size() && ele_types.size() == dim_lists.size());
-
-//     for (int i = 0; i < names.size(); i++) {
-//         data_record* new_record = new data_record(names[i], types[i], ele_types[i], dim_lists[i], 1);
-//         this->parameter_list[names[i]] = new_record;
-//     }
-
-// }
 
 void function_record::print() {
     std::cout << "Name: " << this->name << std::endl;
@@ -202,14 +227,49 @@ void function_record::print() {
  * Symbol Table for functions
 ------------------------------------------------------------ */
 
-void symbol_table_function::add_function_record(std::string name, ELETYPE return_type) {
+/*
+Utility function to compare 2 parameter lists
+*/
 
-    // Check if main function is already defined
-    // if (name == "main") {
-    //     if (this->function_list != this->function_list.end()) {
-    //         yyerror("main function is already defined");
-    //     }
-    // }
+bool compare_parameter_list(std::vector<std::pair<std::string, data_record*> > &parameter_list_1, std::vector<std::pair<std::string, type_info*> > *parameter_list_2) {
+    if (parameter_list_1.size() != parameter_list_2->size()) {
+        return false;
+    }
+
+    for (auto i = 0; i < parameter_list_1.size(); i++) {
+        if ((parameter_list_1[i].second->get_ele_type() != parameter_list_2->at(i).second->eleType) || (parameter_list_1[i].second->get_type() != parameter_list_2->at(i).second->type)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/*-----------------------------------*/
+
+void symbol_table_function::add_function_record(std::string name, ELETYPE return_type) { 
+    //functions that have no input parameters
+
+    if (name == "main") {
+        for (auto i : this->function_list) {
+            if (i->get_name() == name) {
+                std::string err = "Main function already declared";
+                yyerror(err.c_str());
+                exit(1);
+            }
+        }
+    }
+    else {
+        // functions that have no input parameters
+        for (auto i : this->function_list) {
+            if (i->get_name() == name && i->get_parameter_list().size() == 0) {
+                std::string err = "Function " + name + " already declared";
+                yyerror(err.c_str());
+                exit(1);
+            }
+        }
+    }
+
 
     function_record* new_record = new function_record(name, return_type);
     this->function_list.push_back(new_record);
@@ -218,6 +278,38 @@ void symbol_table_function::add_function_record(std::string name, ELETYPE return
 }
 
 void symbol_table_function::add_function_record(std::string name, ELETYPE return_type, std::vector<std::pair<std::string, type_info*> > *par_vec) {
+    // functions that have input parameters
+
+    if (name == "main") {
+        for (auto i : this->function_list) {
+            if (i->get_name() == name) {
+                std::string err = "Main function already declared";
+                yyerror(err.c_str());
+                exit(1);
+            }
+        }
+    }
+    else {
+        // functions that have no input parameters
+        for (auto i : this->function_list) {
+            if (i->get_name() == name && compare_parameter_list(i->get_parameter_list(), par_vec)) {
+                std::string err = "Function " + name + " already declared";
+                yyerror(err.c_str());
+                exit(1);
+            }
+        }
+    }
+
+
+    for (auto i : this->function_list) {
+        std::vector<std::pair<std::string, data_record*> > temp = i->get_parameter_list();
+        if (i->get_name() == name && compare_parameter_list(temp, par_vec)) {
+            std::string err = "Function " + name + " already declared";
+            yyerror(err.c_str());
+            exit(1);
+        }
+    }
+
     function_record* new_record = new function_record(name, return_type);
     this->function_list.push_back(new_record);
     this->current_func_name = name;
@@ -231,14 +323,15 @@ void symbol_table_function::add_function_record(std::string name, ELETYPE return
 }
 
 
-function_record* symbol_table_function::get_function(std::string name) {
+std::vector<function_record*> symbol_table_function::get_function(std::string name) {
+    std::vector<function_record*> res;
     for (auto i : this->function_list) {
         if (i->get_name() == name) {
-            return i;
+            res.push_back(i);
         }
     }
 
-    return nullptr;
+    return res;
 }
 
 void symbol_table_function::print(){

@@ -15,7 +15,20 @@ enum class OPERATOR {
     SUB,
     MUL,
     DIV,
-    XOR
+    XOR,
+    POST_INCR,
+    POST_DECR,
+    INV,
 };
+
+ELETYPE get_type(ELETYPE t1, ELETYPE t2);
+
+bool is_primitive(ELETYPE t);
+bool is_img(ELETYPE t);
+bool is_vid(ELETYPE t);
+bool is_dim_undefined(std::vector<int> &v, int len);
+
+struct type_info* binary_compatible(struct type_info* t1, struct type_info* t2, OPERATOR op);
+struct type_info* unary_compatible(struct type_info* t1, OPERATOR op);
 
 #endif // SEMANTIC_HPP

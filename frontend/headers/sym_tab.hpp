@@ -2,6 +2,9 @@
 #define SYM_TAB_HPP
 
 #include <bits/stdc++.h>
+#include <string>
+#include <utility>
+#include <vector>
 
 /*------------------------------------------------------------------------*
  * Type Information                                                       *
@@ -28,6 +31,12 @@ enum class ELETYPE{
     ELE_VOID,
     ELE_ERROR
 };
+
+/// @brief vector of inbuilt functions
+std::vector<std::string> inbuilt_functions = {"blur", "sharpen", "sobel", "T", "vflip", 
+                                "hflip", "pixelate", "invert", "noise", "bnw",
+                                "get", "set", "convolve", "paint", "frame",
+                                "play", "len", "append", "height", "width"};
 
 /*------------------------------------------------------------------------*
  * Symbol Table for Variables                                             *
@@ -94,7 +103,8 @@ class function_record {
         std::string get_name();
         ELETYPE get_return_type();
         data_record* get_parameter(std::string name);
-
+        std::vector<std::pair<std::string, data_record*> > get_parameter_list();
+ 
         void add_parameter(std::string* name, TYPE type, ELETYPE ele_type, std::vector<int>*dim_list);
         void add_parameter(std::string* name, TYPE type, ELETYPE ele_type);
         void add_parameter(std::vector<std::string>& names, std::vector<TYPE>& types, std::vector<ELETYPE>& ele_types, std::vector<std::vector<int> >& dim_lists);
@@ -115,7 +125,7 @@ class symbol_table_function {
 
         void add_function_record(std::string name, ELETYPE return_type); 
         void add_function_record(std::string name, ELETYPE return_type, std::vector<std::pair<std::string, type_info*> > *par_vec);
-        function_record* get_function(std::string name);
+        std::vector<function_record*> get_function(std::string name);
 
         std::string get_current_func_name(){ return current_func_name; };
         ELETYPE get_current_return_type(){ return current_return_type; };
@@ -125,5 +135,6 @@ class symbol_table_function {
         ~symbol_table_function();
 };
 
+bool compare_parameter_list(std::vector<std::pair<std::string, data_record*> > &parameter_list_1, std::vector<std::pair<std::string, type_info*> > &parameter_list_2);
 
 #endif // SYM_TAB_HPP

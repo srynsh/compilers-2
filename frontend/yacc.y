@@ -3,6 +3,7 @@
     #include "lex.yy.c"
     #include "headers/sym_tab.hpp"
     #include "headers/semantic.hpp"
+    #include "headers/utils.hpp"
 
     int yylex (void);
     FILE* ftoken, *fparser;
@@ -17,6 +18,7 @@
 %code requires {
     #include "headers/semantic.hpp"
     #include "headers/sym_tab.hpp"
+    #include "headers/utils.hpp"
 }
 
 %union {
@@ -34,9 +36,9 @@
 }
 
 %type <dim_list> brak array_element
-%type <tval> datatype
+%type <tval> datatype expr_pred
 %type <tval> RET_TYPE
-%type <par_vec> par_list par
+%type <par_vec> par_list par arg_list arg
 %type <id_vec> id_list
 
 %token <sval> ID /* Identifiers */
@@ -47,14 +49,16 @@
 %token <bval> BOOL_CONST
 
 /* Operators */
-%token <opval> BINARY_OP 
+%token <opval> BINARY_OP
+%token <opval> UNARY_OP
+%token <opval> INV_OP
 
 %token <tval> IMG GRAY_IMG VID GRAY_VID NUM REAL VOID BOOL /* Datatypes */
 %token IF ELSE_IF RETURN CONTINUE BREAK LOOP INK /* Control flow keywords */
 %token ARROW DOT_OP LOG_OP REL_OP GT LT NEG_OP /* Operators */
 %token NEWLINE
 
-%token PATH UNARY_OP INV_OP
+%token PATH 
 %start S /* Start symbol */
 
 %left DOT_OP
@@ -206,8 +210,8 @@ stmt : decl_stmt /* new_lines is included in expr_stmt */
         | unary_stmt  /* new_lines is included in expr_stmt */
         ; 
 
-/*------------------------------------------------------------------------
- * Declaration Statements
+/*------------------------------------------------------------------------*
+ * Declaration Statements                                                 *
  *------------------------------------------------------------------------*/
 
 decl_stmt : img_decl  new_lines
@@ -221,25 +225,25 @@ decl_stmt : img_decl  new_lines
         | real_array_decl new_lines
         ;
 
-img_decl : IMG ID LT NUM_CONST ',' NUM_CONST  GT 
-        | IMG ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT 
-        | IMG ID LT PATH GT 
+img_decl : IMG ID LT NUM_CONST ',' NUM_CONST  GT                { declare_img(SymbolTableVariable, $1, *$2, $4, $6, 0, current_scope);}
+        | IMG ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT    { declare_img(SymbolTableVariable, $1, *$2, $4, $6, $8, current_scope);}
+        | IMG ID LT PATH GT                                     { declare_img(SymbolTableVariable, $1, *$2, -1, -1, 0, current_scope);}
         | IMG ID '=' expr_pred 
         ; 
 
-gray_img_decl : GRAY_IMG ID LT NUM_CONST ',' NUM_CONST GT 
-        | GRAY_IMG ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT 
-        | GRAY_IMG ID LT PATH GT 
+gray_img_decl : GRAY_IMG ID LT NUM_CONST ',' NUM_CONST GT           { declare_gray_img(SymbolTableVariable, $1, *$2, $4, $6, 0, current_scope);}
+        | GRAY_IMG ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT   { declare_gray_img(SymbolTableVariable, $1, *$2, $4, $6, $8, current_scope);}
+        | GRAY_IMG ID LT PATH GT                                    { declare_gray_img(SymbolTableVariable, $1, *$2, -1, -1, 0, current_scope);}
         | GRAY_IMG ID '=' expr_pred 
         ;
 
-vid_decl : VID ID LT NUM_CONST ',' NUM_CONST GT 
-        | VID ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT 
-        ;
+vid_decl : VID ID LT NUM_CONST ',' NUM_CONST GT                     { declare_vid(SymbolTableVariable, $1, *$2, $4, $6, 30, current_scope);}
+        | VID ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT        { declare_vid(SymbolTableVariable, $1, *$2, $4, $6, $8, current_scope);}
+        ; // we can have an assignment here
 
-gray_vid_decl : GRAY_VID ID LT NUM_CONST ',' NUM_CONST GT 
-        | GRAY_VID ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT 
-        ;
+gray_vid_decl : GRAY_VID ID LT NUM_CONST ',' NUM_CONST GT           { declare_gray_vid(SymbolTableVariable, $1, *$2, $4, $6, 30, current_scope);}
+        | GRAY_VID ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT   { declare_gray_vid(SymbolTableVariable, $1, *$2, $4, $6, $8, current_scope);}
+        ; // we can have an assignment here
 
 num_decl : 
     NUM id_list
@@ -248,15 +252,26 @@ num_decl :
             SymbolTableVariable->add_variable(*$2, t->type, t->eleType, current_scope);
         }
     | NUM ID '=' expr_pred
+        {
+            struct type_info* t = $1, *t_res = new type_info;
+            t_res = assignment_compatible(t, $4);
+            SymbolTableVariable->add_variable(*$2, t_res->type, t_res->eleType, current_scope);
+        }
         ;
 
-bool_decl : BOOL id_list
+bool_decl : 
+    BOOL id_list
         {
             struct type_info* t = $1;
             SymbolTableVariable->add_variable(*$2, t->type, t->eleType, current_scope);
         }
-        | BOOL ID '=' expr_pred
-        ;
+    | BOOL ID '=' expr_pred
+        {
+            struct type_info* t = $1, *t_res = new type_info;
+            t_res = assignment_compatible(t, $4);
+            SymbolTableVariable->add_variable(*$2, t_res->type, t_res->eleType, current_scope);
+        }
+    ;
 
 real_decl : 
     REAL id_list
@@ -267,7 +282,12 @@ real_decl :
         }
         
     | REAL ID '=' expr_pred
-        ;
+        {
+            struct type_info* t = $1, *t_res = new type_info;
+            t_res = assignment_compatible(t, $4);
+            SymbolTableVariable->add_variable(*$2, t_res->type, t_res->eleType, current_scope);
+        }
+    ;
 
 num_array_decl : 
     NUM array_element id_list
@@ -276,9 +296,22 @@ num_array_decl :
         t->type = TYPE::ARRAY;
         SymbolTableVariable->add_variable(*$3, t->type, t->eleType, *$2, current_scope);
     }
-    | NUM array_element ID '=' ID    
+    | NUM array_element ID '=' ID 
+        {
+            data_record* dr = SymbolTableVariable->get_variable(*$5, current_scope);
+            struct type_info* t1 = $1, *t_res = new type_info, *t2 = new type_info;
+            t2->type = dr->get_type();
+            t2->eleType = dr->get_ele_type();
+            t2->dim_list = dr->get_dim_list();
+
+            t1->type = TYPE::ARRAY;
+            t1->dim_list = *$2;
+            
+            t_res = assignment_compatible(t1, t2);
+            SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
+        }
     | NUM array_element ID '=' brak_pred 
-                ;
+    ;
 
 real_array_decl : 
     REAL array_element id_list
@@ -297,21 +330,22 @@ array_element : '[' expr_pred ']' { $$ = new std::vector<int>(1, -1);}
         ;
 
 brak_pred : '{' brak_pred_list '}'
-          | '{' const_list '}'
+          /* | '{' const_list '}' */
+          | '{' expr_pred_list '}'
           ;
 
 brak_pred_list : brak_pred_list ',' brak_pred
                | brak_pred
                ;
 
-const_list : const_list ',' const
+/* const_list : const_list ',' const
          | const
-         ;
+         ; */
         
-const : NUM_CONST
+/* const : NUM_CONST
     | REAL_CONST
     | BOOL_CONST
-    ;
+    ; */
 
 id_list : 
     id_list ',' ID
@@ -327,6 +361,10 @@ id_list :
             $$ = p;
         }
         ;
+
+expr_pred_list : expr_pred_list ',' expr_pred
+               | expr_pred
+               ;
 
 /*------------------------------------------------------------------------
 * Conditional Statements
@@ -364,14 +402,14 @@ optional_loop_decl : expr_or_decl_stmt
         | /* empty */
         ;
 
-loop_body : '{' increment_scope new_lines loop_stmt_list '}' decrement_scope
+loop_body : '{' new_lines loop_stmt_list '}'
         ;
 
 loop_stmt_list : loop_stmt
         | loop_stmt_list loop_stmt
         ;
         
-loop_stmt : decl_stmt /* new_lines is included in expr_stmt */
+loop_stmt : decl_stmt /* new_lines is included in decl_stmt */
         | loop_conditional_stmt /* new_lines is included in conditional_stmt */
         | call_stmt new_lines
         | in_built_call_stmt new_lines
@@ -417,36 +455,62 @@ expr_stmt : ID '=' expr_pred new_lines
 expr_pred : 
         ID 
             {
-                data_record* dr;
-                dr = SymbolTableVariable->get_variable(*$1, current_scope);
+                data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
                 struct type_info* ti = new type_info;
                 ti->type = dr->get_type(); 
                 ti->eleType = dr->get_ele_type(); 
-                std::cout << "if it breaks, its here" << std::endl;
                 std::vector<int> temp_dim_list = dr->get_dim_list();
                 ti->dim_list = &temp_dim_list;
-                // ti->dim_list = dr->get_dim_list();
-                std::cout << "it didn't break" << std::endl;
+                $$ = ti;
             }
         | NUM_CONST
+            {
+                struct type_info* ti = new type_info;
+                ti->type = TYPE::SIMPLE;
+                ti->eleType = ELETYPE::ELE_NUM;
+                $$ = ti;
+            }
         | REAL_CONST
+            {
+                struct type_info* ti = new type_info;
+                ti->type = TYPE::SIMPLE;
+                ti->eleType = ELETYPE::ELE_REAL;
+                $$ = ti;
+            }
         | BOOL_CONST
+            {
+                struct type_info* ti = new type_info;
+                ti->type = TYPE::SIMPLE;
+                ti->eleType = ELETYPE::ELE_BOOL;
+                $$ = ti;
+            }
         | expr_pred REL_OP expr_pred
         | expr_pred LT expr_pred
         | expr_pred GT expr_pred
         | expr_pred LOG_OP expr_pred
-        | '(' expr_pred ')'
-        | NEG_OP expr_pred
-        | call_stmt
-        | in_built_call_stmt 
-        | ID array_element
+        | '(' expr_pred ')'                 {$$ = $2;} 
+        | NEG_OP expr_pred                  {$$ = $2;} /*temp*/
+        | call_stmt                         {$$ = new type_info;} /*temp*/
+        | in_built_call_stmt                {$$ = new type_info;} /*temp*/
+        | ID array_element                  {$$ = new type_info;} /*temp*/
         | expr_pred BINARY_OP expr_pred
             {
-                struct type_info* t1 = $1;
-                struct type_info* t2 = $3;
+                struct type_info *t1 = $1, *t2 = $3, *t = new type_info;
+                t = binary_compatible(t1, t2, $2);
+                $$ = t;
             }
-        | expr_pred UNARY_OP
+        | expr_pred UNARY_OP 
+            {
+                struct type_info *t1 = $1, *t = new type_info;
+                t = unary_compatible(t1, $2);
+                $$ = t;
+            }           
         | INV_OP expr_pred
+            {
+                struct type_info *t1 = $2, *t = new type_info;
+                t = unary_compatible(t1, $1);
+                $$ = t;
+            }
         ;
 
 expr_or_decl_stmt : num_decl
@@ -466,7 +530,13 @@ expr_or_decl_stmt : num_decl
 *------------------------------------------------------------------------*/
 
 call_stmt : ID '(' arg_list ')' 
+                {
+                    check_func_call(SymbolTableFunction, *$1, $3);
+                }
         | ID '(' ')' 
+                {
+                    check_func_call(SymbolTableFunction, *$1);
+                }
         ;
 
 in_built_call_stmt : ID DOT_OP ID '(' arg_list ')'
@@ -476,6 +546,12 @@ in_built_call_stmt : ID DOT_OP ID '(' arg_list ')'
         ;
 
 arg_list : arg_list ',' arg
+            {
+                std::vector<std::pair<std::string, type_info*>> *p = $1;
+                std::vector<std::pair<std::string, type_info*>> *q = $3;
+                p->insert(p->end(), q->begin(), q->end());
+                $$ = p;
+            }
         | arg
         ;
 
@@ -491,7 +567,22 @@ unary_stmt : ID UNARY_OP new_lines
     ;
 
 return_stmt : RETURN expr_pred new_lines
+        {
+            ELETYPE last_ret_type = SymbolTableFunction->get_current_return_type();
+            struct type_info* t = $2;
+            if (last_ret_type != t->eleType){
+                yyerror("return type must be same as function definition");
+                exit(1);
+            }
+        }
     | RETURN VOID new_lines 
+        {
+            ELETYPE last_ret_type = SymbolTableFunction->get_current_return_type();
+            if (last_ret_type != ELETYPE::ELE_VOID){
+                yyerror("return type must be same as function definition");
+                exit(1);
+            }
+        }
     ;
 
 /* -----------------------------------------------------------------------
