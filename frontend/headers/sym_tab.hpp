@@ -29,14 +29,9 @@ enum class ELETYPE{
     ELE_VID,
     ELE_GRAY_VID,
     ELE_VOID,
-    ELE_ERROR
+    ELE_STR,
+    ELE_ERROR,
 };
-
-/// @brief vector of inbuilt functions
-std::vector<std::string> inbuilt_functions = {"blur", "sharpen", "sobel", "T", "vflip", 
-                                "hflip", "pixelate", "invert", "noise", "bnw",
-                                "get", "set", "convolve", "paint", "frame",
-                                "play", "len", "append", "height", "width"};
 
 /*------------------------------------------------------------------------*
  * Symbol Table for Variables                                             *
@@ -124,7 +119,7 @@ class symbol_table_function {
         symbol_table_function(){}
 
         void add_function_record(std::string name, ELETYPE return_type); 
-        void add_function_record(std::string name, ELETYPE return_type, std::vector<std::pair<std::string, type_info*> > *par_vec);
+        void add_function_record(std::string name, ELETYPE return_type, std::vector<std::pair<std::string, struct type_info*> > *par_vec);
         std::vector<function_record*> get_function(std::string name);
 
         std::string get_current_func_name(){ return current_func_name; };
@@ -135,6 +130,8 @@ class symbol_table_function {
         ~symbol_table_function();
 };
 
-bool compare_parameter_list(std::vector<std::pair<std::string, data_record*> > &parameter_list_1, std::vector<std::pair<std::string, type_info*> > &parameter_list_2);
+bool compare_parameter_list(std::vector<std::pair<std::string, data_record*> > &parameter_list_1, std::vector<std::pair<std::string, struct type_info*> > &parameter_list_2);
+// Archit
+bool compare_par_list_arg_list(std::vector<struct function_record*> func_list, std::vector<struct type_info*> &arg_list);
 
 #endif // SYM_TAB_HPP

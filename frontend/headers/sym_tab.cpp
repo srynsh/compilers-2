@@ -245,6 +245,26 @@ bool compare_parameter_list(std::vector<std::pair<std::string, data_record*> > &
     return true;
 }
 
+// Archit
+bool compare_par_list_arg_list(std::vector<struct function_record*> func_list, std::vector<struct type_info*> &arg_list) {
+    for (auto i : func_list)
+    {
+        std::vector<std::pair<std::string, struct data_record*>> par_list = i->get_parameter_list();
+        if (par_list.size() == arg_list.size()) {
+            int j;
+            for (j = 0; j < par_list.size(); j++) {
+                if ((par_list[j].second->get_ele_type() != arg_list[j]->eleType) || (par_list[j].second->get_type() != arg_list[j]->type)) {
+                    break;
+                }
+            }
+            if (j == par_list.size())
+                return true;
+        }
+    }
+    
+    return false;
+}
+
 /*-----------------------------------*/
 
 void symbol_table_function::add_function_record(std::string name, ELETYPE return_type) { 
@@ -292,7 +312,8 @@ void symbol_table_function::add_function_record(std::string name, ELETYPE return
     else {
         // functions that have no input parameters
         for (auto i : this->function_list) {
-            if (i->get_name() == name && compare_parameter_list(i->get_parameter_list(), par_vec)) {
+            std::vector<std::pair<std::string, data_record*> > temp = i->get_parameter_list();
+            if (i->get_name() == name && compare_parameter_list(temp, par_vec)) {
                 std::string err = "Function " + name + " already declared";
                 yyerror(err.c_str());
                 exit(1);

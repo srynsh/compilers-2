@@ -30,15 +30,17 @@
     std::vector<int> *dim_list;
     std::vector<std::string> *id_vec;
 
-    std::vector<std::pair<std::string, type_info*>> *par_vec;
+    std::vector<std::pair<std::string, struct type_info*>> *par_vec;
+    std::vector<struct type_info*> *arg_vec;
 
     OPERATOR opval;
 }
 
 %type <dim_list> brak array_element
-%type <tval> datatype expr_pred
-%type <tval> RET_TYPE
-%type <par_vec> par_list par arg_list arg
+%type <tval> datatype expr_pred expr_pred_list brak_pred brak_pred_list
+%type <tval> RET_TYPE in_built_call_stmt
+%type <par_vec> par_list par 
+%type <arg_vec> arg_list arg
 %type <id_vec> id_list
 
 %token <sval> ID /* Identifiers */
@@ -302,10 +304,11 @@ num_array_decl :
             struct type_info* t1 = $1, *t_res = new type_info, *t2 = new type_info;
             t2->type = dr->get_type();
             t2->eleType = dr->get_ele_type();
-            t2->dim_list = dr->get_dim_list();
+            std::vector<int> temp_dim_list = dr->get_dim_list();
+            t2->dim_list = &temp_dim_list;
 
             t1->type = TYPE::ARRAY;
-            t1->dim_list = *$2;
+            t1->dim_list = $2;
             
             t_res = assignment_compatible(t1, t2);
             SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
@@ -321,6 +324,21 @@ real_array_decl :
             SymbolTableVariable->add_variable(*$3, t->type, t->eleType, *$2, current_scope);    
         }
     | REAL array_element ID '=' ID 
+        {
+            data_record* dr = SymbolTableVariable->get_variable(*$5, current_scope);
+            struct type_info* t1 = $1, *t_res = new type_info, *t2 = new type_info;
+            t2->type = dr->get_type();
+            t2->eleType = dr->get_ele_type();
+            std::vector<int> temp_dim_list = dr->get_dim_list();
+            t2->dim_list = &temp_dim_list;
+
+            t1->type = TYPE::ARRAY;
+            std::vector<int> *temp_dim_list2 = $2;
+            t1->dim_list = temp_dim_list2;
+            
+            t_res = assignment_compatible(t1, t2);
+            SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
+        }
     | REAL array_element ID '=' brak_pred  
     ;
 
@@ -329,9 +347,9 @@ array_element : '[' expr_pred ']' { $$ = new std::vector<int>(1, -1);}
         |  '[' expr_pred ',' expr_pred ',' expr_pred ']' { $$ = new std::vector<int>(3, -1);}
         ;
 
-brak_pred : '{' brak_pred_list '}'
+brak_pred : '{' brak_pred_list '}'      {$$ = $2;}
           /* | '{' const_list '}' */
-          | '{' expr_pred_list '}'
+          | '{' expr_pred_list '}'      {$$ = $2;}
           ;
 
 brak_pred_list : brak_pred_list ',' brak_pred
@@ -529,34 +547,68 @@ expr_or_decl_stmt : num_decl
 * Call Statements
 *------------------------------------------------------------------------*/
 
-call_stmt : ID '(' arg_list ')' 
+call_stmt : ID '(' arg_list ')' // Archit
                 {
                     check_func_call(SymbolTableFunction, *$1, $3);
                 }
-        | ID '(' ')' 
+        | ID '(' ')' // Archit
                 {
                     check_func_call(SymbolTableFunction, *$1);
                 }
         ;
 
-in_built_call_stmt : ID DOT_OP ID '(' arg_list ')'
-        | ID DOT_OP ID '(' ')'
-        | in_built_call_stmt DOT_OP ID '(' arg_list ')'
-        | in_built_call_stmt DOT_OP ID '(' ')'
+in_built_call_stmt : 
+    ID DOT_OP ID '(' arg_list ')'
+        {
+            data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
+            struct type_info* t1 = new type_info;
+            t1->type = dr->get_type();
+            t1->eleType = dr->get_ele_type();
+            std::vector<int> temp_dim_list = dr->get_dim_list();
+            t1->dim_list = &temp_dim_list;
+            $$ = check_inbuilt_func_call(t1, *$3, $5);
+        }
+    | ID DOT_OP ID '(' ')'
+        {
+            data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
+            struct type_info* t1 = new type_info;
+            t1->type = dr->get_type();
+            t1->eleType = dr->get_ele_type();
+            std::vector<int> temp_dim_list = dr->get_dim_list();
+            t1->dim_list = &temp_dim_list;
+            std::vector<struct type_info*> *temp  = new std::vector<struct type_info*>;
+            $$ = check_inbuilt_func_call(t1,*$3, temp);
+        }
+    | in_built_call_stmt DOT_OP ID '(' arg_list ')'     
+        { 
+            $$ = check_inbuilt_func_call($1, *$3, $5);
+        }
+    | in_built_call_stmt DOT_OP ID '(' ')'              
+        { 
+            std::vector<struct type_info*> *temp  = new std::vector<struct type_info*>;
+            $$ = check_inbuilt_func_call($1, *$3, temp);
+        }
         ;
 
-arg_list : arg_list ',' arg
-            {
-                std::vector<std::pair<std::string, type_info*>> *p = $1;
-                std::vector<std::pair<std::string, type_info*>> *q = $3;
+// Archit
+arg_list : arg_list ',' arg {
+                std::vector<struct type_info*> *p = $1;
+                std::vector<struct type_info*> *q = $3;
                 p->insert(p->end(), q->begin(), q->end());
                 $$ = p;
             }
-        | arg
+        | arg 
         ;
 
-arg : expr_pred
-    | PATH
+// Archit  
+arg : expr_pred  { std::vector<struct type_info*> *p = new std::vector<struct type_info*>(1, $1); $$ = p;}
+    | PATH 
+        { 
+            struct type_info* t = new type_info;
+            t->type = TYPE::SIMPLE;
+            t->eleType = ELETYPE::ELE_STR;
+            std::vector<struct type_info*> *p = new std::vector<struct type_info*>(1, t); 
+        }
     ;
 
 /* -----------------------------------------------------------------------
@@ -570,7 +622,7 @@ return_stmt : RETURN expr_pred new_lines
         {
             ELETYPE last_ret_type = SymbolTableFunction->get_current_return_type();
             struct type_info* t = $2;
-            if (last_ret_type != t->eleType){
+            if (last_ret_type != t->eleType) {
                 yyerror("return type must be same as function definition");
                 exit(1);
             }
@@ -578,7 +630,7 @@ return_stmt : RETURN expr_pred new_lines
     | RETURN VOID new_lines 
         {
             ELETYPE last_ret_type = SymbolTableFunction->get_current_return_type();
-            if (last_ret_type != ELETYPE::ELE_VOID){
+            if (last_ret_type != ELETYPE::ELE_VOID) {
                 yyerror("return type must be same as function definition");
                 exit(1);
             }

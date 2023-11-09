@@ -5,6 +5,12 @@
 
 extern void yyerror(const char *s);
 
+/// @brief vector of inbuilt functions
+std::vector<std::string> inbuilt_functions = {"blur", "sharpen", "sobel", "T", "vflip", 
+                                "hflip", "pixelate", "invert", "noise", "bnw",
+                                "get", "set", "convolve", "paint", "frame",
+                                "play", "len", "append", "height", "width"};
+
 /* ---------------------------------------------------------- 
  * Helper functions
 ------------------------------------------------------------ */
@@ -117,8 +123,7 @@ size_t Levenstein(std::string_view const & a, std::string_view const & b) {
 }
 
 // Credit: https://stackoverflow.com/questions/70236962/how-do-i-find-the-closest-match-to-a-string-key-within-a-c-map
-std::tuple<size_t, size_t> FindClosest(
-        std::vector<std::string> const & strs, std::string const & query) {
+std::tuple<size_t, size_t> FindClosest(std::vector<std::string> const & strs, std::string const & query) {
     size_t minv = size_t(-1), mini = size_t(-1);
     for (size_t i = 0; i < strs.size(); ++i) {
         size_t const dist = Levenstein(strs[i], query);
@@ -127,6 +132,7 @@ std::tuple<size_t, size_t> FindClosest(
             mini = i;
         }
     }
+    
     return std::make_tuple(mini, minv);
 }
 
@@ -442,19 +448,47 @@ struct type_info* assignment_compatible(struct type_info* t1, struct type_info* 
     return t_return;
 }
 
+/* ---------------------------------------------------------*
+ * Dimension List Compatibility                      *
+ *----------------------------------------------------------*/
+
+/**
+* only ELE_NUM, ELE_REAL, ELE_BOOL can be used as dimension list
+*/
+// struct type_info* dim_list_compatible(struct type_info* t1, struct type_info* t2) {
+//     struct type_info* t_return = new struct type_info;
+//     if (!is_primitive(t1->eleType) || !is_primitive(t2->eleType)) {
+//         yyerror("Cannot use non-primitive types as dimension list");
+//         exit(1);
+//     }
+//     // TODO
+// }
+
 /* ---------------------------------------------------------- 
  * Function calls
 ------------------------------------------------------------ */
 
 
-// void check_func_call(symbol_table_function* SymbolTableFunction, std::string func_name, ) {
-
-// }
-
-void check_func_call(symbol_table_function* SymbolTableFunction, std::string func_name) {
+void check_func_call(symbol_table_function* SymbolTableFunction, std::string func_name, std::vector<struct type_info*> *arg_vec) { //Archit
     if ((SymbolTableFunction->get_function(func_name)).empty())
     {
-        std::string err = "Function not declared";
+        std::string err = "Function doesn't match any declaration";
+        yyerror(err.c_str());
+        exit(1);
+    }
+    
+    if (!compare_par_list_arg_list(SymbolTableFunction->get_function(func_name), *arg_vec))
+    {
+        std::string err = "Function doesn't match any declaration";
+        yyerror(err.c_str());
+        exit(1);
+    }
+}
+
+void check_func_call(symbol_table_function* SymbolTableFunction, std::string func_name) { //Archit
+    if ((SymbolTableFunction->get_function(func_name)).empty())
+    {
+        std::string err = "Function doesn't match any declaration";
         yyerror(err.c_str());
         exit(1);
     }
@@ -464,6 +498,22 @@ void check_func_call(symbol_table_function* SymbolTableFunction, std::string fun
  * In-built function call
 ------------------------------------------------------------ */
 
-void check_inbuilt_func_call(std::string func_name) {
+struct type_info* check_inbuilt_func_call(struct type_info* ti, std::string func_name, std::vector<struct type_info*> *arg_list) {
+    auto const [idx, dist] = FindClosest(inbuilt_functions, func_name);
+    if (inbuilt_functions[idx] != func_name) {
+        // arbitrary threshold of 10
+        std::string err;
+        if (dist < 10) {
+            err = func_name + " is not an inbuilt function; Did you mean " + inbuilt_functions[idx] + "?";
+        } else {
+            err = func_name + " is not an inbuilt function";
+        }
+        yyerror(err.c_str());
+        exit(1);
+    }
 
+    // switch (func_name) {
+        
+    // }
+    return nullptr; //temp
 }
