@@ -44,11 +44,11 @@ ink main1() -> gray_vid {
 	img i1 <2 , 3  ,4   >
 	img a <2, 3, 4>
 	i1 = a.get().get()
-	bool suryaansh
+	img suryaansh <2, 3, 4>
 
 	num iwf, eeer, er ,terretrte, i2, i3, i4, i5, i6, xyz, be
-	real bla = 1.0
-	i1[1,3,2] = _func1(bla.blur().blablablabla(), suryaansh) - i23n32.catastrophe(iwf, eeer,er ,terretrte)  * (i3 - i4) / (i5 ++ ^ i6) / ((xyz or be) and ~~i1.catastrophe2().cat())
+	img bla <1, 2, 3>
+	i1[1,3,2] = _func1(bla.blur().blur(), suryaansh) - i23n32.catastrophe(iwf, eeer,er ,terretrte)  * (i3 - i4) / (i5 ++ ^ i6) / ((xyz or be) and ~~i1.catastrophe2().cat())
 	num s, i
 	real kg
 	$ (i1) -> {
