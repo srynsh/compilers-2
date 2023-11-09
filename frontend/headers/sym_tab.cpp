@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include <iostream>
 #include "sym_tab.hpp"
 #include "semantic.hpp"
 
@@ -55,44 +56,85 @@ void data_record::print() {
 
 void symbol_table_variable::add_variable(std::string name, TYPE type, ELETYPE ele_type, std::vector<int> &dim_list, int scope) {
     data_record* new_record = new data_record(name, type, ele_type, dim_list, scope);
-    this->variable_list[name + " " + std::to_string(scope)] = new_record;
+    this->variable_list.push_back(new_record);
+    std::cout<<"add "<<scope<<" "<<name<<std::endl;
 }
 
 void symbol_table_variable::add_variable(std::string name, TYPE type, ELETYPE ele_type, int scope) {
     data_record* new_record = new data_record(name, type, ele_type, scope);
-    this->variable_list[name + " " + std::to_string(scope)] = new_record;
+    this->variable_list.push_back(new_record);
+    std::cout<<"add "<<scope<<" "<<name<<std::endl;
 }
 
-void symbol_table_variable::add_variable(std::vector<std::string> &names, std::vector<TYPE> &types, std::vector<ELETYPE> &ele_types, std::vector<std::vector<int> > &dim_lists, int scope) {
-    assert (names.size() == types.size() && types.size() == ele_types.size() && ele_types.size() == dim_lists.size());
-
-    for(int i = 0; i < names.size(); i++) {
-        data_record* new_record = new data_record(names[i], types[i], ele_types[i], dim_lists[i], scope);
-        this->variable_list[names[i] + " " + std::to_string(scope)] = new_record;
+void symbol_table_variable::add_variable(std::vector<std::string> &names, TYPE type, ELETYPE ele_type, std::vector<int> &dim_lists, int scope) {
+    for (auto i : names) {
+        data_record* new_record = new data_record(i, type, ele_type, dim_lists, scope);
+        this->variable_list.push_back(new_record);
     }
 
 }
 
+void symbol_table_variable::add_variable(std::vector<std::string> &names, TYPE type, ELETYPE ele_type, int scope) {
+    for (auto i : names) {
+        data_record* new_record = new data_record(i, type, ele_type, scope);
+        this->variable_list.push_back(new_record);
+    }
+}
+
+void symbol_table_variable::add_variable(std::vector<std::pair<std::string, type_info*> > &var_list, int scope){
+    for (auto i : var_list) {
+        if (i.second-> type == TYPE::ARRAY) 
+            this->add_variable(i.first, i.second->type, i.second->eleType, *(i.second->dim_list), scope);
+        else 
+            this->add_variable(i.first, i.second->type, i.second->eleType, scope);
+    }
+}
+
+
 data_record* symbol_table_variable::get_variable(std::string name, int scope) {
-    if (this->variable_list.find(name + " " + std::to_string(scope)) != this->variable_list.end()) {
-        return this->variable_list[name + " " + std::to_string(scope)];
-    } else {
-        return nullptr;
+    data_record* res = nullptr;
+    bool flag = false;
+    std::cout<<"get "<<scope<<" "<<name<<std::endl;
+    for (auto i : this->variable_list) {
+        if (i->get_name() == name && i->get_scope() <= scope) {
+            if (flag && res->get_scope() < i->get_scope()) {
+                res = i;
+            } else if (!flag) {
+                res = i;
+                flag = true;
+            }
+        }
+    }
+
+    if (res != nullptr) {
+        return res;
+    }
+
+    std::string err = "Variable " + name + " not declared";
+    yyerror(err.c_str());
+    exit(1);
+}
+
+void symbol_table_variable::print() {
+    std::cout << "Variables: " << std::endl;
+    for (auto i : this->variable_list) {
+        i->print();
     }
 }
 
 void symbol_table_variable::delete_variable(int scope) {
     for (auto i = this->variable_list.begin(); i != this->variable_list.end(); i++) {
-        if (i->second->get_scope() >= scope) {
-            delete i->second;
+        if ((*i)->get_scope() >= scope) {
+            delete *i;
             this->variable_list.erase(i);
+            i--;
         }
     }
 }
 
 symbol_table_variable::~symbol_table_variable() {
     for (auto i : this->variable_list) {
-        delete i.second;
+        delete i;
     }
 }
 
@@ -124,11 +166,13 @@ data_record* function_record::get_parameter(std::string name) {
 void function_record::add_parameter(std::string* name, TYPE type, ELETYPE ele_type, std::vector<int> *dim_list) {
     data_record* new_record = new data_record(*(name), type, ele_type, *(dim_list), 1);
     this->parameter_list.push_back(std::make_pair(*(name), new_record));
+    std::cout << "add parameter " << *(name) << std::endl;
 }
 
 void function_record::add_parameter(std::string* name, TYPE type, ELETYPE ele_type) {
     data_record* new_record = new data_record(*(name), type, ele_type, 1);
     this->parameter_list.push_back(std::make_pair(*(name), new_record));
+    std::cout << "add parameter " << *(name) << std::endl;
 }
 
 // void function_record::add_parameter(std::vector<std::string> &names, std::vector<TYPE> &types, std::vector<ELETYPE> &ele_types, std::vector<std::vector<int> > &dim_lists){
@@ -161,21 +205,21 @@ void function_record::print() {
 void symbol_table_function::add_function_record(std::string name, ELETYPE return_type) {
 
     // Check if main function is already defined
-    if (name == "main") {
-        if (this->function_list.find(name) != this->function_list.end()) {
-            yyerror("main function is already defined");
-        }
-    }
+    // if (name == "main") {
+    //     if (this->function_list != this->function_list.end()) {
+    //         yyerror("main function is already defined");
+    //     }
+    // }
 
     function_record* new_record = new function_record(name, return_type);
-    this->function_list[name] = new_record;
+    this->function_list.push_back(new_record);
     this->current_func_name = name;
     this->current_return_type = return_type;
 }
 
 void symbol_table_function::add_function_record(std::string name, ELETYPE return_type, std::vector<std::pair<std::string, type_info*> > *par_vec) {
     function_record* new_record = new function_record(name, return_type);
-    this->function_list[name] = new_record;
+    this->function_list.push_back(new_record);
     this->current_func_name = name;
     this->current_return_type = return_type;
     for (auto i : *(par_vec)) {
@@ -188,11 +232,13 @@ void symbol_table_function::add_function_record(std::string name, ELETYPE return
 
 
 function_record* symbol_table_function::get_function(std::string name) {
-    if (this->function_list.find(name) != this->function_list.end()) {
-        return this->function_list[name];
-    } else {
-        return nullptr;
+    for (auto i : this->function_list) {
+        if (i->get_name() == name) {
+            return i;
+        }
     }
+
+    return nullptr;
 }
 
 void symbol_table_function::print(){
@@ -202,13 +248,13 @@ void symbol_table_function::print(){
 
     std::cout << "Functions: " << std::endl;
     for (auto i : this->function_list) {
-        i.second->print();
+        i->print();
     }
 
 }
 
 symbol_table_function::~symbol_table_function() {
     for (auto i : this->function_list) {
-        delete i.second;
+        delete i;
     }
 }

@@ -2,7 +2,7 @@
 
 %{
 #include <bits/stdc++.h>
-#include "y.tab.h"
+#include "yacc.tab.h"
 #include "headers/sym_tab.hpp"
 #include "headers/semantic.hpp"
 extern FILE* ftoken; // Output file for tokens
@@ -41,11 +41,27 @@ path ['][a-zA-Z0-9_\/\.\~]+[']
     fprintf(ftoken,"operator: %s\n", yytext);
 
     if(strcmp(yytext,"=")==0) return *yytext;
-    else if(strcmp(yytext,"+")==0) return BINARY_OP;
-    else if(strcmp(yytext,"-")==0) return BINARY_OP;
-    else if(strcmp(yytext,"*")==0) return BINARY_OP;
-    else if(strcmp(yytext,"/")==0) return BINARY_OP;
-    else if(strcmp(yytext,"^")==0) return BINARY_OP;
+    else if(strcmp(yytext,"+")==0) {
+        OPERATOR op_temp = OPERATOR::ADD;
+        yylval.opval = op_temp;
+        return BINARY_OP;
+    } else if(strcmp(yytext,"-")==0) {
+        OPERATOR op_temp = OPERATOR::SUB;
+        yylval.opval = op_temp;
+        return BINARY_OP;
+    } else if(strcmp(yytext,"*")==0) {
+        OPERATOR op_temp = OPERATOR::MUL;
+        yylval.opval = op_temp;
+        return BINARY_OP;
+    } else if(strcmp(yytext,"/")==0) {
+        OPERATOR op_temp = OPERATOR::DIV;
+        yylval.opval = op_temp;
+        return BINARY_OP;
+    } else if(strcmp(yytext,"^")==0) {
+        OPERATOR op_temp = OPERATOR::XOR;
+        yylval.opval = op_temp;
+        return BINARY_OP;
+    }
 
     else if(strcmp(yytext,"~")==0) return INV_OP;
 

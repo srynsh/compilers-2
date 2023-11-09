@@ -12,8 +12,12 @@
     symbol_table_function* SymbolTableFunction = new symbol_table_function();
     symbol_table_variable* SymbolTableVariable = new symbol_table_variable();
     int current_scope = 0;
-
 %}
+
+%code requires {
+    #include "headers/semantic.hpp"
+    #include "headers/sym_tab.hpp"
+}
 
 %union {
     int ival;
@@ -26,9 +30,10 @@
 
     std::vector<std::pair<std::string, type_info*>> *par_vec;
 
+    OPERATOR opval;
 }
 
-%type <dim_list> brak
+%type <dim_list> brak array_element
 %type <tval> datatype
 %type <tval> RET_TYPE
 %type <par_vec> par_list par
@@ -41,12 +46,15 @@
 %token <ival> NUM_CONST
 %token <bval> BOOL_CONST
 
+/* Operators */
+%token <opval> BINARY_OP 
+
 %token <tval> IMG GRAY_IMG VID GRAY_VID NUM REAL VOID BOOL /* Datatypes */
 %token IF ELSE_IF RETURN CONTINUE BREAK LOOP INK /* Control flow keywords */
 %token ARROW DOT_OP LOG_OP REL_OP GT LT NEG_OP /* Operators */
 %token NEWLINE
 
-%token PATH BINARY_OP UNARY_OP INV_OP /* Operators */ 
+%token PATH UNARY_OP INV_OP
 %start S /* Start symbol */
 
 %left DOT_OP
@@ -95,19 +103,21 @@ optional_new_lines : /* empty */
  * Functions
  *------------------------------------------------------------------------*/
 
-function : function_definition optional_new_lines func_body 
+function : function_definition optional_new_lines func_body decrement_scope
         ;
 
 function_definition 
-    : INK ID  '(' par_list ')' ARROW RET_TYPE 
+    : INK ID  '(' increment_scope par_list ')' ARROW RET_TYPE 
         {
             std::string func_name = *$2;
-            SymbolTableFunction->add_function_record(func_name, $7->eleType, $4);
+            SymbolTableFunction->add_function_record(func_name, $8->eleType, $5); 
+            assert(current_scope == 1);
+            SymbolTableVariable->add_variable(*($5), current_scope);
         }
-    | INK ID  '(' ')' ARROW RET_TYPE 
+    | INK ID  '(' increment_scope ')' ARROW RET_TYPE 
         {
             std::string func_name = *$2;
-            SymbolTableFunction->add_function_record(func_name, $6->eleType);
+            SymbolTableFunction->add_function_record(func_name, $7->eleType);
         }
     ;
 
@@ -122,7 +132,7 @@ par_list :
     | par
     ;
 
-func_body : '{' set_scope_function new_lines stmt_list '}' set_scope_outside_function
+func_body : '{' increment_scope new_lines stmt_list '}' decrement_scope
         ;
 
 /* Only simple types are returned */
@@ -231,61 +241,59 @@ gray_vid_decl : GRAY_VID ID LT NUM_CONST ',' NUM_CONST GT
         | GRAY_VID ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT 
         ;
 
-num_decl : NUM id_list
+num_decl : 
+    NUM id_list
         {
-            std::vector<std::string> *p = $2;
             struct type_info* t = $1;
-            for (auto q : *p){
-                SymbolTableVariable->add_variable(q, t->type, t->eleType, current_scope);
-            }
+            SymbolTableVariable->add_variable(*$2, t->type, t->eleType, current_scope);
         }
-        | NUM ID '=' expr_pred
+    | NUM ID '=' expr_pred
         ;
 
 bool_decl : BOOL id_list
         {
-            std::vector<std::string> *p = $2;
             struct type_info* t = $1;
-            for (auto q : *p){
-                SymbolTableVariable->add_variable(q, t->type, t->eleType, current_scope);
-            }
+            SymbolTableVariable->add_variable(*$2, t->type, t->eleType, current_scope);
         }
         | BOOL ID '=' expr_pred
         ;
 
-real_decl : REAL id_list
+real_decl : 
+    REAL id_list
         {
             std::vector<std::string> *p = $2;
             struct type_info* t = $1;
-            for (auto q : *p){
-                SymbolTableVariable->add_variable(q, t->type, t->eleType, current_scope);
-            }
+            SymbolTableVariable->add_variable(*$2, t->type, t->eleType, current_scope);
         }
-        | REAL ID '=' expr_pred
+        
+    | REAL ID '=' expr_pred
         ;
 
 num_array_decl : 
     NUM array_element id_list
     {
-        // std::vector<std::string> *p = $3;
-        // std::vector<int> *q = $2;
-        // struct type_info* t = $1;
-        // for (auto r : *p){
-        //     SymbolTableVariable->add_variable(r, TYPE::ARRAY, t->eleType, q, current_scope);
-        // }
+        struct type_info* t = $1;
+        t->type = TYPE::ARRAY;
+        SymbolTableVariable->add_variable(*$3, t->type, t->eleType, *$2, current_scope);
     }
     | NUM array_element ID '=' ID    
     | NUM array_element ID '=' brak_pred 
                 ;
 
-real_array_decl : REAL array_element id_list
-                | REAL array_element ID '=' ID 
-                | REAL array_element ID '=' brak_pred  
-                ;
+real_array_decl : 
+    REAL array_element id_list
+        {
+            struct type_info* t = $1;
+            t->type = TYPE::ARRAY;
+            SymbolTableVariable->add_variable(*$3, t->type, t->eleType, *$2, current_scope);    
+        }
+    | REAL array_element ID '=' ID 
+    | REAL array_element ID '=' brak_pred  
+    ;
 
-array_element : '[' expr_pred ']'
-        |  '[' expr_pred ',' expr_pred ']'
-        |  '[' expr_pred ',' expr_pred ',' expr_pred ']'
+array_element : '[' expr_pred ']' { $$ = new std::vector<int>(1, -1);}
+        |  '[' expr_pred ',' expr_pred ']' { $$ = new std::vector<int>(2, -1);}
+        |  '[' expr_pred ',' expr_pred ',' expr_pred ']' { $$ = new std::vector<int>(3, -1);}
         ;
 
 brak_pred : '{' brak_pred_list '}'
@@ -305,14 +313,15 @@ const : NUM_CONST
     | BOOL_CONST
     ;
 
-id_list : id_list ',' ID
+id_list : 
+    id_list ',' ID
         {
             std::vector<std::string> *p = $1;
             std::string *q = $3;
             p->push_back(*q);
             $$ = p;
         }
-        | ID 
+    | ID 
         {
             std::vector<std::string> *p = new std::vector<std::string>(1, *$1);
             $$ = p;
@@ -323,13 +332,13 @@ id_list : id_list ',' ID
 * Conditional Statements
 *------------------------------------------------------------------------*/
 
-conditional_stmt : if_block optional_new_lines else_if_block_list optional_new_lines else { fprintf(fparser, "conditional\n");} new_lines
-                | if_block new_lines {fprintf(fparser, "conditional\n");}
-                | if_block optional_new_lines else_if_block_list new_lines {fprintf(fparser, "conditional\n");}
-                | if_block optional_new_lines else {fprintf(fparser, "conditional\n");} new_lines
+conditional_stmt : if_block optional_new_lines else_if_block_list optional_new_lines else { fprintf(fparser, "conditional");} new_lines
+                | if_block new_lines {fprintf(fparser, "conditional");}
+                | if_block optional_new_lines else_if_block_list new_lines {fprintf(fparser, "conditional");}
+                | if_block optional_new_lines else {fprintf(fparser, "conditional");} new_lines
                 ;
 
-if_block : IF optional_new_lines '(' expr_pred')' optional_new_lines ARROW optional_new_lines func_body 
+if_block : IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body 
         ;
 
 else_if_block_list : else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
@@ -343,8 +352,8 @@ else : ARROW optional_new_lines func_body
 * Loop Statements
 *------------------------------------------------------------------------*/
 
-loop_block : LOOP optional_new_lines '(' optional_loop_expr ')' optional_new_lines loop_body {fprintf(fparser, "loop");}
-        | LOOP optional_new_lines '(' optional_loop_decl ';' optional_loop_expr ';' optional_loop_expr ')' optional_new_lines loop_body {fprintf(fparser, "loop");}
+loop_block : LOOP optional_new_lines '(' increment_scope optional_loop_expr ')' optional_new_lines loop_body decrement_scope {fprintf(fparser, "loop");}
+        | LOOP optional_new_lines '(' increment_scope optional_loop_decl ';' optional_loop_expr ';' optional_loop_expr ')' optional_new_lines loop_body decrement_scope {fprintf(fparser, "loop");}
         ;
 
 optional_loop_expr : expr_pred
@@ -387,10 +396,10 @@ loop_else_if_block_list : loop_else_if_block_list optional_new_lines ELSE_IF '('
         | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body 
         ;
 
-loop_conditional_stmt : loop_if_block optional_new_lines loop_else_if_block_list optional_new_lines loop_else { fprintf(fparser, "conditional\n");} new_lines
-                | loop_if_block new_lines {fprintf(fparser, "conditional\n");}
-                | loop_if_block optional_new_lines loop_else_if_block_list new_lines {fprintf(fparser, "conditional\n");}
-                | loop_if_block optional_new_lines loop_else {fprintf(fparser, "conditional\n");} new_lines
+loop_conditional_stmt : loop_if_block optional_new_lines loop_else_if_block_list optional_new_lines loop_else { fprintf(fparser, "conditional");} new_lines
+                | loop_if_block new_lines {fprintf(fparser, "conditional");}
+                | loop_if_block optional_new_lines loop_else_if_block_list new_lines {fprintf(fparser, "conditional");}
+                | loop_if_block optional_new_lines loop_else {fprintf(fparser, "conditional");} new_lines
                 ;
 
 loop_expr_stmt : ID '=' expr_pred 
@@ -405,7 +414,20 @@ expr_stmt : ID '=' expr_pred new_lines
         | ID array_element '=' expr_pred new_lines
         ;     
 
-expr_pred : ID 
+expr_pred : 
+        ID 
+            {
+                data_record* dr;
+                dr = SymbolTableVariable->get_variable(*$1, current_scope);
+                struct type_info* ti = new type_info;
+                ti->type = dr->get_type(); 
+                ti->eleType = dr->get_ele_type(); 
+                std::cout << "if it breaks, its here" << std::endl;
+                std::vector<int> temp_dim_list = dr->get_dim_list();
+                ti->dim_list = &temp_dim_list;
+                // ti->dim_list = dr->get_dim_list();
+                std::cout << "it didn't break" << std::endl;
+            }
         | NUM_CONST
         | REAL_CONST
         | BOOL_CONST
@@ -419,6 +441,10 @@ expr_pred : ID
         | in_built_call_stmt 
         | ID array_element
         | expr_pred BINARY_OP expr_pred
+            {
+                struct type_info* t1 = $1;
+                struct type_info* t2 = $3;
+            }
         | expr_pred UNARY_OP
         | INV_OP expr_pred
         ;
@@ -471,12 +497,6 @@ return_stmt : RETURN expr_pred new_lines
 /* -----------------------------------------------------------------------
  * Useful Actions
  * ----------------------------------------------------------------------- */
-
-set_scope_function : /* empty */ {current_scope = 2;}
-    ;
-
-set_scope_outside_function : /* empty */ {current_scope = 0;}
-    ;
 
 increment_scope : /* empty */ {current_scope++;}
     ;

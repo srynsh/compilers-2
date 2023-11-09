@@ -1,9 +1,4 @@
-// #include <_types/_uint8_t.h>
 #include <bits/stdc++.h>
-#include <cstdio>
-// #include <malloc/_malloc.h>
-#include <malloc.h>
-#include <vector>
 #include "./frontend/headers/kernel.hpp"
 #include "./frontend/headers/load_bmp.hpp"
 
@@ -1021,7 +1016,7 @@ int main() {
         }
         image i1(200, 200, 0);
         i1.draw("circle", pos);
-        i1.frame("../images/outputs/vid/" + to_string(i) + ".bmp");
+        i1.frame("images/outputs/vid/" + to_string(i) + ".bmp");
     }
 
 

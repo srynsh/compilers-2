@@ -25,7 +25,8 @@ enum class ELETYPE{
     ELE_GRAY_IMG,
     ELE_VID,
     ELE_GRAY_VID,
-    ELE_VOID
+    ELE_VOID,
+    ELE_ERROR
 };
 
 /*------------------------------------------------------------------------*
@@ -57,16 +58,19 @@ class data_record {
 class symbol_table_variable {
 
     private:
-        std::unordered_map<std::string, data_record*> variable_list; // map from name and scope (space-seperated) to data_record
-    
+        // std::unordered_map<std::string, data_record*> variable_list; // map from name and scope (space-seperated) to data_record
+        std::vector<data_record*> variable_list;
     public:
         symbol_table_variable(){}
 
-        void add_variable(std::string name, TYPE type, ELETYPE ele_type, std::vector<int>& dim_list, int scope);
-        void add_variable(std::string name, TYPE type, ELETYPE ele_type, int scope);
-        void add_variable(std::vector<std::string>& names, std::vector<TYPE>& types, std::vector<ELETYPE>& ele_types, std::vector<std::vector<int> >& dim_lists, int scope);
+        void add_variable(std::string name, TYPE type, ELETYPE ele_type, std::vector<int>& dim_list, int scope); 
+        void add_variable(std::string name, TYPE type, ELETYPE ele_type, int scope); 
+        void add_variable(std::vector<std::string> &names, TYPE type, ELETYPE ele_type, std::vector<int> &dim_lists, int scope);
+        void add_variable(std::vector<std::string> &names, TYPE type, ELETYPE ele_type, int scope);
+        void add_variable(std::vector<std::pair<std::string, type_info*> > &var_list, int scope);
         data_record* get_variable(std::string name, int scope);  
         void delete_variable(int scope);
+        void print();
 
         ~symbol_table_variable();
 };
@@ -81,7 +85,7 @@ class function_record {
     private:
         std::string name; // function name
         ELETYPE return_type;
-        std::vector<std::pair<std::string, data_record*>> parameter_list;
+        std::vector<std::pair<std::string, data_record*> > parameter_list;
 
     public:
         function_record(){}
@@ -93,7 +97,7 @@ class function_record {
 
         void add_parameter(std::string* name, TYPE type, ELETYPE ele_type, std::vector<int>*dim_list);
         void add_parameter(std::string* name, TYPE type, ELETYPE ele_type);
-        // void add_parameter(std::vector<std::string>& names, std::vector<TYPE>& types, std::vector<ELETYPE>& ele_types, std::vector<std::vector<int>>& dim_lists);
+        void add_parameter(std::vector<std::string>& names, std::vector<TYPE>& types, std::vector<ELETYPE>& ele_types, std::vector<std::vector<int> >& dim_lists);
         void print();
 };
 
@@ -103,7 +107,8 @@ class symbol_table_function {
     private:
         std::string current_func_name;
         ELETYPE current_return_type;
-        std::unordered_map<std::string, function_record*> function_list; // map from name to function_record
+        // std::unordered_map<std::string, function_record*> function_list; // map from name to function_record
+        std::vector<function_record*> function_list; // map from name to function_record
 
     public:
         symbol_table_function(){}
