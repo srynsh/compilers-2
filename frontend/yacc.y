@@ -658,7 +658,7 @@ int yywrap(){
     return 1;
 }
 void yyerror(const char* s){ 
-    printf("Error at line %d %s\n", lineno, s);
+    printf("\033[1;31mError at line %d:\033[0m %s\n", lineno, s);
     fprintf(fparser, " : invalid statement");
     exit(1);
 }

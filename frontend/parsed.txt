@@ -1,45 +1,35 @@
-   
-     
+ink draw_concentric_circle(img i)->img {
+    num a
 
-          
-    
-            
-    
+    spool(a = 1; a <= 10; a++)
+    {
+        i.draw('circle', 10, 10, a, 0x0000dd)
+    }loop
 
-    
+    i.frame('./out_img.bmp')
 
-     
+    return i
+}
 
+ink magic(img i1, img i2, img i3, img i4)->img {
+    gray_img i <25, 25>
 
-         
-       
+    i = i2.convolve(i3) * i1 ^ 14
+    i.blur()
+    i.noise()
+    i.vflip()
+    img ret_i = ~i
 
-          
-    
-    
-    
-       
+    return ret_i
+} 
 
-     
- 
+ink main()->void {
+    img i1 <25, 25>
+    img i2 <25, 25>
+    img i3 <'./inp_img.bmp'>
+    gray_img i4 <25, 25, 80>
 
-  
-       
-       
-      
-        
+    i1.draw('line', 0, 0, 5, 5)
+    i1.draw('triangle', 2, 2, 4, 3, 0, 6, 0xff9600)
 
-        
-           
-
-    
-
-          
-
-    
-    
-    
-    
-
-     
- : invalid statement
+    draw_concentric_circles(i2) : invalid statement

@@ -804,16 +804,17 @@ case 1:
 YY_RULE_SETUP
 #line 35 "lex.l"
 {
-    // std::cout << "hello darkness my old friend " << std::endl;
-    lineno++;
-    fprintf(fparser,"%s", yytext);
-    fprintf(ftoken,"newline: \\n\n");
+    if(strcmp(yytext, "\n") == 0) {
+        lineno++;   // increment line number on encountering new line
+        fprintf(fparser,"%s", yytext);
+        fprintf(ftoken,"newline: \\n\n");
+    }
     return NEWLINE;
 }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 43 "lex.l"
+#line 44 "lex.l"
 {
     if (!block_comment) {
         fprintf(fparser,"%s", yytext);
@@ -858,14 +859,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 85 "lex.l"
+#line 86 "lex.l"
 {
     fprintf(fparser, "%s", yytext);
 }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 89 "lex.l"
+#line 90 "lex.l"
 {
     if (!block_comment) {
         fprintf(fparser,"%s", yytext);
@@ -876,7 +877,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 97 "lex.l"
+#line 98 "lex.l"
 {
     if (!block_comment) {
         fprintf(fparser,"%s", yytext);
@@ -888,7 +889,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 106 "lex.l"
+#line 107 "lex.l"
 {
     if (!block_comment) {
         fprintf(fparser,"%s", yytext);
@@ -901,7 +902,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 116 "lex.l"
+#line 117 "lex.l"
 {
     if (!block_comment) {
         fprintf(fparser,"%s", yytext);
@@ -913,7 +914,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 125 "lex.l"
+#line 126 "lex.l"
 {
     if (!block_comment) {
         fprintf(fparser,"%s", yytext);
@@ -925,7 +926,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 134 "lex.l"
+#line 135 "lex.l"
 {
     if (!block_comment) {
         fprintf(fparser,"%s", yytext);
@@ -937,7 +938,7 @@ YY_RULE_SETUP
 case 10:
 /* rule 10 can match eol */
 YY_RULE_SETUP
-#line 142 "lex.l"
+#line 143 "lex.l"
 {
     if (!block_comment) {
         fprintf(fparser,"%s", yytext);
@@ -951,7 +952,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 153 "lex.l"
+#line 154 "lex.l"
 {
     if (!block_comment) {
         fprintf(fparser,"%s", yytext);
@@ -1017,7 +1018,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 216 "lex.l"
+#line 217 "lex.l"
 {
     if (!block_comment) {
         fprintf(fparser,"%s", yytext);
@@ -1029,7 +1030,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 225 "lex.l"
+#line 226 "lex.l"
 {
     if (!block_comment) {
         fprintf(fparser,"%s", yytext);
@@ -1042,7 +1043,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 235 "lex.l"
+#line 236 "lex.l"
 {
     if (!block_comment) {
         if (strcmp(yytext,"#*")==0) block_comment = 1;
@@ -1054,14 +1055,14 @@ YY_RULE_SETUP
 case 15:
 /* rule 15 can match eol */
 YY_RULE_SETUP
-#line 243 "lex.l"
+#line 244 "lex.l"
 {
     // fprintf(fparser,"%s", yytext);
 }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 247 "lex.l"
+#line 248 "lex.l"
 {
     if (!block_comment) {
         fprintf(ftoken, "punctuation: %s\n", yytext);
@@ -1072,10 +1073,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 254 "lex.l"
+#line 255 "lex.l"
 ECHO;
 	YY_BREAK
-#line 1078 "lex.yy.c"
+#line 1079 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2080,5 +2081,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 254 "lex.l"
+#line 255 "lex.l"
 

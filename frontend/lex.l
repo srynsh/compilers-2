@@ -33,10 +33,11 @@ path \'([^'\\])*\'
 %%
 
 {newline_token} {
-    // std::cout << "hello darkness my old friend " << std::endl;
-    lineno++;
-    fprintf(fparser,"%s", yytext);
-    fprintf(ftoken,"newline: \\n\n");
+    if(strcmp(yytext, "\n") == 0) {
+        lineno++;   // increment line number on encountering new line
+        fprintf(fparser,"%s", yytext);
+        fprintf(ftoken,"newline: \\n\n");
+    }
     return NEWLINE;
 }
 
