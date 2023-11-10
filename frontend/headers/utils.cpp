@@ -9,6 +9,12 @@ extern void yyerror(const char *s);
  * Declaration 
 ------------------------------------------------------------ */
 
+void declare_img(symbol_table_variable* stv, struct type_info* ti, std::string name, int scope) {
+    ti->dim_list = new std::vector<int>(3);
+    (*ti->dim_list)[0] = -1; (*ti->dim_list)[1] = -1; (*ti->dim_list)[2] = -1;
+    stv->add_variable(name, ti->type, ti->eleType, scope);
+}
+
 void declare_img(symbol_table_variable* stv, struct type_info* ti, std::string name, int h, int w, int color, int scope) {
     if (h <= 0 || w <= 0) {
         yyerror("Image dimensions should be positive");

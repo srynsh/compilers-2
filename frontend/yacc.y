@@ -229,8 +229,8 @@ decl_stmt : img_decl  new_lines
 
 img_decl : IMG ID LT NUM_CONST ',' NUM_CONST  GT                { declare_img(SymbolTableVariable, $1, *$2, $4, $6, 0, current_scope);}
         | IMG ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT    { declare_img(SymbolTableVariable, $1, *$2, $4, $6, $8, current_scope);}
-        | IMG ID LT PATH GT                                     { declare_img(SymbolTableVariable, $1, *$2, -1, -1, 0, current_scope);}
-        | IMG ID '=' expr_pred 
+        | IMG ID LT PATH GT                                     { declare_img(SymbolTableVariable, $1, *$2, current_scope);}
+        | IMG ID '=' expr_pred                                  { struct type_info* t = assignment_compatible($1, $4); declare_img(SymbolTableVariable, t, *$2, current_scope);}
         ; 
 
 gray_img_decl : GRAY_IMG ID LT NUM_CONST ',' NUM_CONST GT           { declare_gray_img(SymbolTableVariable, $1, *$2, $4, $6, 0, current_scope);}
@@ -594,10 +594,10 @@ in_built_call_stmt :
 arg_list : arg_list ',' arg {
                 std::vector<struct type_info*> *p = $1;
                 std::vector<struct type_info*> *q = $3;
-                p->insert(p->end(), q->begin(), q->end());
+                p->push_back(q->at(0));
                 $$ = p;
             }
-        | arg 
+        | arg
         ;
 
 // Archit  
@@ -608,6 +608,7 @@ arg : expr_pred  { std::vector<struct type_info*> *p = new std::vector<struct ty
             t->type = TYPE::SIMPLE;
             t->eleType = ELETYPE::ELE_STR;
             std::vector<struct type_info*> *p = new std::vector<struct type_info*>(1, t); 
+            $$ = p;
         }
     ;
 

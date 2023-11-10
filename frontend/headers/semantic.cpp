@@ -9,7 +9,7 @@ extern void yyerror(const char *s);
 std::vector<std::string> inbuilt_functions = {"blur", "sharpen", "sobel", "T", "vflip", 
                                 "hflip", "pixelate", "invert", "noise", "bnw",
                                 "get", "set", "convolve", "paint", "frame",
-                                "play", "len", "append", "height", "width"};
+                                "play", "len", "append", "height", "width", "draw"};
 
 /* ---------------------------------------------------------- 
  * Helper functions
@@ -330,6 +330,8 @@ struct type_info* binary_compatible(struct type_info* t1, struct type_info* t2, 
 /// @brief check if the two operands are compatible with an unary operator (++, --, ~)
 struct type_info* unary_compatible(struct type_info* t1, OPERATOR op) {
     struct type_info* t_return = new struct type_info;
+    t_return->eleType = t1->eleType;
+    t_return->type = t1->type;
     if (t1->type == TYPE::SIMPLE) 
     {
         if (is_img(t1->eleType) || is_vid(t1->eleType))
@@ -338,11 +340,6 @@ struct type_info* unary_compatible(struct type_info* t1, OPERATOR op) {
             {
                 yyerror("Cannot perform postinc/postdec unary operation on img/video");
                 exit(1);
-            }
-            else {
-                t_return->type = TYPE::SIMPLE;
-                t_return->eleType = t1->eleType;
-                // t_return->dim_list = new std::vector<int>(0);
             }
         }
         else if (t1->eleType == ELETYPE::ELE_BOOL) {
@@ -356,8 +353,6 @@ struct type_info* unary_compatible(struct type_info* t1, OPERATOR op) {
                 yyerror("Cannot perform invert unary operation on num/real");
                 exit(1);
             }
-            t_return->type = TYPE::SIMPLE;
-            t_return->eleType = t1->eleType;
             // t_return->dim_list = new std::vector<int>(0);
         }
     }
@@ -501,9 +496,9 @@ void check_func_call(symbol_table_function* SymbolTableFunction, std::string fun
 struct type_info* check_inbuilt_func_call(struct type_info* ti, std::string func_name, std::vector<struct type_info*> *arg_list) {
     auto const [idx, dist] = FindClosest(inbuilt_functions, func_name);
     if (inbuilt_functions[idx] != func_name) {
-        // arbitrary threshold of 10
+        // arbitrary threshold of 7
         std::string err;
-        if (dist < 10) {
+        if (dist < 7) {
             err = func_name + " is not an inbuilt function; Did you mean " + inbuilt_functions[idx] + "?";
         } else {
             err = func_name + " is not an inbuilt function";

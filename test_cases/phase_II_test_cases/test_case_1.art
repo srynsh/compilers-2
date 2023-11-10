@@ -1,7 +1,4 @@
-# This program has no errors
-# Some Basic image manipulations
-
-ink draw_concentric_circles(img i)->img {
+#*ink draw_concentric_circles(img i)->img {
     num a
 
     spool(a = 1; a <= 10; a++)
@@ -24,7 +21,7 @@ ink magic(img i1, img i2, img i3, img i4)->img {
     img ret_i = ~i
 
     return ret_i
-}
+} 
 
 ink main()->void {
     img i1 <25, 25>
@@ -45,4 +42,4 @@ ink main()->void {
     i.paint(i4)
 
     return void
-}
+}*#
