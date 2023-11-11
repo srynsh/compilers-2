@@ -162,21 +162,33 @@ path \'([^'\\])*\'
 
         if (strcmp(yytext,"img")==0) {
             tinfo->eleType = ELETYPE::ELE_IMG;
+            std::vector<int>* dim_list = new std::vector<int>(3);
+            dim_list->at(0) = -1; dim_list->at(1) = -1; dim_list->at(2) = 3;
+            tinfo->dim_list = dim_list;
             yylval.tval = tinfo;
             return IMG;
         }
         else if (strcmp(yytext,"gray_img")==0) {
             tinfo->eleType = ELETYPE::ELE_GRAY_IMG;
+            std::vector <int>* dim_list = new std::vector<int>(3);
+            dim_list->at(0) = -1; dim_list->at(1) = -1; dim_list->at(2) = 3;
+            tinfo->dim_list = dim_list;
             yylval.tval = tinfo;
             return GRAY_IMG;
         }
         else if (strcmp(yytext,"vid")==0) {
             tinfo->eleType = ELETYPE::ELE_VID;
+            std::vector<int>* dim_list = new std::vector<int>(4);
+            dim_list->at(0) = -1; dim_list->at(1) = -1; dim_list->at(2) = 3, dim_list->at(3) = 30; 
+            tinfo->dim_list = dim_list; 
             yylval.tval = tinfo;
             return VID;
         }
         else if (strcmp(yytext,"gray_vid")==0) {
             tinfo->eleType = ELETYPE::ELE_GRAY_VID;
+            std::vector <int>* dim_list = new std::vector<int>(3);
+            dim_list->at(0) = -1; dim_list->at(1) = -1; dim_list->at(2) = 1; dim_list->at(3) = 30; 
+            tinfo->dim_list = dim_list;
             yylval.tval = tinfo;
             return GRAY_VID;
         }

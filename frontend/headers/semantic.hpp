@@ -7,7 +7,13 @@
 struct type_info{
     TYPE type;
     ELETYPE eleType;
+    std::string name;
     std::vector<int>* dim_list; // For arrays -> -1 or (-1, -1) or (-1, -1, -1) | for images -> (h,w,1) or (h,w,3) | for videos -> (h, w, 1, f) | (h, w, 3, f)
+};
+
+enum flag_type{
+    assignment,
+    call_stmt
 };
 
 enum class OPERATOR {
@@ -31,7 +37,7 @@ bool is_dim_undefined(std::vector<int> &v, int len);
 struct type_info* binary_compatible(struct type_info* t1, struct type_info* t2, OPERATOR op);
 struct type_info* unary_compatible(struct type_info* t1, OPERATOR op);
 struct type_info* dim_list_compatible(struct type_info* t1, struct type_info* t2);
-struct type_info* assignment_compatible(struct type_info* t1, struct type_info* t2);
+struct type_info* assignment_compatible(struct type_info* t1, struct type_info* t2, flag_type flag=assignment);
 
 struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, std::string func_name, std::vector<struct type_info*> *arg_vec);
 struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, std::string func_name);

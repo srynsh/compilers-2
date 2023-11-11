@@ -98,6 +98,7 @@ bool is_vid(ELETYPE t) {
 
 /// Checks if any dimension is undefined 
 bool is_dim_undefined(std::vector<int> &v, int len) {
+    assert (len <= v.size());
     for(auto i = 0; i < len; i++) {
         if (v[i] == -1) {
             return true;
@@ -161,16 +162,10 @@ std::tuple<size_t, size_t> FindClosest(std::vector<std::string> const & strs, st
 
 /// @brief check if the two operands are compatible with an binary operator (+, -, /, *, ^)
 struct type_info* binary_compatible(struct type_info* t1, struct type_info* t2, OPERATOR op) {
-    std::cout<<"bruh: ";
     struct type_info* t_return = new struct type_info;
-    std::cout<<"t1: ";
     if (t1->type == t2->type && t1->type == TYPE::SIMPLE) {
-        std::cout<<"here1";
         t_return->type = TYPE::SIMPLE;
-        std::cout<<"here";
         t_return->eleType = get_type(t1->eleType, t2->eleType);
-        std::cout<<"t_return: ";
-        print_eleType(t_return->eleType);
         if (is_primitive(t1->eleType) && is_vid(t2->eleType) || is_primitive(t2->eleType) && is_vid(t1->eleType)) 
         {
             yyerror("Cannot perform binary operation on primitive and video");
@@ -251,6 +246,7 @@ struct type_info* binary_compatible(struct type_info* t1, struct type_info* t2, 
         }
         else if (is_vid(t1->eleType) && is_vid(t2->eleType)) 
         {
+            
             if (!(is_dim_undefined(*(t1->dim_list), 2) || is_dim_undefined(*(t2->dim_list), 2)))    {
                 if(!((t1->dim_list->at(0) == t2->dim_list->at(0)) && (t1->dim_list->at(1) == t2->dim_list->at(1)))) 
                 {
@@ -346,6 +342,10 @@ struct type_info* unary_compatible(struct type_info* t1, OPERATOR op) {
                 yyerror("Cannot perform postinc/postdec unary operation on img/video");
                 exit(1);
             }
+            t_return->dim_list = new std::vector<int>(t1->dim_list->size());
+            for (int i = 0; i < t1->dim_list->size(); i++) {
+                t_return->dim_list->at(i) = t1->dim_list->at(i);
+            }
         }
         else if (t1->eleType == ELETYPE::ELE_BOOL) {
             yyerror("Cannot perform unary operation on bool");
@@ -386,61 +386,110 @@ struct type_info* unary_compatible(struct type_info* t1, OPERATOR op) {
 */
 
 /// @brief check if the two operands are compatible with an assignment operator (=)
-struct type_info* assignment_compatible(struct type_info* t1, struct type_info* t2) {
+struct type_info* assignment_compatible(struct type_info* t1, struct type_info* t2, flag_type flag) {
     struct type_info* t_return = new struct type_info;
+    
     if (t1->type == t2->type && t1->type == TYPE::SIMPLE) 
     {
-        if (t1->eleType == ELETYPE::ELE_NUM || t1->eleType == ELETYPE::ELE_REAL || t1->eleType == ELETYPE::ELE_BOOL) 
+        if (is_primitive(t1->eleType)) 
         {
+            if (is_img(t2->eleType) || is_vid(t2->eleType)) 
+            {
+                if (flag == assignment)
+                    yyerror("Cannot assign img/video to primitive");
+                else if (flag == call_stmt)
+                    yyerror("Cannot pass img/video to primitive");
+                // yyerror("Cannot assign img/video to primitive");
+                exit(1);
+            }
             t_return->type = TYPE::SIMPLE;
             t_return->eleType = t1->eleType;
             // t_return->dim_list = new std::vector<int>(0);
         } 
         else if (is_img(t1->eleType) && is_img(t2->eleType)) 
         {
+            if (!(is_dim_undefined(*(t1->dim_list), 2) || is_dim_undefined(*(t2->dim_list), 2))) {
+                for (auto i = 0; i < 2; i++) 
+                {
+                    if (t1->dim_list->at(i) != t2->dim_list->at(i)) 
+                    {
+                        yyerror("Incompatible dimensions. Cannot perform assignment");
+                        exit(1);
+                    }
+                }
+            }
             t_return->type = TYPE::SIMPLE;
             t_return->eleType = t1->eleType;
-            std::vector<int> * dim_list_temp = t2->dim_list;
+            std::vector<int> * dim_list_temp = new std::vector<int>(t1->dim_list->size());
+            for (int i = 0; i < t1->dim_list->size(); i++) {
+                dim_list_temp->at(i) = t1->dim_list->at(i);
+            }
+            t_return->dim_list = dim_list_temp;
+        } 
+        else if (is_vid(t1->eleType) && is_vid(t2->eleType)) 
+        {
+
+            if (!(is_dim_undefined(*(t1->dim_list), 2) || is_dim_undefined(*(t2->dim_list), 2)))    {
+                if(!((t1->dim_list->at(0) == t2->dim_list->at(0)) && (t1->dim_list->at(1) == t2->dim_list->at(1)))) 
+                {
+                    yyerror("Videos are not compatible. They must have same h and w");
+                    exit(1);
+                }
+            } 
+            if(t1->dim_list->at(3) != -1 && t2->dim_list->at(3) != -1) {
+                if (t1->dim_list->at(3) != t2->dim_list->at(3)) {
+                    yyerror("Videos are not compatible. They must have same frame rate");
+                    exit(1);
+                }
+            }
+            t_return->type = TYPE::SIMPLE;
+            t_return->eleType = t1->eleType;
+            std::vector<int> * dim_list_temp = new std::vector<int>(t1->dim_list->size());
+            for (int i = 0; i < t1->dim_list->size(); i++) {
+                dim_list_temp->at(i) = t1->dim_list->at(i);
+            }
+
             t_return->dim_list = dim_list_temp;
         } 
         else 
         {
-            std::string s = "Cannot assign incompatible types";
+            std::string s;
+            if (flag == assignment)
+                std::string s = "Cannot assign incompatible types";
+            else if (flag == call_stmt)
+                std::string s = "Passed arguments are incompatible";
             yyerror(s.c_str());
             exit(1);
         }
     }
     else if (t1->type == t2->type && t1->type == TYPE::ARRAY) 
     {
-        // if (t1->eleType == t2->eleType) 
-        // {
-            t_return->type = TYPE::ARRAY;
-            t_return->eleType = t1->eleType;
-            
-            if (t1->dim_list->size() == t2->dim_list->size()){
-                for (int i = 0; i < t1->dim_list->size(); i++) {
-                    if (t1->dim_list->at(i) != -1 && t1->dim_list->at(i) != t2->dim_list->at(i)) {
-                        yyerror("Dimension values mismatch in assignment");
-                        exit(1);
-                    }
+        t_return->type = TYPE::ARRAY;
+        t_return->eleType = t1->eleType;
+        
+        if (t1->dim_list->size() == t2->dim_list->size()){
+            for (int i = 0; i < t1->dim_list->size(); i++) {
+                if (t1->dim_list->at(i) != -1 && t1->dim_list->at(i) != t2->dim_list->at(i)) {
+                    yyerror("Dimension values mismatch in assignment");
+                    exit(1);
                 }
-                std::vector<int> * dim_list_temp = t2->dim_list;
-                t_return->dim_list = dim_list_temp;
             }
-            else {
-                yyerror("Dimension mismatch in assignment");
+            std::vector<int> * dim_list_temp = new std::vector<int>(t1->dim_list->size());
+            for (int i = 0; i < t1->dim_list->size(); i++) {
+                dim_list_temp->at(i) = t1->dim_list->at(i);
             }
-        // } 
-        // else 
-        // {
-        //     std::string s = "Cannot assign incompatible types";
-        //     yyerror(s.c_str());
-        //     exit(1);
-        // }
+        }
+        else {
+            yyerror("Dimension mismatch in assignment");
+        }
     }
     else 
     {
-        std::string s = "Cannot assign incompatible types";
+        std::string s;
+        if (flag == assignment)
+            std::string s = "Cannot assign incompatible types";
+        else if (flag == call_stmt)
+            std::string s = "Passed arguments are incompatible";
         yyerror(s.c_str());
         exit(1);
     }
@@ -481,7 +530,7 @@ struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, st
     if (!compare_par_list_arg_list(func_list, *arg_vec))
     {
         
-        std::string err = "Function doesn't match any declaration";
+        std::string err = "Function Call Arguments doesn't match any function declaration";
         yyerror(err.c_str());
         exit(1);
     }
@@ -490,7 +539,8 @@ struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, st
     t_return->eleType = func_list[0]->get_return_type();
     if (is_img(t_return->eleType)) {
         t_return->dim_list = new std::vector<int>(3);
-        t_return->dim_list->at(0) = -1; t_return->dim_list->at(1) = -1;
+        t_return->dim_list->at(0) = -1; 
+        t_return->dim_list->at(1) = -1;
         if (t_return->eleType == ELETYPE::ELE_IMG)
             t_return->dim_list->at(2) = 3;
         else

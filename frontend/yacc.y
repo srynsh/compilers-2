@@ -151,7 +151,17 @@ par :
         {
         //     function_record* func = SymbolTableFunction->get_function(SymbolTableFunction->get_current_func_name());
         //     func->add_parameter($2,$1->type, $1->eleType);
-            std::pair<std::string, type_info*> *p = new std::pair<std::string, type_info*>(*$2, $1);
+            struct type_info* t = new struct type_info;
+            t->type = $1->type;
+            t->eleType = $1->eleType;
+            
+            if (is_vid(t->eleType) || is_img(t->eleType)) {
+                t->dim_list = new std::vector<int>;
+                for (int i = 0; i < $1->dim_list->size(); i++){
+                    t->dim_list->push_back($1->dim_list->at(i));
+                }
+            }
+            std::pair<std::string, type_info*> *p = new std::pair<std::string, type_info*>(*$2, t);
             $$ = new std::vector<std::pair<std::string, type_info*>>(1, *p);
         }
     | NUM brak ID
@@ -305,7 +315,12 @@ num_array_decl :
             t2->type = dr->get_type();
             t2->eleType = dr->get_ele_type();
             std::vector<int> temp_dim_list = dr->get_dim_list();
-            t2->dim_list = &temp_dim_list;
+
+            // t2->dim_list = &temp_dim_list;
+            t2->dim_list = new std::vector<int>;
+            for (int i = 0; i < temp_dim_list.size(); i++){
+                t2->dim_list->push_back(temp_dim_list[i]);
+            }
 
             t1->type = TYPE::ARRAY;
             t1->dim_list = $2;
@@ -330,7 +345,11 @@ real_array_decl :
             t2->type = dr->get_type();
             t2->eleType = dr->get_ele_type();
             std::vector<int> temp_dim_list = dr->get_dim_list();
-            t2->dim_list = &temp_dim_list;
+            // t2->dim_list = &temp_dim_list;
+            t2->dim_list = new std::vector<int>;
+            for (int i = 0; i < temp_dim_list.size(); i++){
+                t2->dim_list->push_back(temp_dim_list[i]);
+            }
 
             t1->type = TYPE::ARRAY;
             std::vector<int> *temp_dim_list2 = $2;
@@ -473,13 +492,19 @@ expr_stmt : ID '=' expr_pred new_lines
 expr_pred : 
         ID 
             {
-                std:: cout << "check expr pred" << std::endl;
                 data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
                 struct type_info* ti = new struct type_info;
                 ti->type = dr->get_type(); 
                 ti->eleType = dr->get_ele_type(); 
                 std::vector<int> temp_dim_list = dr->get_dim_list();
-                ti->dim_list = &temp_dim_list;
+                // ti->dim_list = &temp_dim_list;
+                // Copy elements of temp_dim_list to ti->dim_list
+                ti->dim_list = new std::vector<int>;
+                for (int i = 0; i < temp_dim_list.size(); i++){
+                    ti->dim_list->push_back(temp_dim_list[i]);
+                }
+                ti->name = *$1;
+                // print size of dim_list
                 $$ = ti;
             }
         | NUM_CONST
@@ -515,15 +540,8 @@ expr_pred :
         | expr_pred BINARY_OP expr_pred
             {
                 struct type_info *t1 = $1, *t2 = $3, *t = new struct type_info;
-                std::cout << "check new" << std::endl;
-                print_eleType(t1->eleType);
-                print_eleType(t2->eleType);
-                print_type(t1->type);
-                print_type(t2->type);
-                print_operator($2);
-                std::cout << "check new22" << std::endl;
+                // print address of t1's dim_list
                 t = binary_compatible(t1, t2, $2);
-                std::cout << "check new3" << std::endl;
                 $$ = t;
             }
         | expr_pred UNARY_OP 
@@ -558,12 +576,15 @@ expr_or_decl_stmt : num_decl
 
 call_stmt : ID '(' arg_list ')' // Archit
                 {
-                    std::cout << "check 1" << std::endl;
-                    $$ = check_func_call(SymbolTableFunction, *$1, $3);
+                    struct type_info* t = new struct type_info;
+                    t = check_func_call(SymbolTableFunction, *$1, $3);
+                    $$ = t;
                 }
         | ID '(' ')' // Archit
                 {
+                    struct type_info* t = new struct type_info;
                     $$ = check_func_call(SymbolTableFunction, *$1);
+                    $$ = t;
                 }
         ;
 
@@ -575,7 +596,11 @@ in_built_call_stmt :
             t1->type = dr->get_type();
             t1->eleType = dr->get_ele_type();
             std::vector<int> temp_dim_list = dr->get_dim_list();
-            t1->dim_list = &temp_dim_list;
+            t1->dim_list = new std::vector<int>;    
+            for (int i = 0; i < temp_dim_list.size(); i++){
+                t1->dim_list->push_back(temp_dim_list[i]);
+            }
+            // t1->dim_list = &temp_dim_list;
             $$ = check_inbuilt_func_call(t1, *$3, $5);
         }
     | ID DOT_OP ID '(' ')'
@@ -585,7 +610,11 @@ in_built_call_stmt :
             t1->type = dr->get_type();
             t1->eleType = dr->get_ele_type();
             std::vector<int> temp_dim_list = dr->get_dim_list();
-            t1->dim_list = &temp_dim_list;
+            // t1->dim_list = &temp_dim_list;
+            t1->dim_list = new std::vector<int>;
+            for (int i = 0; i < temp_dim_list.size(); i++){
+                t1->dim_list->push_back(temp_dim_list[i]);
+            }
             std::vector<struct type_info*> *temp  = new std::vector<struct type_info*>;
             $$ = check_inbuilt_func_call(t1,*$3, temp);
         }
@@ -602,28 +631,23 @@ in_built_call_stmt :
 
 // Archit
 arg_list : arg_list ',' arg {
-                std::cout << "check 2" << std::endl;
                 std::vector<struct type_info*> *p = $1;
-                std::cout << "check 3" << std::endl;
 
                 std::vector<struct type_info*> *q = $3;
-                std::cout << "check 4" << std::endl;
                 p->push_back(q->at(0));
                 $$ = p;
             }
-        | arg {std::cout << "check 5" << std::endl;}
+        | arg 
         ;
 
 // Archit  
 arg : expr_pred  
         { 
-            std::cout << "check 6" << std::endl; 
             std::vector<struct type_info*> *p = new std::vector<struct type_info*>(1, $1); 
             $$ = p;
         }
     | PATH 
         { 
-            std::cout << "check 7" << std::endl;
             struct type_info* t = new struct type_info;
             t->type = TYPE::SIMPLE;
             t->eleType = ELETYPE::ELE_STR;

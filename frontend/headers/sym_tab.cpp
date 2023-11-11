@@ -255,7 +255,15 @@ bool compare_par_list_arg_list(std::vector<struct function_record*> func_list, s
             int j;
             for (j = 0; j < par_list.size(); j++) {
                 if ((par_list[j].second->get_ele_type() != arg_list[j]->eleType) || (par_list[j].second->get_type() != arg_list[j]->type)) {
-                    break;
+                    struct type_info* t = new struct type_info;
+                    t->type = par_list[j].second->get_type();
+                    t->eleType = par_list[j].second->get_ele_type();
+                    std::vector <int> temp_dim_list = par_list[j].second->get_dim_list();
+                    t->dim_list = new std::vector<int>(temp_dim_list.size());
+                    for (int k = 0; k < temp_dim_list.size(); k++) {
+                        t->dim_list->at(k) = temp_dim_list[k];
+                    }
+                    assignment_compatible(t, arg_list[j], flag_type::call_stmt);
                 }
             }
             if (j == par_list.size())
@@ -311,7 +319,6 @@ void symbol_table_function::add_function_record(std::string name, ELETYPE return
         }
     }
     else {
-        // functions that have no input parameters
         for (auto i : this->function_list) {
             std::vector<std::pair<std::string, data_record*> > temp = i->get_parameter_list();
             if (i->get_name() == name && compare_parameter_list(temp, par_vec)) {
@@ -337,7 +344,7 @@ void symbol_table_function::add_function_record(std::string name, ELETYPE return
     this->current_func_name = name;
     this->current_return_type = return_type;
     for (auto i : *(par_vec)) {
-        if (i.second-> type == TYPE::ARRAY) 
+        if (i.second-> type == TYPE::ARRAY || is_img(i.second->eleType) || is_vid(i.second->eleType))
             new_record->add_parameter(&(i.first), i.second->type, i.second->eleType, i.second->dim_list);
         else 
             new_record->add_parameter(&(i.first), i.second->type, i.second->eleType);
@@ -357,9 +364,6 @@ std::vector<function_record*> symbol_table_function::get_function(std::string na
 }
 
 void symbol_table_function::print(){
-    // std::cout << "Function Name: " << current_func_name << std::endl;
-
-    // std::cout << "Prev Return Type: " << (current_return_type == ELETYPE::ELE_NUM ? "NUM" : (current_return_type == ELETYPE::ELE_REAL ? "REAL" : (current_return_type == ELETYPE::ELE_BOOL ? "BOOL" : (current_return_type == ELETYPE::ELE_IMG ? "IMG" : (current_return_type == ELETYPE::ELE_GRAY_IMG ? "GRAY_IMG" : (current_return_type == ELETYPE::ELE_VID ? "VID" : "GRAY_VID")))))) << std::endl;
 
     std::cout << "Functions: " << std::endl;
     for (auto i : this->function_list) {
