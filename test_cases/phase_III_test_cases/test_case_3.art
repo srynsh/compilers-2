@@ -1,0 +1,62 @@
+# Function definitions and calls, and in-built functions
+
+ink bar(real p, num q, real r, img s) -> num
+{
+    spool(num i = 0; i < 20; i++)
+    {
+        num s = 0
+        s = p + q * i + r
+
+        $ (s >= 5) ->
+        {
+            r = p * q
+        }
+        ->
+        {
+            r = p + q
+        }
+    }
+
+
+    num q = 9
+
+    return q
+}
+
+ink operations(img i1, img i2, img i3, img i4)->img {
+    i1.noise()
+    i2.pixelate(6)
+    i3.flip()
+    i4.sobel()
+    i = i2.convolve(i3) * i1 ^ 14
+    
+    v1.blur(4)
+    v2.invert()
+    
+    return i1
+} 
+
+ink main()->void {
+    num a, b
+    real f, g
+    img i1 <25, 25>
+    img i2 <25, 25>
+    img i3 <'./inp_img.bmp'>
+    gray_img i4 <25, 25, 80>
+    vid v1 <25, 25, 30>
+    vid v2 <25, 25, 60>
+
+    a = bar(f, b, g, i1)
+
+    i1.draw('line', 0, 0, 5, 5)
+    i1.draw('triangle', 2, 2, 4, 3, 0, 6, 0xff9600)
+
+    img ret_i = operations(i1, i2, i3, i4, v1, v2)
+
+    i1.paint()
+    i2.paint()
+    i3.paint()
+    i4.paint()
+
+    return void
+}

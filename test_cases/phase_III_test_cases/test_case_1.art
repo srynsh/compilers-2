@@ -1,0 +1,48 @@
+# Type Checking
+
+ink main()->void {
+    num a, b
+    real c, d
+    img i1 <25, 25>
+    img i2 <25, 25>
+    img i3 <'./inp_img.bmp'>
+    gray_img i4 <25, 25, 80>
+    vid v1 <25, 25, 30>
+    vid v2 <25, 25, 30>
+    vid v3 <25, 25, 30>
+
+    a = 4
+    b = 8
+    c = 4.59
+    d = 0.00
+
+    a = b * c + 9 / 2.3
+    d = a + b
+
+    $ (a == c) ->
+    {
+        a = 0.0
+    }
+    $$ (!a and d) ->
+    {
+        b = 3
+    }
+    $$ (a <= c) ->
+    {
+        b--
+    }
+
+    i1 = i2 + i3
+    i4 = i3 * i3
+    i2 = ~i3
+
+    v1 = v2 + v3
+    v1 = v1 + i1
+
+    spool (num i = 1; i <= 10; i++)
+    {
+        c = c * i + d++
+    }
+
+    return void
+}
