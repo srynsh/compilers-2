@@ -13,6 +13,7 @@
     symbol_table_function* SymbolTableFunction = new symbol_table_function();
     symbol_table_variable* SymbolTableVariable = new symbol_table_variable();
     int current_scope = 0;
+    bool return_flag = false;
 %}
 
 %code requires {
@@ -113,7 +114,15 @@ optional_new_lines : /* empty */
  * Functions
  *------------------------------------------------------------------------*/
 
-function : function_definition optional_new_lines func_body decrement_scope
+function : function_definition optional_new_lines func_body decrement_scope 
+            {
+                if (return_flag == false) {
+                    yyerror("function does not return");
+                    exit(1);
+                } else {
+                    return_flag = false;
+                }
+            }
         ;
 
 function_definition 
@@ -763,7 +772,8 @@ unary_stmt : ID UNARY_OP new_lines
     ;
 
 return_stmt : RETURN expr_pred new_lines
-        {
+        {   
+            return_flag = true;
             ELETYPE last_ret_type = SymbolTableFunction->get_current_return_type();
             struct type_info* t = $2;
             if (last_ret_type != t->eleType) {
@@ -773,6 +783,7 @@ return_stmt : RETURN expr_pred new_lines
         }
     | RETURN VOID new_lines 
         {
+            return_flag = true;
             ELETYPE last_ret_type = SymbolTableFunction->get_current_return_type();
             if (last_ret_type != ELETYPE::ELE_VOID) {
                 yyerror("return type must be same as function definition");

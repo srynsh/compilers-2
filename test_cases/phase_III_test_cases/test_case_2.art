@@ -17,6 +17,8 @@ ink foo(num a, img i)->num {
     }
 
     q = 0
+
+    return p
 }
 
 ink main()->void {
