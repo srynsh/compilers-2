@@ -488,6 +488,22 @@ struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, st
     struct type_info* t_return = new struct type_info;
     t_return->type = TYPE::SIMPLE;
     t_return->eleType = func_list[0]->get_return_type();
+    if (is_img(t_return->eleType)) {
+        t_return->dim_list = new std::vector<int>(3);
+        t_return->dim_list->at(0) = -1; t_return->dim_list->at(1) = -1;
+        if (t_return->eleType == ELETYPE::ELE_IMG)
+            t_return->dim_list->at(2) = 3;
+        else
+            t_return->dim_list->at(2) = 1;
+    }
+    else if (is_vid(t_return->eleType)) {
+        t_return->dim_list = new std::vector<int>(4);
+        t_return->dim_list->at(0) = -1; t_return->dim_list->at(1) = -1; t_return->dim_list->at(3) = -1;
+        if (t_return->eleType == ELETYPE::ELE_VID)
+            t_return->dim_list->at(2) = 3;
+        else
+            t_return->dim_list->at(2) = 1;
+    }
     return t_return;
 }
 
@@ -502,6 +518,22 @@ struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, st
     struct type_info* t_return = new struct type_info;
     t_return->type = TYPE::SIMPLE;
     t_return->eleType = SymbolTableFunction->get_function(func_name)[0]->get_return_type();
+    if (is_img(t_return->eleType)) {
+        t_return->dim_list = new std::vector<int>(3);
+        t_return->dim_list->at(0) = -1; t_return->dim_list->at(1) = -1;
+        if (t_return->eleType == ELETYPE::ELE_IMG)
+            t_return->dim_list->at(2) = 3;
+        else
+            t_return->dim_list->at(2) = 1;
+    }
+    else if (is_vid(t_return->eleType)) {
+        t_return->dim_list = new std::vector<int>(4);
+        t_return->dim_list->at(0) = -1; t_return->dim_list->at(1) = -1; t_return->dim_list->at(3) = -1;
+        if (t_return->eleType == ELETYPE::ELE_VID)
+            t_return->dim_list->at(2) = 3;
+        else
+            t_return->dim_list->at(2) = 1;
+    }
     return t_return;
 }
 

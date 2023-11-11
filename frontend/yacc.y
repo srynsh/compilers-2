@@ -520,6 +520,7 @@ expr_pred :
                 print_eleType(t2->eleType);
                 print_type(t1->type);
                 print_type(t2->type);
+                print_operator($2);
                 std::cout << "check new22" << std::endl;
                 t = binary_compatible(t1, t2, $2);
                 std::cout << "check new3" << std::endl;

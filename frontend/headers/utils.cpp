@@ -129,3 +129,35 @@ void print_type(TYPE type) {
             break;
     }
 }
+
+void print_operator(OPERATOR op) {
+    switch (op) {
+        case OPERATOR::ADD:
+            std::cout << "ADD";
+            break;
+        case OPERATOR::SUB:
+            std::cout << "SUB";
+            break;
+        case OPERATOR::MUL:
+            std::cout << "MUL";
+            break;
+        case OPERATOR::DIV:
+            std::cout << "DIV";
+            break;
+        case OPERATOR::XOR:
+            std::cout << "XOR";
+            break;
+        case OPERATOR::POST_INCR:
+            std::cout << "POST_INCR";
+            break;
+        case OPERATOR::POST_DECR:
+            std::cout << "POST_DECR";
+            break;
+        case OPERATOR::INV:
+            std::cout << "INV";
+            break;
+        default:
+            std::cout << "unknown";
+            break;
+    }
+}

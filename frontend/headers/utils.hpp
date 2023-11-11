@@ -13,4 +13,5 @@ void declare_vid(symbol_table_variable* stv, struct type_info* ti, std::string n
 void declare_gray_vid(symbol_table_variable* stv, struct type_info* ti, std::string name, int h, int w, int frame_rate, int scope);
 void print_eleType (ELETYPE eleType);
 void print_type(TYPE type);
+void print_operator(OPERATOR op);
 # endif
