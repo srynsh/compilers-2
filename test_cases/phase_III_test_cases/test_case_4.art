@@ -1,0 +1,26 @@
+# This program has no main function
+
+ink func1() -> void
+{
+    num x, y
+    real w, z
+    img i1 <20, 20>
+    gray_img i2 <20, 20>
+
+    i1.blur(3)
+    w = 3 * x + 5
+
+    return void
+}
+
+ink func2() -> void
+{
+    num a = 0
+    real b = 3.33
+    spool (num i = 0; i < 30; i++)
+    {
+        b = b + a * i
+    }
+
+    return void
+}
