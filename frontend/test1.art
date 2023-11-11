@@ -54,7 +54,7 @@ ink main()->void {
         i3.paint()
     }
 
-    foo(i2, i1)
+    foo(a, i1)
 
     return void
 }

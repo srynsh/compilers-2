@@ -190,7 +190,10 @@ punctuation: )
 punctuation: }
 ID: foo
 punctuation: (
-ID: i2
+ID: a
 punctuation: ,
 ID: i1
 punctuation: )
+keyword: return
+keyword: void
+punctuation: }
