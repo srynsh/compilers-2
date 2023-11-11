@@ -1,6 +1,6 @@
 # Function definitions and calls, and in-built functions
 
-ink bar(real p, num q, real r, img s) -> num
+ink bar(real p, num q, real r) -> num
 {
     spool(num i = 0; i < 20; i++)
     {
@@ -17,21 +17,15 @@ ink bar(real p, num q, real r, img s) -> num
         }
     }
 
-
-    num q = 9
-
     return q
 }
 
 ink operations(img i1, img i2, img i3, img i4)->img {
-    i1.noise()
+    i1.noise(5)
     i2.pixelate(6)
-    i3.flip()
+    i3.vflip()
     i4.sobel()
-    i = i2.convolve(i3) * i1 ^ 14
-    
-    v1.blur(4)
-    v2.invert()
+    img i = i2.convolve(i3) * i1 ^ 14
     
     return i1
 } 
@@ -46,12 +40,12 @@ ink main()->void {
     vid v1 <25, 25, 30>
     vid v2 <25, 25, 60>
 
-    a = bar(f, b, g, i1)
+    a = bar(f, b, g)
 
     i1.draw('line', 0, 0, 5, 5)
     i1.draw('triangle', 2, 2, 4, 3, 0, 6, 0xff9600)
 
-    img ret_i = operations(i1, i2, i3, i4, v1, v2)
+    img ret_i = operations(i1, i2, i3, i4)
 
     i1.paint()
     i2.paint()
