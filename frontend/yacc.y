@@ -370,24 +370,34 @@ array_element : '[' expr_pred ']' { $$ = new std::vector<int>(1, -1);}
         |  '[' expr_pred ',' expr_pred ',' expr_pred ']' { $$ = new std::vector<int>(3, -1);}
         ;
 
-brak_pred : '{' brak_pred_list '}'      {$$ = $2;}
-          /* | '{' const_list '}' */
-          | '{' expr_pred_list '}'      {$$ = $2;}
+brak_pred : '{' brak_pred_list '}'      
+                {
+                    $$ = $2;
+                }
+          | '{' expr_pred_list '}'      
+                {
+                    std::vector<int> *p = new std::vector<int>;
+                    p->push_back($2);
+                    $$ = p;
+                }
           ;
 
 brak_pred_list : brak_pred_list ',' brak_pred 
-                    {
-                        std::vector<type_info*> *p = $1;
-                        std::vector<type_info*> *q = $3;
-                        p->insert(p->end(), q->begin(), q->end());
-                        $$ = p;
-
-                    }
+                {
+                    std::vector<int> *p = $1;
+                    std::vector<int> *q = $3;
+                    
+                    // for (int i = 1; i<p->size(); i++){
+                    //     if (p->at(i) != q->at(i-1)){
+                    //         yyerror("dimension mismatch");
+                    //         exit(1);
+                    //     }
+                    // }
+                }
                | brak_pred
-                    {
-                        std::vector<type_info*> *p = $1;
-                        $$ = p;
-                    }
+                {
+                    
+                }
                ;
 
  /* {{{1, 1}, {1, 1}, {1, 1}}, {{1, 1}, {1, 1}, {1, 1}}}
@@ -426,7 +436,7 @@ id_list :
         }
         ;
 
-expr_pred_list : expr_pred_list ',' expr_pred { $$ = $1 + $3;}
+expr_pred_list : expr_pred_list ',' expr_pred { $$ = $1 + 1;}
                | expr_pred { $$ = 1;}
                ;
 
@@ -488,7 +498,7 @@ loop_stmt : decl_stmt /* new_lines is included in decl_stmt */
         | CONTINUE new_lines
         ;
 
-loop_if_block : IF optional_new_lines '(' expr_pred')' optional_new_lines ARROW optional_new_lines loop_body 
+loop_if_block : IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body 
         ;
 
 loop_else : ARROW optional_new_lines loop_body
@@ -594,9 +604,9 @@ expr_pred :
         | expr_pred LOG_OP expr_pred
             {
                 /*temp*/
-                struct type_info *t1 = $1, *t2 = $3, *t = new struct type_info;
-                t = relational_compatible(t1, t2, $2);
-                $$ = t;
+                // struct type_info *t1 = $1, *t2 = $3, *t = new struct type_info;
+                // t = relational_compatible(t1, t2, $2);
+                // $$ = t;
             }
         | '(' expr_pred ')'                 {$$ = $2;} 
         | NEG_OP expr_pred                  {$$ = $2;} /*temp*/

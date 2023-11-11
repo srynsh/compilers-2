@@ -109,7 +109,25 @@ path \'([^'\\])*\'
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"relational_operator: %s\n", yytext);
-        OPERATOR op_temp = OPERATOR::ADD;
+        OPERATOR op_temp;
+        if (strcmp(yytext, "<")) {
+            op_temp = OPERATOR::LESSER;
+        }
+        else if (strcmp(yytext, "<=")) {
+            op_temp = OPERATOR::LTEQ;
+        }
+        else if (strcmp(yytext, ">")) {
+            op_temp = OPERATOR::GREATER;
+        }
+        else if (strcmp(yytext, ">=")) {
+            op_temp = OPERATOR::GTEQ;
+        }
+        else if (strcmp(yytext, "==")) {
+            op_temp = OPERATOR::EQUAL;
+        }
+        else if (strcmp(yytext, "!=")) {
+            op_temp = OPERATOR::NEQ;
+        }
         yylval.opval = op_temp;
         if (strcmp(yytext, "<")==0) return LT;
         else if (strcmp(yytext, ">")==0) return GT;

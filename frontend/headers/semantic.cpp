@@ -320,9 +320,10 @@ struct type_info* relational_compatible(struct type_info* t1, struct type_info* 
         - since this is just for relational operators, we can just check if the types are primitive
         - since only primitives, no need to transfer dim_list
     */
-    if (op == OPERATOR::EQUAL) {
-        if (t1->type == )
-    } 
+    // if (op == OPERATOR::EQUAL) {
+    //     if (!t1->type)
+    // } 
+    // else
     if (t1->type == TYPE::ARRAY || t2->type == TYPE::ARRAY || !is_primitive(t1->eleType) || !is_primitive(t2->eleType)) {
         yyerror("Can only perform logical/relational operations on numeric types");
         exit(1);
@@ -671,6 +672,26 @@ struct type_info* check_inbuilt_func_call(struct type_info* ti, std::string func
             }
         if (!is_img(ti->eleType)) {
             yyerror("in-built function can only be applied to images");
+            exit(1);
+        }
+    }
+    else if (func_name == "bnw") {
+        if (arg_list->size() != 1) {
+                yyerror("in-built function takes exactly 1 argument");
+                exit(1);
+        }
+        if (arg_list->at(0)->eleType != ELETYPE::ELE_GRAY_IMG) {
+            yyerror("in-built function can only be applied to gray images");
+            exit(1);
+        }
+    }
+    else if (func_name == "play") {
+        if (arg_list->size() != 0) {
+                yyerror("in-built function takes no arguments");
+                exit(1);
+        }
+        if (!is_vid(ti->eleType)) {
+            yyerror("in-built function can only be applied to videos");
             exit(1);
         }
     }

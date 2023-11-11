@@ -28,6 +28,7 @@ enum class OPERATOR {
     POST_DECR,
     INV,
     NOT,
+    NEQ,
     GTEQ,
     LTEQ,
     GREATER,

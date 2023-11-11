@@ -59,13 +59,3 @@ ink main()->void {
     return void
 }
 
-#*
-(DONE) constants (type coercibility has to be checked when you pass in arguments)
-logical operators, relational operators, negative (HARD)
-in-built call statements, checking operands, return type (EASY)
-brak preds (V HARD?)
-(DONE) unary operators (EASYISH)
-repeating everything for loop body (EASY)
-(DONE) expr_stmt : ID '=' expr_pred new_lines (put semantic check) 
-array expr_stmt
-*#
