@@ -54,10 +54,14 @@
 %token <opval> BINARY_OP
 %token <opval> UNARY_OP
 %token <opval> INV_OP
+%token <opval> GT
+%token <opval> LT
+%token <opval> LOG_OP
+%token <opval> DOT_OP
 
 %token <tval> IMG GRAY_IMG VID GRAY_VID NUM REAL VOID BOOL /* Datatypes */
 %token IF ELSE_IF RETURN CONTINUE BREAK LOOP INK /* Control flow keywords */
-%token ARROW DOT_OP LOG_OP REL_OP GT LT NEG_OP /* Operators */
+%token ARROW REL_OP NEG_OP /* Operators */
 %token NEWLINE
 
 %token PATH 
@@ -377,6 +381,7 @@ brak_pred_list : brak_pred_list ',' brak_pred
                         std::vector<type_info*> *q = $3;
                         p->insert(p->end(), q->begin(), q->end());
                         $$ = p;
+
                     }
                | brak_pred
                     {
@@ -384,6 +389,18 @@ brak_pred_list : brak_pred_list ',' brak_pred
                         $$ = p;
                     }
                ;
+
+ /* {{{1, 1}, {1, 1}, {1, 1}}, {{1, 1}, {1, 1}, {1, 1}}}
+2 -> expr_pred_list
+{2} -> brak_pred
+new_brak_pred -> check last n-1 dimensions 2 matches!
+{3, 2} -> brak_pred_list
+brak_pred -> {3,2}
+brak_pred_list -> {1,3,2}
+new_brak_pred -> check last n-1 dimensions, 3,2 matches!
+{2,3,2} */
+
+ 
 
 /* const_list : const_list ',' const
          | const
@@ -409,8 +426,8 @@ id_list :
         }
         ;
 
-expr_pred_list : expr_pred_list ',' expr_pred
-               | expr_pred
+expr_pred_list : expr_pred_list ',' expr_pred { $$ = $1 + $3;}
+               | expr_pred { $$ = 1;}
                ;
 
 /*------------------------------------------------------------------------
@@ -556,10 +573,31 @@ expr_pred :
                 ti->eleType = ELETYPE::ELE_BOOL;
                 $$ = ti;
             }
-        | expr_pred REL_OP expr_pred        
+        | expr_pred REL_OP expr_pred  
+            {
+                struct type_info *t1 = $1, *t2 = $3, *t = new struct type_info;
+                t = relational_compatible(t1, t2, $2);
+                $$ = t;
+            }      
         | expr_pred LT expr_pred
+            {
+                struct type_info *t1 = $1, *t2 = $3, *t = new struct type_info;
+                t = relational_compatible(t1, t2, $2);
+                $$ = t;
+            }
         | expr_pred GT expr_pred
+            {
+                struct type_info *t1 = $1, *t2 = $3, *t = new struct type_info;
+                t = relational_compatible(t1, t2, $2);
+                $$ = t;
+            }
         | expr_pred LOG_OP expr_pred
+            {
+                /*temp*/
+                struct type_info *t1 = $1, *t2 = $3, *t = new struct type_info;
+                t = relational_compatible(t1, t2, $2);
+                $$ = t;
+            }
         | '(' expr_pred ')'                 {$$ = $2;} 
         | NEG_OP expr_pred                  {$$ = $2;} /*temp*/
         | call_stmt                         

@@ -109,6 +109,8 @@ path \'([^'\\])*\'
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"relational_operator: %s\n", yytext);
+        OPERATOR op_temp = OPERATOR::ADD;
+        yylval.opval = op_temp;
         if (strcmp(yytext, "<")==0) return LT;
         else if (strcmp(yytext, ">")==0) return GT;
         return REL_OP;

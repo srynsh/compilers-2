@@ -312,6 +312,32 @@ struct type_info* binary_compatible(struct type_info* t1, struct type_info* t2, 
     return t_return;
 }
 
+/* ----------------------------------------------------------*
+ * Relational Compatibility                                  *
+ *---------------------------------------------------------- */
+struct type_info* relational_compatible(struct type_info* t1, struct type_info* t2, OPERATOR op) {
+    /*
+        - since this is just for relational operators, we can just check if the types are primitive
+        - since only primitives, no need to transfer dim_list
+    */
+    if (op == OPERATOR::EQUAL) {
+        if (t1->type == )
+    } 
+    if (t1->type == TYPE::ARRAY || t2->type == TYPE::ARRAY || !is_primitive(t1->eleType) || !is_primitive(t2->eleType)) {
+        yyerror("Can only perform logical/relational operations on numeric types");
+        exit(1);
+    }
+    struct type_info* t_return = new struct type_info;
+    t_return->type = TYPE::SIMPLE;
+    t_return->eleType = ELETYPE::ELE_BOOL;
+
+
+
+    return t_return;
+}
+
+
+
 /* ---------------------------------------------------------- 
  * Unary Compatibility
 ------------------------------------------------------------ */
@@ -410,9 +436,9 @@ struct type_info* assignment_compatible(struct type_info* t1, struct type_info* 
         {
             if (is_img(t2->eleType) || is_vid(t2->eleType)) 
             {
-                if (flag == assignment)
+                if (flag == flag_type::assignment)
                     yyerror("Cannot assign img/video to primitive");
-                else if (flag == call_stmt)
+                else if (flag == flag_type::call_stmt)
                     yyerror("Cannot pass img/video to primitive");
                 // yyerror("Cannot assign img/video to primitive");
                 exit(1);
@@ -470,9 +496,9 @@ struct type_info* assignment_compatible(struct type_info* t1, struct type_info* 
         {
             std::string s;
             lineno--;
-            if (flag == assignment)
+            if (flag == flag_type::assignment)
                 s = "Cannot assign incompatible types";
-            else if (flag == call_stmt)
+            else if (flag == flag_type::call_stmt)
                 s = "Passed arguments are incompatible";
             yyerror(s.c_str());
             lineno++;
@@ -504,9 +530,9 @@ struct type_info* assignment_compatible(struct type_info* t1, struct type_info* 
     {
         std::string s;
         lineno--;
-        if (flag == assignment)
+        if (flag == flag_type::assignment)
             s = "Cannot assign incompatible types";
-        else if (flag == call_stmt)
+        else if (flag == flag_type::call_stmt)
             s = "Passed arguments are incompatible";
         yyerror(s.c_str());
         lineno++;

@@ -27,6 +27,12 @@ enum class OPERATOR {
     POST_INCR,
     POST_DECR,
     INV,
+    NOT,
+    GTEQ,
+    LTEQ,
+    GREATER,
+    LESSER,
+    EQUAL,
 };
 
 ELETYPE get_type(ELETYPE t1, ELETYPE t2);
@@ -38,6 +44,7 @@ bool is_dim_undefined(std::vector<int> &v, int len);
 
 struct type_info* binary_compatible(struct type_info* t1, struct type_info* t2, OPERATOR op);
 struct type_info* unary_compatible(struct type_info* t1, OPERATOR op, flag_type flag=expr_pred);
+struct type_info* relational_compatible(struct type_info* t1, struct type_info* t2, OPERATOR op);
 struct type_info* dim_list_compatible(struct type_info* t1, struct type_info* t2);
 struct type_info* assignment_compatible(struct type_info* t1, struct type_info* t2, flag_type flag=assignment);
 
