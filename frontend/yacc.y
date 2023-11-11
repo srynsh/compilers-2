@@ -213,7 +213,7 @@ stmt : decl_stmt /* new_lines is included in expr_stmt */
         | conditional_stmt /* new_lines is included in conditional_stmt */
         | call_stmt new_lines
         | in_built_call_stmt new_lines
-        | expr_stmt /* new_lines is included in expr_stmt */
+        | expr_stmt new_lines 
         | return_stmt /* new_lines is included in expr_stmt */
         | loop_block new_lines
         | '{'increment_scope new_lines stmt_list '}' decrement_scope new_lines /* This allows nested scopes */
@@ -371,8 +371,18 @@ brak_pred : '{' brak_pred_list '}'      {$$ = $2;}
           | '{' expr_pred_list '}'      {$$ = $2;}
           ;
 
-brak_pred_list : brak_pred_list ',' brak_pred
+brak_pred_list : brak_pred_list ',' brak_pred 
+                    {
+                        std::vector<type_info*> *p = $1;
+                        std::vector<type_info*> *q = $3;
+                        p->insert(p->end(), q->begin(), q->end());
+                        $$ = p;
+                    }
                | brak_pred
+                    {
+                        std::vector<type_info*> *p = $1;
+                        $$ = p;
+                    }
                ;
 
 /* const_list : const_list ',' const
@@ -450,7 +460,7 @@ loop_stmt : decl_stmt /* new_lines is included in decl_stmt */
         | loop_conditional_stmt /* new_lines is included in conditional_stmt */
         | call_stmt new_lines
         | in_built_call_stmt new_lines
-        | expr_stmt /* new_lines is included in expr_stmt */
+        | expr_stmt new_lines
         | return_stmt /* new_lines is included in expr_stmt */
         | loop_block new_lines
         | '{' increment_scope new_lines loop_stmt_list '}' decrement_scope new_lines /* This allows nested scopes */
@@ -485,9 +495,27 @@ loop_expr_stmt : ID '=' expr_pred
 * Expressions
 *------------------------------------------------------------------------*/
         
-expr_stmt : ID '=' expr_pred new_lines
-        | ID array_element '=' expr_pred new_lines
-        ;     
+expr_stmt : 
+    ID '=' expr_pred 
+    {
+        data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
+        struct type_info* t1 = $3, *t2 = new struct type_info;
+        t2->type = dr->get_type();
+        t2->eleType = dr->get_ele_type();
+        std::vector<int> temp_dim_list = dr->get_dim_list();
+        t2->dim_list = new std::vector<int>;
+        for (int i = 0; i < temp_dim_list.size(); i++){
+            t2->dim_list->push_back(temp_dim_list[i]);
+        }
+        struct type_info* t = assignment_compatible(t2, t1);
+        if (t == NULL) {
+            yyerror("assignment not compatible");
+            exit(1);
+        }
+    }
+        
+    | ID array_element '=' expr_pred 
+    ;     
 
 expr_pred : 
         ID 
@@ -528,7 +556,7 @@ expr_pred :
                 ti->eleType = ELETYPE::ELE_BOOL;
                 $$ = ti;
             }
-        | expr_pred REL_OP expr_pred
+        | expr_pred REL_OP expr_pred        
         | expr_pred LT expr_pred
         | expr_pred GT expr_pred
         | expr_pred LOG_OP expr_pred
@@ -661,6 +689,22 @@ arg : expr_pred
  * ----------------------------------------------------------------------- */
 
 unary_stmt : ID UNARY_OP new_lines
+    {
+        data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
+        struct type_info* t1 = new struct type_info;
+        t1->type = dr->get_type();
+        t1->eleType = dr->get_ele_type();
+        std::vector<int> temp_dim_list = dr->get_dim_list();
+        t1->dim_list = new std::vector<int>;
+        for (int i = 0; i < temp_dim_list.size(); i++){
+            t1->dim_list->push_back(temp_dim_list[i]);
+        }
+        struct type_info* t = unary_compatible(t1, $2, flag_type::stmt);
+        if (t == NULL) {
+            yyerror("unary operation not compatible");
+            exit(1);
+        }
+    }
     ;
 
 return_stmt : RETURN expr_pred new_lines

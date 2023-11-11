@@ -60,7 +60,6 @@ void declare_vid(symbol_table_variable* stv, struct type_info* ti, std::string n
     }
     ti->dim_list = new std::vector<int>(4);
     (*ti->dim_list)[0] = h; (*ti->dim_list)[1] = w; (*ti->dim_list)[2] = 3; (*ti->dim_list)[3] = frame_rate;
-    std::cout << ti->dim_list->size() << std::endl;
     stv->add_variable(name, ti->type, ti->eleType, (*ti->dim_list), scope);
 }
 

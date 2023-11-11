@@ -13,7 +13,9 @@ struct type_info{
 
 enum flag_type{
     assignment,
-    call_stmt
+    call_stmt,
+    expr_pred,
+    stmt
 };
 
 enum class OPERATOR {
@@ -35,7 +37,7 @@ bool is_vid(ELETYPE t);
 bool is_dim_undefined(std::vector<int> &v, int len);
 
 struct type_info* binary_compatible(struct type_info* t1, struct type_info* t2, OPERATOR op);
-struct type_info* unary_compatible(struct type_info* t1, OPERATOR op);
+struct type_info* unary_compatible(struct type_info* t1, OPERATOR op, flag_type flag=expr_pred);
 struct type_info* dim_list_compatible(struct type_info* t1, struct type_info* t2);
 struct type_info* assignment_compatible(struct type_info* t1, struct type_info* t2, flag_type flag=assignment);
 

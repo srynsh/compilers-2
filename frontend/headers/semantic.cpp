@@ -4,7 +4,10 @@
 #include "sym_tab.hpp"
 #include "utils.hpp"
 
+
 extern void yyerror(const char *s);
+extern int lineno;
+
 
 /// @brief vector of inbuilt functions
 std::vector<std::string> inbuilt_functions = {"blur", "sharpen", "sobel", "T", "vflip", 
@@ -329,7 +332,7 @@ struct type_info* binary_compatible(struct type_info* t1, struct type_info* t2, 
 
 
 /// @brief check if the two operands are compatible with an unary operator (++, --, ~)
-struct type_info* unary_compatible(struct type_info* t1, OPERATOR op) {
+struct type_info* unary_compatible(struct type_info* t1, OPERATOR op, flag_type flag) {
     struct type_info* t_return = new struct type_info;
     t_return->eleType = t1->eleType;
     t_return->type = t1->type;
@@ -339,7 +342,10 @@ struct type_info* unary_compatible(struct type_info* t1, OPERATOR op) {
         {
             if (op != OPERATOR::INV )
             {
+                if (flag == flag_type::stmt)
+                    lineno--;
                 yyerror("Cannot perform postinc/postdec unary operation on img/video");
+                lineno++;
                 exit(1);
             }
             t_return->dim_list = new std::vector<int>(t1->dim_list->size());
@@ -348,14 +354,20 @@ struct type_info* unary_compatible(struct type_info* t1, OPERATOR op) {
             }
         }
         else if (t1->eleType == ELETYPE::ELE_BOOL) {
+            if (flag == flag_type::stmt)
+                lineno--;
             yyerror("Cannot perform unary operation on bool");
+            lineno++;
             exit(1);
         }
         else if (t1->eleType == ELETYPE::ELE_NUM || t1->eleType == ELETYPE::ELE_REAL) 
         {
             if (op == OPERATOR::INV) 
             {
+                if (flag == flag_type::stmt)
+                    lineno--;
                 yyerror("Cannot perform invert unary operation on num/real");
+                lineno++;
                 exit(1);
             }
             // t_return->dim_list = new std::vector<int>(0);
@@ -363,7 +375,10 @@ struct type_info* unary_compatible(struct type_info* t1, OPERATOR op) {
     }
     else if (t1->type == TYPE::ARRAY)
     {
+        if (flag == flag_type::stmt)
+            lineno--;
         yyerror("Cannot perform unary operation on array");
+        lineno++;
         exit(1);
     }
     return t_return;
@@ -454,11 +469,13 @@ struct type_info* assignment_compatible(struct type_info* t1, struct type_info* 
         else 
         {
             std::string s;
+            lineno--;
             if (flag == assignment)
-                std::string s = "Cannot assign incompatible types";
+                s = "Cannot assign incompatible types";
             else if (flag == call_stmt)
-                std::string s = "Passed arguments are incompatible";
+                s = "Passed arguments are incompatible";
             yyerror(s.c_str());
+            lineno++;
             exit(1);
         }
     }
@@ -486,11 +503,13 @@ struct type_info* assignment_compatible(struct type_info* t1, struct type_info* 
     else 
     {
         std::string s;
+        lineno--;
         if (flag == assignment)
-            std::string s = "Cannot assign incompatible types";
+            s = "Cannot assign incompatible types";
         else if (flag == call_stmt)
-            std::string s = "Passed arguments are incompatible";
+            s = "Passed arguments are incompatible";
         yyerror(s.c_str());
+        lineno++;
         exit(1);
     }
     
@@ -605,8 +624,29 @@ struct type_info* check_inbuilt_func_call(struct type_info* ti, std::string func
         exit(1);
     }
 
-    // switch (func_name) {
-        
-    // }
+    if (func_name == "blur" || func_name == "sharpen" || func_name == "pixelate" || func_name == "noise"){
+            if (arg_list->size() != 1) {
+                yyerror("in-built function takes exactly 1 argument");
+                exit(1);
+            }
+            if (arg_list->at(0)->type != TYPE::SIMPLE && !is_primitive(arg_list->at(0)->eleType)) {
+                yyerror("in-built function takes only primitive arguments (type will be casted to num)");
+                exit(1);
+            }
+            if (!is_img(ti->eleType)) {
+                yyerror("in-built function can only be applied to images");
+                exit(1);
+            }
+    }
+    else if (func_name == "T" || func_name == "invert" || func_name == "paint" || func_name == "sobel" || func_name == "vflip" || func_name == "hflip") {
+        if (arg_list->size() != 0) {
+                yyerror("in-built function takes no arguments");
+                exit(1);
+            }
+        if (!is_img(ti->eleType)) {
+            yyerror("in-built function can only be applied to images");
+            exit(1);
+        }
+    }
     return nullptr; //temp
 }
