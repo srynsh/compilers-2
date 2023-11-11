@@ -9,7 +9,9 @@ extern FILE* ftoken; // Output file for tokens
 extern FILE* fparser; // Output file for parser
 extern int lineno;
 int block_comment = 0;
-// ("#*"([^\*]|[\n\r]|\*[^#])*"*#")
+int inline_comment = 0;
+
+extern void yyerror(const char *s);
 %}
 
 number [-]?[1-9][0-9]*|0|0[xX][0-9a-fA-F]+
@@ -23,8 +25,7 @@ arrow "->"
 newline_token [\n\r]
 blanks [ \t]+
 if "$"|"$$"
-comments (#[^\*]*)
-multi_line_comments "#*"|"*#"
+comments "#"|"#*"|"*#"
 punctuators [\{\}\[\]\(\)';,]
 operators "="|"+"|"-"|"*"|"/"|"^"|"~"|"++"|"--"
 path \'([^'\\])*\'
@@ -34,15 +35,15 @@ path \'([^'\\])*\'
 
 {newline_token} {
     if(strcmp(yytext, "\n") == 0) {
+        if (inline_comment) 
+            inline_comment = 0;
         lineno++;   // increment line number on encountering new line
-        fprintf(fparser,"%s", yytext);
-        fprintf(ftoken,"newline: \\n\n");
     }
     return NEWLINE;
 }
 
 {operators} {
-    if (!block_comment) {
+    if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"operator: %s\n", yytext);
 
@@ -88,7 +89,7 @@ path \'([^'\\])*\'
 }
 
 {access_operator} {
-    if (!block_comment) {
+    if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"access_operator: %s\n", yytext);
         return DOT_OP;
@@ -96,7 +97,7 @@ path \'([^'\\])*\'
 }
 
 {logical_operator} {
-    if (!block_comment) {
+    if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"logical_operator: %s\n", yytext);
         if (strcmp(yytext,"!")==0) return NEG_OP;
@@ -105,7 +106,7 @@ path \'([^'\\])*\'
 }
 
 {relational_operator} {
-    if (!block_comment) {
+    if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"relational_operator: %s\n", yytext);
         if (strcmp(yytext, "<")==0) return LT;
@@ -115,7 +116,7 @@ path \'([^'\\])*\'
 }
 
 {number} {
-    if (!block_comment) {
+    if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"constant: %s\n", yytext);
         yylval.ival = atoi(yytext);
@@ -124,7 +125,7 @@ path \'([^'\\])*\'
 }
 
 {real_number} {
-    if (!block_comment) {
+    if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"constant: %s\n", yytext);
         yylval.fval = atof(yytext);
@@ -133,7 +134,7 @@ path \'([^'\\])*\'
 }
 
 {arrow} {
-    if (!block_comment) {
+    if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"operator: %s\n", yytext);
         return ARROW;
@@ -141,7 +142,7 @@ path \'([^'\\])*\'
 }
 
 {path} {
-    if (!block_comment) {
+    if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"path: %s\n", yytext);
         struct type_info* tinfo = new struct type_info;
@@ -152,7 +153,7 @@ path \'([^'\\])*\'
 }
 
 {keywords} {
-    if (!block_comment) {
+    if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"keyword: %s\n", yytext);
 
@@ -215,7 +216,7 @@ path \'([^'\\])*\'
 }
 
 {if} {
-    if (!block_comment) {
+    if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"keyword: %s\n", yytext);
         if (strcmp(yytext,"$")==0) return IF;
@@ -224,7 +225,7 @@ path \'([^'\\])*\'
 }
 
 {identifiers} {
-    if (!block_comment) {
+    if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"ID: %s\n", yytext);
         auto sval_temp = new std::string(yytext);
@@ -233,23 +234,37 @@ path \'([^'\\])*\'
     }
 }
 
-{multi_line_comments} {
-    if (!block_comment) {
+{comments} {
+    if (!inline_comment && !block_comment) {
         if (strcmp(yytext,"#*")==0) block_comment = 1;
+        else if (strcmp(yytext,"#")==0) inline_comment = 1;
+        else if (strcmp(yytext,"*#")==0) {
+            fprintf(fparser,"%s", yytext);
+            fprintf(ftoken,"error: %s\n", yytext);
+            yyerror("Invalid token");
+            exit(1);
+        }
     } else if (block_comment) {
         if (strcmp(yytext,"*#")==0) block_comment = 0;
-    }      
-}
-
-{comments} {
-    // fprintf(fparser,"%s", yytext);
-}
+    }
+} 
 
 {punctuators} {
-    if (!block_comment) {
+    if (!inline_comment && !block_comment) {
         fprintf(ftoken, "punctuation: %s\n", yytext);
         fprintf(fparser, "%s", yytext);
         return *yytext;
     }
 }
+
+. {
+    if (!inline_comment && !block_comment) {
+        fprintf(fparser,"%s", yytext);
+        fprintf(ftoken,"error: %s\n", yytext);
+        yyerror("Invalid token");
+        exit(1);
+        // return *yytext;
+    }
+}
+ 
 %%

@@ -2,6 +2,7 @@
 #include <vector>
 #include "semantic.hpp"
 #include "sym_tab.hpp"
+#include "utils.hpp"
 
 extern void yyerror(const char *s);
 
@@ -160,12 +161,16 @@ std::tuple<size_t, size_t> FindClosest(std::vector<std::string> const & strs, st
 
 /// @brief check if the two operands are compatible with an binary operator (+, -, /, *, ^)
 struct type_info* binary_compatible(struct type_info* t1, struct type_info* t2, OPERATOR op) {
+    std::cout<<"bruh: ";
     struct type_info* t_return = new struct type_info;
+    std::cout<<"t1: ";
     if (t1->type == t2->type && t1->type == TYPE::SIMPLE) {
-
+        std::cout<<"here1";
         t_return->type = TYPE::SIMPLE;
+        std::cout<<"here";
         t_return->eleType = get_type(t1->eleType, t2->eleType);
-
+        std::cout<<"t_return: ";
+        print_eleType(t_return->eleType);
         if (is_primitive(t1->eleType) && is_vid(t2->eleType) || is_primitive(t2->eleType) && is_vid(t1->eleType)) 
         {
             yyerror("Cannot perform binary operation on primitive and video");
@@ -464,29 +469,40 @@ struct type_info* assignment_compatible(struct type_info* t1, struct type_info* 
 ------------------------------------------------------------ */
 
 
-void check_func_call(symbol_table_function* SymbolTableFunction, std::string func_name, std::vector<struct type_info*> *arg_vec) { //Archit
-    if ((SymbolTableFunction->get_function(func_name)).empty())
+struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, std::string func_name, std::vector<struct type_info*> *arg_vec) { 
+    std::vector<function_record*> func_list = SymbolTableFunction->get_function(func_name);
+    if (func_list.empty())
     {
         std::string err = "Function doesn't match any declaration";
         yyerror(err.c_str());
         exit(1);
     }
     
-    if (!compare_par_list_arg_list(SymbolTableFunction->get_function(func_name), *arg_vec))
+    if (!compare_par_list_arg_list(func_list, *arg_vec))
     {
+        
         std::string err = "Function doesn't match any declaration";
         yyerror(err.c_str());
         exit(1);
     }
+    struct type_info* t_return = new struct type_info;
+    t_return->type = TYPE::SIMPLE;
+    t_return->eleType = func_list[0]->get_return_type();
+    return t_return;
 }
 
-void check_func_call(symbol_table_function* SymbolTableFunction, std::string func_name) { //Archit
+struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, std::string func_name) { //Archit
     if ((SymbolTableFunction->get_function(func_name)).empty())
     {
         std::string err = "Function doesn't match any declaration";
         yyerror(err.c_str());
         exit(1);
     }
+
+    struct type_info* t_return = new struct type_info;
+    t_return->type = TYPE::SIMPLE;
+    t_return->eleType = SymbolTableFunction->get_function(func_name)[0]->get_return_type();
+    return t_return;
 }
 
 /* ---------------------------------------------------------- 

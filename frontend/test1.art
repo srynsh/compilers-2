@@ -1,11 +1,83 @@
-ink magic(img i1, img i2, img i3, img i4)-> img {
-    gray_img i <25, 25>
+# This program has no errors
+# Some array manipulations (including videos)
 
-    i = i2.convolve(i3) * i1 ^ 14
-    i.blur()
-    i.noise()
-    i.vflip()
-    img ret_i = ~i
+ink func()->void {
+    num[10] a
+    real[10] b
+    num[5] arr = {2, 4, 4, 0, 0}
 
-    return ret_i
-} 
+    spool (num i = 1; i <= 10; i++)
+    {
+        a.append(i * 2 + 3)
+        b.append(i / 8.0 + 0.3)
+    }
+
+    return void
+}
+
+ink add_img_to_vid (num f, img i, vid v, real t)->void {
+    spool (num k = 0; k < f * t; k++)
+    {
+        v.append(i)
+    }
+
+    return void
+}
+
+ink three_img_reel(num h, num w, num f, img i1, real t1, img i2, real t2, img i3, real t3)->vid {
+    vid v <40, 40, 30>
+
+    add_img_to_vid(30, i1, v, t1)
+    add_img_to_vid(30, i2, v, t2)
+    add_img_to_vid(30, i3, v, t3)
+
+    return v
+}
+
+ink set_std_frame_rate(vid v)->vid {
+    vid ret_v <40, 40, 30>
+
+    spool (num i = 0; i < v.len(); i++)
+    {
+        ret_v.append(v[i])
+    }
+
+    return ret_v
+}
+
+ink main()->void {
+    vid v1 <40, 40, 30>
+    vid v2 <40, 40, 30>
+    gray_vid v3 <40, 40, 60>
+    img i1 <'./i1.bmp'>
+    img i2 <'./i2.bmp'>
+    img i3 <'./i3.bmp'>
+    gray_img i4 <'./i4.bmp'>
+    gray_img i5 <'./i5.bmp'>
+    gray_img i6 <'./i6.bmp'>
+
+    func()
+    
+    v1 = v1 + three_img_reel(40, 40, 30, i1, 1.5, i2, 0.5, i3, 2.5)
+
+    v3 = three_img_reel(40, 40, 60, i4, 0.25, i5, 0.25, i6, 0.1)
+
+    v3 = set_std_frame_rate(v3)
+
+    v2 = v1 + v3.blur()
+
+    v2.play()
+
+    return void
+}
+
+#*
+constants (type coercibility has to be checked when you pass in arguments)
+logical operators, relational operators, negative (HARD)
+in-built call statements, checking operands, return type (EASY)
+gray image decl with expr pred (VERY EASY) (DONE)
+brak preds (V HARD?)
+unary operators (EASYISH)
+
+repeating everything for loop body (EASY)
+*#

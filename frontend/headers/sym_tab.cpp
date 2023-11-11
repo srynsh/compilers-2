@@ -40,10 +40,10 @@ int data_record::get_scope() {
 }
 
 void data_record::print() {
-    std::cout << "Name: " << this->name << std::endl;
-    std::cout << "Type: " << (this->type == TYPE::SIMPLE ? "SIMPLE" : "ARRAY") << std::endl;
-    std::cout << "Element Type: " << (this->ele_type == ELETYPE::ELE_NUM ? "NUM" : (this->ele_type == ELETYPE::ELE_REAL ? "REAL" : (this->ele_type == ELETYPE::ELE_BOOL ? "BOOL" : (this->ele_type == ELETYPE::ELE_IMG ? "IMG" : (this->ele_type == ELETYPE::ELE_GRAY_IMG ? "GRAY_IMG" : (this->ele_type == ELETYPE::ELE_VID ? "VID" : "GRAY_VID")))))) << std::endl;
-    std::cout << "dim_list: ";
+    std::cout << "Name: " << this->name;
+    std::cout << " | Type: " << (this->type == TYPE::SIMPLE ? "SIMPLE" : "ARRAY");
+    std::cout << " | Element Type: " << (this->ele_type == ELETYPE::ELE_NUM ? "NUM" : (this->ele_type == ELETYPE::ELE_REAL ? "REAL" : (this->ele_type == ELETYPE::ELE_BOOL ? "BOOL" : (this->ele_type == ELETYPE::ELE_IMG ? "IMG" : (this->ele_type == ELETYPE::ELE_GRAY_IMG ? "GRAY_IMG" : (this->ele_type == ELETYPE::ELE_VID ? "VID" : "GRAY_VID"))))));
+    std::cout << " | dim_list: ";
 
     for (auto i : this->dim_list) {
         std::cout << i << " ";
@@ -211,9 +211,9 @@ void function_record::add_parameter(std::string* name, TYPE type, ELETYPE ele_ty
 }
 
 void function_record::print() {
-    std::cout << "Name: " << this->name << std::endl;
+    std::cout << "Name: " << this->name;
 
-    std::cout << "Return Type: " << (this->return_type == ELETYPE::ELE_NUM ? "NUM" : (this->return_type == ELETYPE::ELE_REAL ? "REAL" : (this->return_type == ELETYPE::ELE_BOOL ? "BOOL" : (this->return_type == ELETYPE::ELE_IMG ? "IMG" : (this->return_type == ELETYPE::ELE_GRAY_IMG ? "GRAY_IMG" : (this->return_type == ELETYPE::ELE_VID ? "VID" : "GRAY_VID")))))) << std::endl;
+    std::cout << " | Return Type: " << (this->return_type == ELETYPE::ELE_NUM ? "NUM" : (this->return_type == ELETYPE::ELE_REAL ? "REAL" : (this->return_type == ELETYPE::ELE_BOOL ? "BOOL" : (this->return_type == ELETYPE::ELE_IMG ? "IMG" : (this->return_type == ELETYPE::ELE_GRAY_IMG ? "GRAY_IMG" : (this->return_type == ELETYPE::ELE_VID ? "VID" : (this->return_type == ELETYPE::ELE_GRAY_VID? "GRAY_VID" : "VOID"))))))) << std::endl;
     
     std::cout << "Parameters: " << std::endl;
 
@@ -221,6 +221,7 @@ void function_record::print() {
         i.second->print();
     }
 
+    std::cout << std::endl << std::endl;
 }
 
 /* ---------------------------------------------------------- 
@@ -356,9 +357,9 @@ std::vector<function_record*> symbol_table_function::get_function(std::string na
 }
 
 void symbol_table_function::print(){
-    std::cout << "Function Name: " << current_func_name << std::endl;
+    // std::cout << "Function Name: " << current_func_name << std::endl;
 
-    std::cout << "Prev Return Type: " << (current_return_type == ELETYPE::ELE_NUM ? "NUM" : (current_return_type == ELETYPE::ELE_REAL ? "REAL" : (current_return_type == ELETYPE::ELE_BOOL ? "BOOL" : (current_return_type == ELETYPE::ELE_IMG ? "IMG" : (current_return_type == ELETYPE::ELE_GRAY_IMG ? "GRAY_IMG" : (current_return_type == ELETYPE::ELE_VID ? "VID" : "GRAY_VID")))))) << std::endl;
+    // std::cout << "Prev Return Type: " << (current_return_type == ELETYPE::ELE_NUM ? "NUM" : (current_return_type == ELETYPE::ELE_REAL ? "REAL" : (current_return_type == ELETYPE::ELE_BOOL ? "BOOL" : (current_return_type == ELETYPE::ELE_IMG ? "IMG" : (current_return_type == ELETYPE::ELE_GRAY_IMG ? "GRAY_IMG" : (current_return_type == ELETYPE::ELE_VID ? "VID" : "GRAY_VID")))))) << std::endl;
 
     std::cout << "Functions: " << std::endl;
     for (auto i : this->function_list) {

@@ -37,7 +37,7 @@
 }
 
 %type <dim_list> brak array_element
-%type <tval> datatype expr_pred expr_pred_list brak_pred brak_pred_list
+%type <tval> datatype expr_pred expr_pred_list brak_pred brak_pred_list call_stmt
 %type <tval> RET_TYPE in_built_call_stmt
 %type <par_vec> par_list par 
 %type <arg_vec> arg_list arg
@@ -235,8 +235,8 @@ img_decl : IMG ID LT NUM_CONST ',' NUM_CONST  GT                { declare_img(Sy
 
 gray_img_decl : GRAY_IMG ID LT NUM_CONST ',' NUM_CONST GT           { declare_gray_img(SymbolTableVariable, $1, *$2, $4, $6, 0, current_scope);}
         | GRAY_IMG ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT   { declare_gray_img(SymbolTableVariable, $1, *$2, $4, $6, $8, current_scope);}
-        | GRAY_IMG ID LT PATH GT                                    { declare_gray_img(SymbolTableVariable, $1, *$2, -1, -1, 0, current_scope);}
-        | GRAY_IMG ID '=' expr_pred 
+        | GRAY_IMG ID LT PATH GT                                    { declare_gray_img(SymbolTableVariable, $1, *$2, current_scope);}
+        | GRAY_IMG ID '=' expr_pred                                 { struct type_info* t = assignment_compatible($1, $4); declare_gray_img(SymbolTableVariable, t, *$2, current_scope);}
         ;
 
 vid_decl : VID ID LT NUM_CONST ',' NUM_CONST GT                     { declare_vid(SymbolTableVariable, $1, *$2, $4, $6, 30, current_scope);}
@@ -255,7 +255,7 @@ num_decl :
         }
     | NUM ID '=' expr_pred
         {
-            struct type_info* t = $1, *t_res = new type_info;
+            struct type_info* t = $1, *t_res = new struct type_info;
             t_res = assignment_compatible(t, $4);
             SymbolTableVariable->add_variable(*$2, t_res->type, t_res->eleType, current_scope);
         }
@@ -269,7 +269,7 @@ bool_decl :
         }
     | BOOL ID '=' expr_pred
         {
-            struct type_info* t = $1, *t_res = new type_info;
+            struct type_info* t = $1, *t_res = new struct type_info;
             t_res = assignment_compatible(t, $4);
             SymbolTableVariable->add_variable(*$2, t_res->type, t_res->eleType, current_scope);
         }
@@ -285,7 +285,7 @@ real_decl :
         
     | REAL ID '=' expr_pred
         {
-            struct type_info* t = $1, *t_res = new type_info;
+            struct type_info* t = $1, *t_res = new struct type_info;
             t_res = assignment_compatible(t, $4);
             SymbolTableVariable->add_variable(*$2, t_res->type, t_res->eleType, current_scope);
         }
@@ -301,7 +301,7 @@ num_array_decl :
     | NUM array_element ID '=' ID 
         {
             data_record* dr = SymbolTableVariable->get_variable(*$5, current_scope);
-            struct type_info* t1 = $1, *t_res = new type_info, *t2 = new type_info;
+            struct type_info* t1 = $1, *t_res = new struct type_info, *t2 = new struct type_info;
             t2->type = dr->get_type();
             t2->eleType = dr->get_ele_type();
             std::vector<int> temp_dim_list = dr->get_dim_list();
@@ -326,7 +326,7 @@ real_array_decl :
     | REAL array_element ID '=' ID 
         {
             data_record* dr = SymbolTableVariable->get_variable(*$5, current_scope);
-            struct type_info* t1 = $1, *t_res = new type_info, *t2 = new type_info;
+            struct type_info* t1 = $1, *t_res = new struct type_info, *t2 = new struct type_info;
             t2->type = dr->get_type();
             t2->eleType = dr->get_ele_type();
             std::vector<int> temp_dim_list = dr->get_dim_list();
@@ -473,8 +473,9 @@ expr_stmt : ID '=' expr_pred new_lines
 expr_pred : 
         ID 
             {
+                std:: cout << "check expr pred" << std::endl;
                 data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
-                struct type_info* ti = new type_info;
+                struct type_info* ti = new struct type_info;
                 ti->type = dr->get_type(); 
                 ti->eleType = dr->get_ele_type(); 
                 std::vector<int> temp_dim_list = dr->get_dim_list();
@@ -483,21 +484,21 @@ expr_pred :
             }
         | NUM_CONST
             {
-                struct type_info* ti = new type_info;
+                struct type_info* ti = new struct type_info;
                 ti->type = TYPE::SIMPLE;
                 ti->eleType = ELETYPE::ELE_NUM;
                 $$ = ti;
             }
         | REAL_CONST
             {
-                struct type_info* ti = new type_info;
+                struct type_info* ti = new struct type_info;
                 ti->type = TYPE::SIMPLE;
                 ti->eleType = ELETYPE::ELE_REAL;
                 $$ = ti;
             }
         | BOOL_CONST
             {
-                struct type_info* ti = new type_info;
+                struct type_info* ti = new struct type_info;
                 ti->type = TYPE::SIMPLE;
                 ti->eleType = ELETYPE::ELE_BOOL;
                 $$ = ti;
@@ -508,24 +509,31 @@ expr_pred :
         | expr_pred LOG_OP expr_pred
         | '(' expr_pred ')'                 {$$ = $2;} 
         | NEG_OP expr_pred                  {$$ = $2;} /*temp*/
-        | call_stmt                         {$$ = new type_info;} /*temp*/
-        | in_built_call_stmt                {$$ = new type_info;} /*temp*/
-        | ID array_element                  {$$ = new type_info;} /*temp*/
+        | call_stmt                         
+        | in_built_call_stmt                {$$ = new struct type_info;} /*temp*/
+        | ID array_element                  {$$ = new struct type_info;} /*temp*/
         | expr_pred BINARY_OP expr_pred
             {
-                struct type_info *t1 = $1, *t2 = $3, *t = new type_info;
+                struct type_info *t1 = $1, *t2 = $3, *t = new struct type_info;
+                std::cout << "check new" << std::endl;
+                print_eleType(t1->eleType);
+                print_eleType(t2->eleType);
+                print_type(t1->type);
+                print_type(t2->type);
+                std::cout << "check new22" << std::endl;
                 t = binary_compatible(t1, t2, $2);
+                std::cout << "check new3" << std::endl;
                 $$ = t;
             }
         | expr_pred UNARY_OP 
             {
-                struct type_info *t1 = $1, *t = new type_info;
+                struct type_info *t1 = $1, *t = new struct type_info;
                 t = unary_compatible(t1, $2);
                 $$ = t;
             }           
         | INV_OP expr_pred
             {
-                struct type_info *t1 = $2, *t = new type_info;
+                struct type_info *t1 = $2, *t = new struct type_info;
                 t = unary_compatible(t1, $1);
                 $$ = t;
             }
@@ -549,11 +557,12 @@ expr_or_decl_stmt : num_decl
 
 call_stmt : ID '(' arg_list ')' // Archit
                 {
-                    check_func_call(SymbolTableFunction, *$1, $3);
+                    std::cout << "check 1" << std::endl;
+                    $$ = check_func_call(SymbolTableFunction, *$1, $3);
                 }
         | ID '(' ')' // Archit
                 {
-                    check_func_call(SymbolTableFunction, *$1);
+                    $$ = check_func_call(SymbolTableFunction, *$1);
                 }
         ;
 
@@ -561,7 +570,7 @@ in_built_call_stmt :
     ID DOT_OP ID '(' arg_list ')'
         {
             data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
-            struct type_info* t1 = new type_info;
+            struct type_info* t1 = new struct type_info;
             t1->type = dr->get_type();
             t1->eleType = dr->get_ele_type();
             std::vector<int> temp_dim_list = dr->get_dim_list();
@@ -571,7 +580,7 @@ in_built_call_stmt :
     | ID DOT_OP ID '(' ')'
         {
             data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
-            struct type_info* t1 = new type_info;
+            struct type_info* t1 = new struct type_info;
             t1->type = dr->get_type();
             t1->eleType = dr->get_ele_type();
             std::vector<int> temp_dim_list = dr->get_dim_list();
@@ -592,19 +601,29 @@ in_built_call_stmt :
 
 // Archit
 arg_list : arg_list ',' arg {
+                std::cout << "check 2" << std::endl;
                 std::vector<struct type_info*> *p = $1;
+                std::cout << "check 3" << std::endl;
+
                 std::vector<struct type_info*> *q = $3;
+                std::cout << "check 4" << std::endl;
                 p->push_back(q->at(0));
                 $$ = p;
             }
-        | arg
+        | arg {std::cout << "check 5" << std::endl;}
         ;
 
 // Archit  
-arg : expr_pred  { std::vector<struct type_info*> *p = new std::vector<struct type_info*>(1, $1); $$ = p;}
+arg : expr_pred  
+        { 
+            std::cout << "check 6" << std::endl; 
+            std::vector<struct type_info*> *p = new std::vector<struct type_info*>(1, $1); 
+            $$ = p;
+        }
     | PATH 
         { 
-            struct type_info* t = new type_info;
+            std::cout << "check 7" << std::endl;
+            struct type_info* t = new struct type_info;
             t->type = TYPE::SIMPLE;
             t->eleType = ELETYPE::ELE_STR;
             std::vector<struct type_info*> *p = new std::vector<struct type_info*>(1, t); 
