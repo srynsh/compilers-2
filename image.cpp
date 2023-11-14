@@ -44,14 +44,14 @@ image::image(int h, int w, int color) {
     this->h = h;
     this->w = w;
 
-    red = new int*[w];
-    green = new int*[w];
-    blue = new int*[w];
+    red = new uint8_t*[w];
+    green = new uint8_t*[w];
+    blue = new uint8_t*[w];
 
     for (int i=0; i<w; i++) {
-        this->red[i] = new int[h];
-        this->green[i] = new int[h];
-        this->blue[i] = new int[h];
+        this->red[i] = new uint8_t[h];
+        this->green[i] = new uint8_t[h];
+        this->blue[i] = new uint8_t[h];
     }
 
     for(int i=0; i<w; i++) {
@@ -82,14 +82,14 @@ image::image(const image &img) {
     h = img.get_height();
     w = img.get_width();
 
-    red = new int*[w];
-    green = new int*[w];
-    blue = new int*[w];
+    red = new uint8_t*[w];
+    green = new uint8_t*[w];
+    blue = new uint8_t*[w];
 
     for (int i=0; i<w; i++) {
-        red[i] = new int[h];
-        green[i] = new int[h];
-        blue[i] = new int[h];
+        red[i] = new uint8_t[h];
+        green[i] = new uint8_t[h];
+        blue[i] = new uint8_t[h];
     }
 
     for(int i=0; i<w; i++) {
@@ -441,14 +441,14 @@ image& image::operator=(image const& img) {
     h = img.get_height();
     w = img.get_width();
 
-    red = new int*[w];
-    green = new int*[w];
-    blue = new int*[w];
+    red = new uint8_t*[w];
+    green = new uint8_t*[w];
+    blue = new uint8_t*[w];
 
     for (int i=0; i<w; i++) {
-        red[i] = new int[h];
-        green[i] = new int[h];
-        blue[i] = new int[h];
+        red[i] = new uint8_t[h];
+        green[i] = new uint8_t[h];
+        blue[i] = new uint8_t[h];
     }
 
     for(int i=0; i<w; i++) {
