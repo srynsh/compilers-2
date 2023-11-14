@@ -9,39 +9,46 @@
 //     return ((-x*x + 40*x - 400)/16)+65;
 // }
 
-// int main() {
-//     image img("./images/inputs/blackbuck.bmp");
-//     img.frame("./images/outputs/output_orig.bmp");
+int main() {
+    image img("./images/inputs/snail.bmp");
+    gray_image new_img = img.grayscale();
+    image new_img2 = img.blur(5);
+    image new_img3 = img.sharpen(3);
 
-//     return 0;
-// }
+    img.frame("./images/outputs_color/output_orig.bmp");
+    new_img.frame("./images/outputs_color/output_grayscale.bmp");
+    new_img2.frame("./images/outputs_color/output_blur.bmp");
+    new_img3.frame("./images/outputs_color/output_sharpen.bmp");
 
-
-int main(){
-    gray_image img("./images/inputs/blackbuck.bmp");
-    gray_image new_img = img.blur(5);
-    gray_image new_img2 = img.sharpen(20);
-    gray_image new_img3 = img.sobel();
-    gray_image new_img4 = img.hflip();
-    gray_image new_img5 = img.vflip();
-    gray_image new_img6 = img.T();
-    gray_image new_img7 = img.pixelate(5);
-    gray_image new_img8 = img.invert();
-    gray_image new_img9 = img.noise(15);
-    gray_image new_img10 = img.bnw();
-
-    img.frame("./images/outputs/output_orig.bmp");
-    new_img.frame("./images/outputs/output_blur.bmp");
-    new_img2.frame("./images/outputs/output_sharpen.bmp");
-    new_img3.frame("./images/outputs/output_sobel.bmp");
-    new_img4.frame("./images/outputs/output_hflip.bmp");
-    new_img5.frame("./images/outputs/output_vflip.bmp");
-    new_img6.frame("./images/outputs/output_transpose.bmp");
-    new_img7.frame("./images/outputs/output_pixelate.bmp");
-    new_img8.frame("./images/outputs/output_invert.bmp");
-    new_img9.frame("./images/outputs/output_noise.bmp");
-    new_img10.frame("./images/outputs/output_bnw.bmp");
+    return 0;
 }
+
+
+// int main(){
+//     gray_image img("./images/inputs/blackbuck.bmp");
+//     gray_image new_img = img.blur(5);
+//     gray_image new_img2 = img.sharpen(20);
+//     gray_image new_img3 = img.sobel();
+//     gray_image new_img4 = img.hflip();
+//     gray_image new_img5 = img.vflip();
+//     gray_image new_img6 = img.T();
+//     gray_image new_img7 = img.pixelate(5);
+//     gray_image new_img8 = img.invert();
+//     gray_image new_img9 = img.noise(15);
+//     gray_image new_img10 = img.bnw();
+
+//     img.frame("./images/outputs/output_orig.bmp");
+//     new_img.frame("./images/outputs/output_blur.bmp");
+//     new_img2.frame("./images/outputs/output_sharpen.bmp");
+//     new_img3.frame("./images/outputs/output_sobel.bmp");
+//     new_img4.frame("./images/outputs/output_hflip.bmp");
+//     new_img5.frame("./images/outputs/output_vflip.bmp");
+//     new_img6.frame("./images/outputs/output_transpose.bmp");
+//     new_img7.frame("./images/outputs/output_pixelate.bmp");
+//     new_img8.frame("./images/outputs/output_invert.bmp");
+//     new_img9.frame("./images/outputs/output_noise.bmp");
+//     new_img10.frame("./images/outputs/output_bnw.bmp");
+// }
 
 
 // // Check filters and functions

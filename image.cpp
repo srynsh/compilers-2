@@ -44,14 +44,14 @@ image::image(int h, int w, int color) {
     this->h = h;
     this->w = w;
 
-    red = new uint8_t*[w];
-    green = new uint8_t*[w];
-    blue = new uint8_t*[w];
+    red = new int*[w];
+    green = new int*[w];
+    blue = new int*[w];
 
     for (int i=0; i<w; i++) {
-        this->red[i] = new uint8_t[h];
-        this->green[i] = new uint8_t[h];
-        this->blue[i] = new uint8_t[h];
+        this->red[i] = new int[h];
+        this->green[i] = new int[h];
+        this->blue[i] = new int[h];
     }
 
     for(int i=0; i<w; i++) {
@@ -69,6 +69,39 @@ image::image(int h, int w, int color) {
 /// @brief Initializes an image from a given file
 image::image(std::string filename) {
     this->load(filename, true);
+}
+
+/// @brief Copy constructor
+/// @param img
+image::image(const image &img) {
+    /*
+        params:
+            img: image to be copied
+    */
+
+    h = img.get_height();
+    w = img.get_width();
+
+    red = new int*[w];
+    green = new int*[w];
+    blue = new int*[w];
+
+    for (int i=0; i<w; i++) {
+        red[i] = new int[h];
+        green[i] = new int[h];
+        blue[i] = new int[h];
+    }
+
+    for(int i=0; i<w; i++) {
+        for(int j=0; j<h; j++) {
+            red[i][j] = img.get_pixel(i, j, 0);
+            green[i][j] = img.get_pixel(i, j, 1);
+            blue[i][j] = img.get_pixel(i, j, 2);
+        }
+    }
+
+    this->buffer_size = 54 + 3*this->w*this->h;
+    this->made = 1;
 }
 
 /// @brief Loads a .bmp
@@ -219,16 +252,260 @@ void image::draw(std::string shape, std::vector<int> params) {
     }
 }
 
+/// @brief Uses the NTSC formula to convert RGB to gray (See https://support.ptc.com/help/mathcad/r9.0/en/index.html#page/PTC_Mathcad_Help/example_grayscale_and_color_in_images.html)
+gray_image image::grayscale() {
+    vector<vector<vector <float> > > vec = string_to_vec3d("{{{0.299, 0.587, 0.114}}}"); // (1x1x3)
+
+    gray_image new_img = conv(*this, vec, 1, 0);
+    return new_img;
+}
+
+image image::blur(int k) {
+    std::vector<std::vector<float>> kernel(k, std::vector<float>(k, 1.0/(k*k))); // (kxk)
+
+    image new_img = conv(*this, kernel, kernel, kernel, 1, (k-1)/2.0); // same padding => (k-1)/2
+    return new_img;
+}
+
+/// @brief Clip all values to 0-255
+/// @return 
+image image::clip() {
+
+    image new_img(h, w, 0);
+
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+            int val = red[i][j]; 
+            if (val < 0) {
+                val = 0; // clip to 0 if value is negative
+            } else if (val > 255) {
+                val = 255; // clip to 255 if value exceeds 255
+            }
+            new_img.set_pixel(i, j, 0, val);
+
+            val = green[i][j]; 
+            if (val < 0) {
+                val = 0; // clip to 0 if value is negative
+            } else if (val > 255) {
+                val = 255; // clip to 255 if value exceeds 255
+            }
+            new_img.set_pixel(i, j, 1, val);
+
+            val = blue[i][j]; 
+            if (val < 0) {
+                val = 0; // clip to 0 if value is negative
+            } else if (val > 255) {
+                val = 255; // clip to 255 if value exceeds 255
+            }
+            new_img.set_pixel(i, j, 2, val);
+        }
+    }
+
+    return new_img;
+}
+
+/* Some cool shit happens */
+// image image::sharpen(int k) {
+//     std::vector<std::vector<float>> kernel(k, std::vector<float>(k, -1.0/(k*k))); // (kxk)
+//     kernel[(k-1)/2][(k-1)/2] = 1.0 - 1.0/(k*k);
+
+//     image new_img = conv(*this, kernel, kernel, kernel, 1, (k-1)/2.0); // same padding => (k-1)/2
+//     // new_img = *this + new_img;
+//     return new_img;
+// }
+
+image image::sharpen(int k) {
+
+    image blurred = blur(k);
+    image new_img = (*this - blurred).clip();
+    image new_img_2 = *this;
+
+    // print all RGB vals of new_img
+
+    for(int i = new_img.get_width()/2; i < new_img.get_width(); i++){
+        for(int j = 0; j < new_img.get_height()/2; j++){
+            std::cout << "(" << new_img.get_pixel(i, j, 0) << " " << new_img.get_pixel(i, j, 1) << " " << new_img.get_pixel(i, j, 2) << ") "; 
+        }
+        std::cout << std::endl;
+    } 
+    std::cout << std::endl;std::cout << std::endl;std::cout << std::endl;
+    for(int i = new_img_2.get_width()/2; i < new_img_2.get_width(); i++){
+        for(int j = 0; j < new_img_2.get_height()/2; j++){
+            std::cout << "(" << new_img_2.get_pixel(i, j, 0) << " " << new_img_2.get_pixel(i, j, 1) << " " << new_img_2.get_pixel(i, j, 2) << ") "; 
+        }
+        std::cout << std::endl;
+    } 
+
+    image new_img_3 = new_img + new_img_2;
+    std::cout << std::endl;std::cout << std::endl;std::cout << std::endl;
+
+    for(int i = new_img_3.get_width()/2; i < new_img_3.get_width(); i++){
+        for(int j = 0; j < new_img_3.get_height()/2; j++){
+            std::cout << "(" << new_img_3.get_pixel(i, j, 0) << " " << new_img_3.get_pixel(i, j, 1) << " " << new_img_3.get_pixel(i, j, 2) << ") "; 
+        }
+        std::cout << std::endl;
+    } 
+
+
+    
+    return new_img;
+}
+
+// /// @brief Sharpens image using standard filter
+// /// @param num Number of times to sharpen
+// /// @return 
+// image image::sharpen(int num) {
+//     assert(num > 0);
+
+//     vector<vector<float>> kernel(3, vector<float>(3, 0)); // (kxk)
+//     // kernel[0][0] = -1; kernel[0][1] = -1; kernel[0][2] = -1;
+//     // kernel[1][0] = -1; kernel[1][1] = 9; kernel[1][2] = -1;
+//     // kernel[2][0] = -1; kernel[2][1] = -1; kernel[2][2] = -1;
+//     kernel[0][0] = 0; kernel[0][1] = -1; kernel[0][2] = 0;
+//     kernel[1][0] = -1; kernel[1][1] = 5; kernel[1][2] = -1;
+//     kernel[2][0] = 0; kernel[2][1] = -1; kernel[2][2] = 0;
+
+//     image sharpened = conv(*this, kernel, kernel, kernel, 1, 1);
+
+//     for (int i = 0; i < num - 1; i++) {
+//         sharpened = conv(sharpened, kernel, kernel, kernel, 1, 1);
+//     }
+
+//     return sharpened;
+// }
 /*------------------------------------------------------------------------
  * Getters and Setters
  *------------------------------------------------------------------------*/
 
-int image::get_height() {
+int image::get_height() const{
     return h;
 }
 
-int image::get_width() {
+int image::get_width() const{
     return w;
+}
+
+int image::get_pixel(int i, int j, int channel) const {
+    assert(channel >= 0 && channel <= 2);
+    assert(i >= 0 && i < w);
+    assert(j >= 0 && j < h);
+
+    if (channel == 0) {
+        return red[i][j];
+    } else if (channel == 1) {
+        return green[i][j];
+    } else {
+        return blue[i][j];
+    }
+}
+
+void image::set_pixel(int i, int j, int channel, int value) {
+    assert(channel >= 0 && channel <= 2);
+    assert(i >= 0 && i < w);
+    assert(j >= 0 && j < h);
+    // assert(value >= 0 && value <= 255);
+
+    if (channel == 0) {
+        red[i][j] = value;
+    } else if (channel == 1) {
+        green[i][j] = value;
+    } else {
+        blue[i][j] = value;
+    }
+}
+
+/*------------------------------------------------------------------------
+ * Operators
+ *------------------------------------------------------------------------*/
+
+image& image::operator=(image const& img) {
+
+    if (this == &img) {
+        return *this; // handle self assignment
+    }
+
+    for (int i=0; i<w; i++) {
+        delete [] red[i];
+        delete [] green[i];
+        delete [] blue[i];
+    }
+
+    delete [] red;
+    delete [] green;
+    delete [] blue;
+
+    if (!made) {
+        delete FileBuffer;
+    }
+
+    h = img.get_height();
+    w = img.get_width();
+
+    red = new int*[w];
+    green = new int*[w];
+    blue = new int*[w];
+
+    for (int i=0; i<w; i++) {
+        red[i] = new int[h];
+        green[i] = new int[h];
+        blue[i] = new int[h];
+    }
+
+    for(int i=0; i<w; i++) {
+        for(int j=0; j<h; j++) {
+            red[i][j] = img.get_pixel(i, j, 0);
+            green[i][j] = img.get_pixel(i, j, 1);
+            blue[i][j] = img.get_pixel(i, j, 2);
+        }
+    }
+
+    return *this;
+}
+
+image image::operator-(image const& img) {
+
+    assert(w == img.get_width());
+    assert(h == img.get_height());
+
+    image new_img(h, w, 0);
+
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+            int val = red[i][j] - img.get_pixel(i, j, 0); 
+            new_img.set_pixel(i, j, 0, val);
+
+            val = green[i][j] - img.get_pixel(i, j, 1); 
+            new_img.set_pixel(i, j, 1, val);
+
+            val = blue[i][j] - img.get_pixel(i, j, 2); 
+            new_img.set_pixel(i, j, 2, val);
+        }
+    }
+
+    return new_img;
+}
+
+image image::operator+(image const& img) {
+
+    assert(w == img.get_width());
+    assert(h == img.get_height());
+
+    image new_img(h, w, 0);
+
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+            int val = red[i][j] + img.get_pixel(i, j, 0); 
+            new_img.set_pixel(i, j, 0, val);
+
+            val = green[i][j] + img.get_pixel(i, j, 1); 
+            new_img.set_pixel(i, j, 1, val);
+
+            val = blue[i][j] + img.get_pixel(i, j, 2); 
+            new_img.set_pixel(i, j, 2, val);
+        }
+    }
+
+    return new_img;
 }
 
 /*------------------------------------------------------------------------
@@ -386,11 +663,6 @@ void gray_image::set_pixel(int x, int y, int color) {
 
 /// @brief Loads a .bmp in RGB format and converts it to gray scale
 void gray_image::load(std::string filename, bool init) {
-    /*
-        params:
-            filename: path to the .bmp file
-            init: if true, initializes the image, else, overwrites the image (first deallocate memory)
-    */
 
     FILE *f;
     unsigned char info[54];
@@ -888,6 +1160,185 @@ gray_image::~gray_image() {
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * @brief Convolves an image with a single colored filter
+ * 
+ * @param img 
+ * @param kernel (height x width x 3)
+ * @param stride 
+ * @param padding 
+ * @return gray_image 
+ */
+gray_image conv(image &img, std::vector< std::vector<std::vector <float> > > kernel, int stride, float padding) {
+    
+    assert(kernel[0][0].size() == 3); // 3 channels (RGB)
+
+    int h = img.get_height();
+    int w = img.get_width();
+
+    int k_h = kernel.size();
+    int k_w = kernel[0].size();
+
+    int new_h = (h - k_h + 2*padding)/stride + 1;
+    int new_w = (w - k_w + 2*padding)/stride + 1;
+
+    gray_image new_img(new_h, new_w, 0);
+
+    for (int i=0; i<new_w; i++) {
+        for (int j=0; j<new_h; j++) {
+            float sum = 0;
+            for (int m=0; m<k_w; m++) {
+                for (int n=0; n<k_h; n++) {
+                    int x = i*stride + m - padding;
+                    int y = j*stride + n - padding;
+
+                    // x and y when m and n are 0 -> where bottom left corner of kernel is placed
+                    if (x >= 0 && x < w && y >= 0 && y < h) {
+                        sum += img.get_pixel(x, y, 0) * kernel[k_h - n - 1][m][0];
+                        sum += img.get_pixel(x, y, 1) * kernel[k_h - n - 1][m][1];
+                        sum += img.get_pixel(x, y, 2) * kernel[k_h - n - 1][m][2];
+                        // sum += kernel[k][l]*img.get_pixel(i*stride + l, j*stride + (k_h - k - 1));
+                    }
+                }
+            }
+            new_img.set_pixel(i, j, (int)sum);
+        }
+    }
+
+    return new_img;
+}
+
+/**
+ * @brief Convolves an image with 3 colored filters, and returns a 3 channel image
+ * All 3 filters must be of the same size
+ * 
+ * @param img 
+ * @param kernel1 
+ * @param kernel2 
+ * @param kernel3 
+ * @param stride 
+ * @param padding 
+ * @return image 
+ */
+image conv(
+        image &img, 
+        std::vector< std::vector<std::vector <float> > > kernel1,
+        std::vector< std::vector<std::vector <float> > > kernel2,
+        std::vector< std::vector<std::vector <float> > > kernel3,
+        int stride, 
+        float padding) {
+    
+    assert(kernel1[0][0].size() == 3); // 3 channels (RGB)
+    assert(kernel2[0][0].size() == 3); // 3 channels (RGB)
+    assert(kernel3[0][0].size() == 3); // 3 channels (RGB)
+    assert(kernel1.size() == kernel2.size() && kernel2.size() == kernel3.size());
+    assert(kernel1[0].size() == kernel2[0].size() && kernel2[0].size() == kernel3[0].size());
+
+    int h = img.get_height();
+    int w = img.get_width();
+
+    int k_h = kernel1.size();
+    int k_w = kernel1[0].size();
+
+    int new_h = (h - k_h + 2*padding)/stride + 1;
+    int new_w = (w - k_w + 2*padding)/stride + 1;
+
+    image new_img(new_h, new_w, 0);
+
+    for (int i=0; i<new_w; i++) {
+        for (int j=0; j<new_h; j++) {
+            float sum1 = 0;
+            float sum2 = 0;
+            float sum3 = 0;
+            for (int m=0; m<k_w; m++) {
+                for (int n=0; n<k_h; n++) {
+                    int x = i*stride + m - padding;
+                    int y = j*stride + n - padding;
+
+                    // x and y when m and n are 0 -> where bottom left corner of kernel is placed
+                    if (x >= 0 && x < w && y >= 0 && y < h) {
+                        sum1 += img.get_pixel(x, y, 0) * kernel1[k_h - n - 1][m][0];
+                        sum1 += img.get_pixel(x, y, 1) * kernel1[k_h - n - 1][m][1];
+                        sum1 += img.get_pixel(x, y, 2) * kernel1[k_h - n - 1][m][2];
+
+                        sum2 += img.get_pixel(x, y, 0) * kernel2[k_h - n - 1][m][0];
+                        sum2 += img.get_pixel(x, y, 1) * kernel2[k_h - n - 1][m][1];
+                        sum2 += img.get_pixel(x, y, 2) * kernel2[k_h - n - 1][m][2];
+
+                        sum3 += img.get_pixel(x, y, 0) * kernel3[k_h - n - 1][m][0];
+                        sum3 += img.get_pixel(x, y, 1) * kernel3[k_h - n - 1][m][1];
+                        sum3 += img.get_pixel(x, y, 2) * kernel3[k_h - n - 1][m][2];
+                    }
+                }
+            }
+            new_img.set_pixel(i, j, 0, (int)sum1);
+            new_img.set_pixel(i, j, 1, (int)sum2);
+            new_img.set_pixel(i, j, 2, (int)sum3);
+        }
+    }
+    return new_img;
+}
+
+/**
+ * @brief Convolves an image with 3 filters, and returns a 3 channel image
+ * All 3 filters must be of the same size
+ * 
+ * @param img 
+ * @param kernel1 
+ * @param kernel2 
+ * @param kernel3 
+ * @param stride 
+ * @param padding 
+ * @return image 
+ */
+image conv(
+        image &img, 
+        std::vector< std::vector<float> >  kernel1,
+        std::vector< std::vector<float> >  kernel2,
+        std::vector< std::vector<float> >  kernel3,
+        int stride, 
+        float padding) {
+
+    assert(kernel1.size() == kernel2.size() && kernel2.size() == kernel3.size());
+    assert(kernel1[0].size() == kernel2[0].size() && kernel2[0].size() == kernel3[0].size());
+
+    int h = img.get_height();
+    int w = img.get_width();
+
+    int k_h = kernel1.size();
+    int k_w = kernel1[0].size();
+
+    int new_h = (h - k_h + 2*padding)/stride + 1;
+    int new_w = (w - k_w + 2*padding)/stride + 1;
+
+    image new_img(new_h, new_w, 0);
+
+    for (int i=0; i<new_w; i++) {
+        for (int j=0; j<new_h; j++) {
+            float sum1 = 0;
+            float sum2 = 0;
+            float sum3 = 0;
+            for (int m=0; m<k_w; m++) {
+                for (int n=0; n<k_h; n++) {
+                    int x = i*stride + m - padding;
+                    int y = j*stride + n - padding;
+
+                    // x and y when m and n are 0 -> where bottom left corner of kernel is placed
+                    if (x >= 0 && x < w && y >= 0 && y < h) {
+                        sum1 += img.get_pixel(x, y, 0) * kernel1[k_h - n - 1][m];
+                        sum2 += img.get_pixel(x, y, 1) * kernel2[k_h - n - 1][m];
+                        sum3 += img.get_pixel(x, y, 2) * kernel3[k_h - n - 1][m];
+                    }
+                }
+            }
+            new_img.set_pixel(i, j, 0, (int)sum1);
+            new_img.set_pixel(i, j, 1, (int)sum2);
+            new_img.set_pixel(i, j, 2, (int)sum3);
+        }
+    
+    }
+    return new_img;
+}
 /**
  * @brief Convolves a gray scale image with a given kernel
  * 
