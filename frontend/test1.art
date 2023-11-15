@@ -56,6 +56,9 @@ ink main()->void {
 
     foo(a, i1)
 
+    img i5 <40, 40, 0x000000>
+    i5.cat(i1, i2, i3, i4)
+
     return void
 }
 
