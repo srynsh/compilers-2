@@ -150,8 +150,8 @@ std::tuple<size_t, size_t> FindClosest(std::vector<std::string> const & strs, st
 // ^ 
 /**
 *    ELE_NUM -> can be binoped to everything except video
-*    ELE_REAL -> can be binoped to everything except video
-*    ELE_BOOL -> can be binoped to everything except video
+*    ELE_REAL -> can be binoped to everything except video (casted to int for img/grayimg)
+*    ELE_BOOL -> can be binoped to everything except video (casted to int for img/grayimg)
 *
 *    ELE_IMG -> can be binoped to everything (can only be added to videos)
 *    ELE_GRAY_IMG -> can be binoped to everything (can only be added to videos)

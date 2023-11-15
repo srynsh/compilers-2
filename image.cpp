@@ -558,6 +558,47 @@ image image::T() {
     return new_img;
 }
 
+/// @brief Creates a voronoi tessellation of the image ("crystallizes it")
+/// @param k number of points to use
+/// @return 
+image image::crystallize(int k) {
+
+    assert(k > 0);
+
+    int points[k][2];
+
+    // Randomly generate k points
+    for (int i=0; i<k; i++) {
+        points[i][0] = rand() % w;
+        points[i][1] = rand() % h;
+    }
+
+    image new_img(h, w, 0);
+
+    #pragma omp parallel for
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+
+            int min_dist = INT_MAX;
+            int min_point = 0;
+
+            // Find the closest point
+            for (int m=0; m<k; m++) {
+                int dist = (i - points[m][0])*(i - points[m][0]) + (j - points[m][1])*(j - points[m][1]);
+                if (dist < min_dist) {
+                    min_dist = dist;
+                    min_point = m;
+                }
+            }
+
+            new_img.set_pixel(i, j, 0, red[points[min_point][0]][points[min_point][1]]);
+            new_img.set_pixel(i, j, 1, green[points[min_point][0]][points[min_point][1]]);
+            new_img.set_pixel(i, j, 2, blue[points[min_point][0]][points[min_point][1]]);
+        }
+    }
+
+    return new_img;
+}
 
 
 /*------------------------------------------------------------------------
@@ -1385,6 +1426,63 @@ gray_image gray_image::T() {
     return new_img;
 }
 
+/// @brief Creates a voronoi tessellation of the image ("crystallizes it")
+/// @param k number of points to use
+/// @return 
+gray_image gray_image::crystallize(int k) {
+    
+        assert(k > 0);
+    
+        int points[k][2];
+    
+        // Randomly generate k points
+        for (int i=0; i<k; i++) {
+            points[i][0] = rand() % w;
+            points[i][1] = rand() % h;
+        }
+    
+        gray_image new_img(h, w, 0);
+    
+        #pragma omp parallel for
+        for (int i=0; i<w; i++) {
+            for (int j=0; j<h; j++) {
+    
+                int min_dist = INT_MAX;
+                int min_point = 0;
+    
+                // Find the closest point
+                for (int m=0; m<k; m++) {
+                    int dist = (i - points[m][0])*(i - points[m][0]) + (j - points[m][1])*(j - points[m][1]);
+                    if (dist < min_dist) {
+                        min_dist = dist;
+                        min_point = m;
+                    }
+                }
+    
+                new_img.set_pixel(i, j, gray[points[min_point][0]][points[min_point][1]]);
+            }
+        }
+    
+        return new_img;
+}
+
+/// @brief converts gray_image to image (3 channels) 
+image gray_image::to_image() {
+    image new_img(h, w, 0);
+
+    #pragma omp parallel for
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+
+            new_img.set_pixel(i, j, 0, gray[i][j]);
+            new_img.set_pixel(i, j, 1, gray[i][j]);
+            new_img.set_pixel(i, j, 2, gray[i][j]);
+        }
+    }
+
+    return new_img;
+}
+
 /*------------------------------------------------------------------------
  * Destructor
  *------------------------------------------------------------------------*/
@@ -1397,6 +1495,377 @@ gray_image::~gray_image() {
     }
 
     free(gray);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+////////////////////// Video Class ////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
+/*------------------------------------------------------------------------
+ * Constructors and related functions
+ *------------------------------------------------------------------------*/
+
+/// @brief Initializes height, width and fps of video
+/// @param h height in pixels
+/// @param w width in pixels
+/// @param fps frames per second
+video::video(int h, int w, int fps) {
+    this->h = h;
+    this->w = w;
+    this->fps = fps;
+    this->frames_vec = new std::vector<image>();
+}
+
+/*------------------------------------------------------------------------
+ * Display functions
+ *------------------------------------------------------------------------*/
+
+/// @brief Plays the video on the terminal
+void video::play() {
+    /* For KG */
+}
+
+/*------------------------------------------------------------------------
+ * Operators
+ *------------------------------------------------------------------------*/
+
+/// @brief Accesses the ith frame of the video
+image video::operator[](int i) const {
+    return frames_vec[i];
+}
+
+/// @brief assigns to the ith frame of the video
+image& video::operator[](int i) {
+    return frames_vec[i];
+}
+
+/// @brief Concatenates two videos
+video video::operator+(video const& vid) {
+    int h = vid.get_height();
+    int w = vid.get_width();
+    int fps = vid.get_fps();
+
+    assert(h == this->h); assert(w == this->w); assert(fps == this->fps);
+
+    video new_vid(h, w, fps);
+
+    for (int i=0; i<this->frames_vec->size(); i++) 
+        new_vid.frames_vec->push_back((*this)[i]);
+
+    for (int i=0; i<vid.frames_vec->size(); i++) 
+        new_vid.frames_vec->push_back(vid[i]);
+
+    return new_vid;
+}
+
+/// @brief Assigns a video to another
+video& video::operator=(video const& vid) {
+    if (this == &vid) {
+        return *this; // handle self assignment
+    }
+
+    this->h = vid.get_height();
+    this->w = vid.get_width();
+    this->fps = vid.get_fps();
+
+    this->frames_vec->clear();
+
+    for (int i=0; i<vid.frames_vec->size(); i++) 
+        this->frames_vec->push_back(vid[i]);
+
+    return *this;
+}
+
+/// @brief Converts a gray-scale video to 3 channel video, assigns
+video& video::operator=(gray_video const& vid) {
+    if (this == &vid) {
+        return *this; // handle self assignment
+    }
+
+    this->h = vid.get_height();
+    this->w = vid.get_width();
+    this->fps = vid.get_fps();
+
+    this->frames_vec->clear();
+
+    for (int i=0; i<vid.frames_vec->size(); i++) 
+        this->frames_vec->push_back(vid[i].to_image());
+
+    return *this;
+}
+
+/// @brief concatenates a gray-scale video to a 3 channel video
+video video::operator+(gray_video const& vid) {
+    int h = vid.get_height();
+    int w = vid.get_width();
+    int fps = vid.get_fps();
+
+    assert(h == this->h); assert(w == this->w); assert(fps == this->fps);
+
+    video new_vid(h, w, fps);
+
+    new_vid = vid;
+    new_vid = *this + new_vid;
+
+    return new_vid;
+}
+
+/// @brief Adds a frame to the video
+video video::operator+(image const& img) {
+    int h = img.get_height();
+    int w = img.get_width();
+
+    assert(h == this->h); assert(w == this->w);
+
+    this->frames_vec->push_back(img);
+
+    return *this;
+}
+
+/// @brief Adds a frame (gray) to the video
+video video::operator+(gray_image const& img) {
+    int h = img.get_height();
+    int w = img.get_width();
+
+    assert(h == this->h); assert(w == this->w);
+
+    this->frames_vec->push_back(img.to_image());
+
+    return *this;
+}
+
+/*------------------------------------------------------------------------
+ * Getters and Setters
+ *------------------------------------------------------------------------*/
+
+int video::get_height() const {
+    return h;
+}
+
+int video::get_width() const {
+    return w;
+}
+
+int video::get_fps() const {
+    return fps;
+}
+
+int video::get_num_frames() const {
+    return frames_vec->size();
+}
+
+image video::get_frame(int i) const {
+    return (*frames_vec)[i];
+}
+
+
+void video::set_fps(int fps) {
+    this->fps = fps;
+}
+
+void video::set_frame(int i, image const& img) {
+
+    int h = img.get_height();
+    int w = img.get_width();
+
+    assert(h == this->h); assert(w == this->w);
+
+    (*frames_vec)[i] = img;
+}
+
+/*------------------------------------------------------------------------
+ * Destructor
+ *------------------------------------------------------------------------*/
+
+video::~video() {
+    delete frames_vec;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+////////////////////// Gray Video Class ////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
+/*------------------------------------------------------------------------
+ * Constructors and related functions
+ *------------------------------------------------------------------------*/
+
+/// @brief Initializes height, width and fps of video
+/// @param h height in pixels
+/// @param w width in pixels
+/// @param fps frames per second
+gray_video::gray_video(int h, int w, int fps) {
+    this->h = h;
+    this->w = w;
+    this->fps = fps;
+    this->frames_vec = new std::vector<gray_image>();
+}
+
+/*------------------------------------------------------------------------
+ * Display functions
+ *------------------------------------------------------------------------*/
+
+/// @brief Plays the video on the terminal
+void gray_video::play() {
+    /* For KG */
+}
+
+/*------------------------------------------------------------------------
+ * Operators
+ *------------------------------------------------------------------------*/
+
+/// @brief Accesses the ith frame of the video
+gray_image gray_video::operator[](int i) const {
+    return frames_vec[i];
+}
+
+/// @brief assigns to the ith frame of the video
+gray_image& gray_video::operator[](int i) {
+    return frames_vec[i];
+}
+
+/// @brief Concatenates two videos
+gray_video gray_video::operator+(gray_video const& vid) {
+    int h = vid.get_height();
+    int w = vid.get_width();
+    int fps = vid.get_fps();
+
+    assert(h == this->h); assert(w == this->w); assert(fps == this->fps);
+
+    gray_video new_vid(h, w, fps);
+
+    for (int i=0; i<this->frames_vec->size(); i++) 
+        new_vid.frames_vec->push_back((*this)[i]);
+
+    for (int i=0; i<vid.frames_vec->size(); i++) 
+        new_vid.frames_vec->push_back(vid[i]);
+
+    return new_vid;
+}
+
+/// @brief Assigns a video to another
+gray_video& gray_video::operator=(gray_video const& vid) {
+    if (this == &vid) {
+        return *this; // handle self assignment
+    }
+
+    this->h = vid.get_height();
+    this->w = vid.get_width();
+    this->fps = vid.get_fps();
+
+    this->frames_vec->clear();
+
+    for (int i=0; i<vid.frames_vec->size(); i++) 
+        this->frames_vec->push_back(vid[i]);
+
+    return *this;
+}
+
+/// @brief Converts a 3 channel video to gray-scale video, assigns
+gray_video& gray_video::operator=(video const& vid) {
+    if (this == &vid) {
+        return *this; // handle self assignment
+    }
+
+    this->h = vid.get_height();
+    this->w = vid.get_width();
+    this->fps = vid.get_fps();
+
+    this->frames_vec->clear();
+
+    for (int i=0; i<vid.frames_vec->size(); i++) 
+        this->frames_vec->push_back(vid[i].grayscale());
+
+    return *this;
+}
+
+/// @brief Adds a frame to the video
+gray_video gray_video::operator+(image const& img) {
+    int h = img.get_height();
+    int w = img.get_width();
+
+    assert(h == this->h); assert(w == this->w);
+
+    this->frames_vec->push_back(img.grayscale());
+
+    return *this;
+}
+
+/// @brief Adds a frame (gray) to the video
+gray_video gray_video::operator+(gray_image const& img) {
+    int h = img.get_height();
+    int w = img.get_width();
+
+    assert(h == this->h); assert(w == this->w);
+
+    this->frames_vec->push_back(img);
+
+    return *this;
+}
+
+/// @brief Adds an rgb frame to the gray video, converting it to a video 
+video gray_video::operator+(image const& img) {
+    int h = img.get_height();
+    int w = img.get_width();
+
+    assert(h == this->h); assert(w == this->w);
+
+    video new_vid(h, w, this->fps);
+
+    for (int i=0; i<this->frames_vec->size(); i++) 
+        new_vid.frames_vec->push_back((*this)[i].to_image());
+
+    new_vid.frames_vec->push_back(img);
+
+    return new_vid;
+}
+
+/*------------------------------------------------------------------------
+ * Getters and Setters
+ *------------------------------------------------------------------------*/
+
+int gray_video::get_height() const {
+    return h;
+}
+
+int gray_video::get_width() const {
+    return w;
+}
+
+int gray_video::get_fps() const {
+    return fps;
+}
+
+int gray_video::get_num_frames() const {
+    return frames_vec->size();
+}
+
+gray_image gray_video::get_frame(int i) const {
+    return frames_vec->at(i);
+}
+
+
+void gray_video::set_fps(int fps) {
+    this->fps = fps;
+}
+
+void gray_video::set_frame(int i, gray_image const& img) {
+
+    int h = img.get_height();
+    int w = img.get_width();
+
+    assert(h == this->h); assert(w == this->w);
+
+    (*frames_vec)[i] = img;
+}
+
+/*------------------------------------------------------------------------
+ * Destructor
+ *------------------------------------------------------------------------*/
+
+gray_video::~gray_video() {
+    delete frames_vec;
 }
 
 

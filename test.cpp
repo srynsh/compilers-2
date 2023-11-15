@@ -17,8 +17,8 @@ using namespace std;
 int main() {
     image img("./images/inputs/lena_color.bmp");
     // gray_image new_img = img.grayscale();
-    image new_img2 = img.blur(50);
-    new_img2 = new_img2.sharpen(50);
+    // image new_img2 = img.blur(50);
+    // image new_img3 = img.sharpen(50);
     // image new_img4 = img.sobel();
     // image new_img5 = img.pixelate(6);
     // image new_img6 = img.invert();
@@ -27,10 +27,12 @@ int main() {
     // image new_img9 = img.hflip();
     // image new_img10 = img.vflip();
     // image new_img11 = img.T();
+    image new_img12 = img.crystallize(5000);
+
 
     img.frame("./images/outputs_color/output_orig.bmp");
     // new_img.frame("./images/outputs_color/output_grayscale.bmp");
-    new_img2.frame("./images/outputs_color/output_blur.bmp");
+    // new_img2.frame("./images/outputs_color/output_blur.bmp");
     // new_img3.frame("./images/outputs_color/output_sharpen.bmp");
     // new_img4.frame("./images/outputs_color/output_sobel.bmp");
     // new_img5.frame("./images/outputs_color/output_pixelate.bmp");
@@ -40,6 +42,7 @@ int main() {
     // new_img9.frame("./images/outputs_color/output_hflip.bmp");
     // new_img10.frame("./images/outputs_color/output_vflip.bmp");
     // new_img11.frame("./images/outputs_color/output_transpose.bmp");
+    new_img12.frame("./images/outputs_color/output_crystallize.bmp");
 
     return 0;
 }
