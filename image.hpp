@@ -88,6 +88,7 @@ class image {
 
         // Operators
         image& operator=(image const& img);
+        image& operator=(gray_image const& img);
         image operator+(image const& img);
         image operator-(image const& img);
         image operator*(image const& img);

@@ -4,6 +4,7 @@
 #include "image.hpp"
 #include "./frontend/headers/kernel.hpp"
 #include "./frontend/headers/load_bmp.hpp"
+#include <omp.h>
 
 /* To run: g++ --std=c++11 -o image frontend/headers/kernel.cpp frontend/headers/load_bmp.cpp image.cpp */
 
@@ -51,12 +52,14 @@ image::image(int h, int w, int color) {
     green = new int*[w];
     blue = new int*[w];
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         this->red[i] = new int[h];
         this->green[i] = new int[h];
         this->blue[i] = new int[h];
     }
 
+    #pragma omp parallel for
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
             this->red[i][j] = red_c;
@@ -89,12 +92,14 @@ image::image(const image &img) {
     green = new int*[w];
     blue = new int*[w];
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         red[i] = new int[h];
         green[i] = new int[h];
         blue[i] = new int[h];
     }
 
+    #pragma omp parallel for
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
             // Clip all values to 0-255
@@ -111,6 +116,8 @@ image::image(const image &img) {
 /// @brief Loads a .bmp
 void image::load(std::string filename, bool init) {
     if (!init) {    
+
+        #pragma omp parallel for
         for (int i=0; i<this->w; i++) {
             delete [] this->red[i];
             delete [] this->green[i];
@@ -150,12 +157,14 @@ void image::load(std::string filename, bool init) {
     this->green = new int*[w];
     this->blue = new int*[w];
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         this->red[i] = new int[h];
         this->green[i] = new int[h];
         this->blue[i] = new int[h];
     }
 
+    #pragma omp parallel for
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++){
             this->red[i][j] = red_temp[i][j];
@@ -164,6 +173,7 @@ void image::load(std::string filename, bool init) {
         }
     }
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         delete [] red_temp[i];
         delete [] green_temp[i];
@@ -203,6 +213,7 @@ void image::frame_self(std::string filename) {
     canvas = (unsigned char *)malloc(3*w*h);
     memset(canvas,0,3*w*h);
 
+    #pragma omp parallel for
     for(int i=0; i<h; i++) {
         for(int j=0; j<w; j++) {
             int x=i; int y=j;
@@ -248,12 +259,14 @@ void image::frame_pre(std::string filename) {
     uint8_t** green_temp = new uint8_t*[w];
     uint8_t** blue_temp = new uint8_t*[w];
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         red_temp[i] = new uint8_t[h];
         green_temp[i] = new uint8_t[h];
         blue_temp[i] = new uint8_t[h];
     }
 
+    #pragma omp parallel for
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++){
             red_temp[i][j] = ::clip(red[i][j]);
@@ -326,7 +339,7 @@ void image::draw(std::string shape, std::vector<int> params) {
 
 /// @brief Uses the NTSC formula to convert RGB to gray (See https://support.ptc.com/help/mathcad/r9.0/en/index.html#page/PTC_Mathcad_Help/example_grayscale_and_color_in_images.html)
 gray_image image::grayscale() {
-    vector<vector<vector <float> > > vec = string_to_vec3d("{{{0.299, 0.587, 0.114}}}"); // (1x1x3)
+    vector<vector<vector <float> > > vec = {{{0.299, 0.587, 0.114}}};
 
     gray_image new_img = conv(*this, vec, 1, 0);
     return new_img;
@@ -345,6 +358,7 @@ image image::clip() {
 
     image new_img(h, w, 0);
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             new_img.set_pixel(i, j, 0, ::clip(red[i][j]));
@@ -363,6 +377,188 @@ image image::sharpen(int k) {
 
     return new_img;
 }
+
+/// @brief Uses the Sobel filter to detect edges (https://en.wikipedia.org/wiki/Sobel_operator)
+/// @return 
+image image::sobel() {
+
+    std::vector<std::vector<float>> kernel_x(3, std::vector<float>(3));
+    std::vector<std::vector<float>> kernel_y(3, std::vector<float>(3));
+
+    kernel_x[0][0] = 1; kernel_x[0][1] = 0; kernel_x[0][2] = -1;
+    kernel_x[1][0] = 2; kernel_x[1][1] = 0; kernel_x[1][2] = -2;
+    kernel_x[2][0] = 1; kernel_x[2][1] = 0; kernel_x[2][2] = -1;
+
+    kernel_y[0][0] = 1; kernel_y[0][1] = 2; kernel_y[0][2] = 1;
+    kernel_y[1][0] = 0; kernel_y[1][1] = 0; kernel_y[1][2] = 0;
+    kernel_y[2][0] = -1; kernel_y[2][1] = -2; kernel_y[2][2] = -1;
+
+    image new_img = conv(*this, kernel_x, kernel_x, kernel_x, 1, 1);
+    new_img = conv(new_img, kernel_y, kernel_y, kernel_y, 1, 1);
+
+    return new_img;
+}
+
+
+/// @brief Pixelates the image by a factor of k
+/// @param k
+/// @return
+image image::pixelate(int k) {
+
+    gray_image reference = this->grayscale();
+    image new_img(h, w, 0);
+
+    // Split the image into kxk blocks, replace the pixels in each block with the max value according to the grayscale reference
+
+    #pragma omp parallel for
+    for (int i=0; i<w; i+=k) { 
+        for (int j=0; j<h; j+=k) {
+            int max_val = 0;
+            int max_x = 0, max_y = 0;
+
+            // Finding max value in a block
+            for (int m=0; m<k; m++) {
+                for (int n=0; n<k; n++) {
+                    int x = i + m; 
+                    int y = j + n; 
+                    // x and y when m and n are 0 -> where bottom left corner of kernel is placed
+                    if (x >= 0 && x < w && y >= 0 && y < h) {
+                        if (reference.get_pixel(x, y) > max_val) {
+                            max_val = reference.get_pixel(x, y);
+                            max_x = x;
+                            max_y = y;
+                        }
+                    }
+                }
+            }
+
+            // Setting all pixels in the block to value of "max" pixel
+            for (int m=0; m<k; m++) {
+                for (int n=0; n<k; n++) {
+                    int x = i + m; 
+                    int y = j + n; 
+                    // x and y when m and n are 0 -> where bottom left corner of kernel is placed
+                    if (x >= 0 && x < w && y >= 0 && y < h) {
+                        new_img.set_pixel(x, y, 0, red[max_x][max_y]);
+                        new_img.set_pixel(x, y, 1, green[max_x][max_y]);
+                        new_img.set_pixel(x, y, 2, blue[max_x][max_y]);
+                    }
+                }
+            }
+        }
+    }
+    return new_img;
+}
+
+
+/// @brief Inverts the image
+/// @return
+image image::invert() {
+
+    image new_img(h, w, 0);
+
+    #pragma omp parallel for
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+            new_img.set_pixel(i, j, 0, 255 - red[i][j]);
+            new_img.set_pixel(i, j, 1, 255 - green[i][j]);
+            new_img.set_pixel(i, j, 2, 255 - blue[i][j]);
+        }
+    }
+
+    return new_img;
+}
+
+/// @brief Adds gaussian noise to the image
+/// @param var variance of the noise
+/// @return
+image image::noise(float var) {
+
+    image new_img(h, w, 0);
+
+    std::default_random_engine generator;
+    std::normal_distribution<double> distribution(0.0, var);
+
+    #pragma omp parallel for
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+            int noise = distribution(generator);
+            new_img.set_pixel(i, j, 0, red[i][j] + noise);
+            new_img.set_pixel(i, j, 1, green[i][j] + noise);
+            new_img.set_pixel(i, j, 2, blue[i][j] + noise);
+        }
+    }
+
+    return new_img;
+}
+
+/// @brief Converts the image to black and white
+/// @param thr threshold value
+/// @return
+image image::bnw(int thr) {
+
+    image new_img(h, w, 0);
+    gray_image temp = this->grayscale().bnw(thr);
+    new_img = temp;
+
+    return new_img;
+}
+
+/// @brief Flips the image horizontally
+/// @return
+image image::hflip() {
+
+    image new_img(h, w, 0);
+
+    #pragma omp parallel for
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+            new_img.set_pixel(i, j, 0, red[w-i-1][j]);
+            new_img.set_pixel(i, j, 1, green[w-i-1][j]);
+            new_img.set_pixel(i, j, 2, blue[w-i-1][j]);
+        }
+    }
+
+    return new_img;
+}
+
+/// @brief Flips the image vertically
+/// @return
+image image::vflip() {
+
+    image new_img(h, w, 0);
+
+    #pragma omp parallel for
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+            new_img.set_pixel(i, j, 0, red[i][h-j-1]);
+            new_img.set_pixel(i, j, 1, green[i][h-j-1]);
+            new_img.set_pixel(i, j, 2, blue[i][h-j-1]);
+        }
+    }
+
+    return new_img;
+}
+
+/// @brief Transposes the image (Equivalent to rotating the image by 90 degrees clockwise)
+/// @return
+image image::T() {
+
+    image new_img(w, h, 0);
+
+    #pragma omp parallel for
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+            new_img.set_pixel(j, i, 0, red[i][j]);
+            new_img.set_pixel(j, i, 1, green[i][j]);
+            new_img.set_pixel(j, i, 2, blue[i][j]);
+        }
+    }
+
+    return new_img;
+}
+
+
 
 /*------------------------------------------------------------------------
  * Getters and Setters
@@ -435,12 +631,14 @@ image& image::operator=(image const& img) {
     green = new int*[w];
     blue = new int*[w];
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         red[i] = new int[h];
         green[i] = new int[h];
         blue[i] = new int[h];
     }
 
+    #pragma omp parallel for
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
             // Clip all values to 0-255
@@ -453,6 +651,50 @@ image& image::operator=(image const& img) {
     return *this;
 }
 
+/// @brief Assigns gray_image to image
+image& image::operator=(gray_image const& img) {
+    
+        for (int i=0; i<w; i++) {
+            delete [] red[i];
+            delete [] green[i];
+            delete [] blue[i];
+        }
+    
+        delete [] red;
+        delete [] green;
+        delete [] blue;
+    
+        if (!made) {
+            delete FileBuffer;
+        }
+    
+        h = img.get_height();
+        w = img.get_width();
+    
+        red = new int*[w];
+        green = new int*[w];
+        blue = new int*[w];
+    
+        #pragma omp parallel for
+        for (int i=0; i<w; i++) {
+            red[i] = new int[h];
+            green[i] = new int[h];
+            blue[i] = new int[h];
+        }
+    
+        #pragma omp parallel for
+        for(int i=0; i<w; i++) {
+            for(int j=0; j<h; j++) {
+                // Clip all values to 0-255
+                red[i][j] = ::clip(img.get_pixel(i, j));
+                green[i][j] = ::clip(img.get_pixel(i, j));
+                blue[i][j] = ::clip(img.get_pixel(i, j));
+            }
+        }
+
+        return *this;
+}
+
 image image::operator-(image const& img) {
 
     assert(w == img.get_width());
@@ -460,6 +702,7 @@ image image::operator-(image const& img) {
 
     image new_img(h, w, 0);
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             int val = red[i][j] - img.get_pixel(i, j, 0); 
@@ -483,6 +726,7 @@ image image::operator+(image const& img) {
 
     image new_img(h, w, 0);
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             int val = red[i][j] + img.get_pixel(i, j, 0); 
@@ -520,6 +764,8 @@ image::~image() {
 }
 
 void image::flip() {
+
+    #pragma omp parallel for
     for (int i=0; i<this->w; i++) {
         for (int j=0; j<this->h/2; j++) {
             swap(this->red[i][j], this->red[i][h-1-j]);
@@ -555,10 +801,12 @@ gray_image::gray_image(int h, int w, int color) {
 
     gray = (int **)malloc(w * sizeof(int *));
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         gray[i] = (int *)malloc(h * sizeof(int));
     }
 
+    #pragma omp parallel for
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
             gray[i][j] = gray_c;
@@ -586,10 +834,12 @@ gray_image::gray_image(const gray_image &img) {
 
     gray = (int **)malloc(w * sizeof(int *));
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         gray[i] = (int *)malloc(h * sizeof(int));
     }
 
+    #pragma omp parallel for
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
             gray[i][j] = ::clip(img.get_pixel(i, j));
@@ -683,10 +933,12 @@ void gray_image::load(std::string filename, bool init) {
 
     gray = (int **)malloc(w * sizeof(int *));
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         gray[i] = (int *)malloc(h * sizeof(int));
     }
 
+    #pragma omp parallel for
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++){
             // Uses the NTSC formula to convert RGB to gray
@@ -716,12 +968,14 @@ void gray_image::frame(std::string filename) {
     memset(canvas,0,3*w*h);
 
     // Clip all values to 0-255
+    #pragma omp parallel for
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
             gray[i][j] = ::clip(gray[i][j]);
         }
     }
 
+    #pragma omp parallel for
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
             int x=i; int y=(h-1)-j;
@@ -777,6 +1031,7 @@ gray_image gray_image::operator-(gray_image const& img) {
 
     gray_image new_img(h, w, 0);
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             int val = gray[i][j] - img.get_pixel(i, j); 
@@ -794,6 +1049,7 @@ gray_image gray_image::operator+(gray_image const& img) {
 
     gray_image new_img(h, w, 0);
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             int val = gray[i][j] + img.get_pixel(i, j); 
@@ -810,6 +1066,7 @@ gray_image gray_image::operator/(float const& val) {
 
     gray_image new_img(h, w, 0);
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             int val = (int)gray[i][j]/val; 
@@ -841,10 +1098,12 @@ gray_image& gray_image::operator=(gray_image const& img) {
 
     gray = (int **)malloc(w * sizeof(int *));
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         gray[i] = (int *)malloc(h * sizeof(int));
     }
 
+    #pragma omp parallel for
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
             gray[i][j] = ::clip(img.get_pixel(i, j));
@@ -865,6 +1124,7 @@ gray_image gray_image::operator*(gray_image const& img) {
 
     gray_image new_img(h, w, 0);
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             int val = gray[i][j] * img.get_pixel(i, j); 
@@ -878,6 +1138,7 @@ gray_image gray_image::operator*(gray_image const& img) {
 gray_image gray_image::sqrt() {
     gray_image new_img(h, w, 0);
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             int val = (int)std::sqrt(gray[i][j]); 
@@ -905,6 +1166,7 @@ gray_image gray_image::operator*(std::vector<std::vector<float>> kernel) {
 std::vector<std::vector<float>> gray_image::to_vector() {
     std::vector<std::vector<float>> vec(w, std::vector<float>(h));
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             vec[i][j] = gray[i][j];
@@ -992,6 +1254,8 @@ gray_image gray_image::pixelate(int k) {
     gray_image new_img(h, w, 0);
 
     // We basically split the image into k*k blocks, and replace each pixel in the block with the maximum value of the block
+
+    #pragma omp parallel for
     for (int i=0; i<w; i+=k) { 
         for (int j=0; j<h; j+=k) {
             int max_val = 0;
@@ -1046,6 +1310,7 @@ gray_image gray_image::noise(float var) {
     std::default_random_engine generator;
     std::normal_distribution<double> distribution(0.0, var);
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             int val = gray[i][j] + distribution(generator);
@@ -1065,6 +1330,7 @@ gray_image gray_image::noise(float var) {
 gray_image gray_image::bnw(int thr) {
     gray_image new_img(h, w, 0);
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             if (gray[i][j] > thr) {
@@ -1081,6 +1347,7 @@ gray_image gray_image::bnw(int thr) {
 gray_image gray_image::hflip() {
     gray_image new_img(h, w, 0);
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             new_img.set_pixel(i, j, gray[w-i-1][j]);
@@ -1094,6 +1361,7 @@ gray_image gray_image::hflip() {
 gray_image gray_image::vflip() {
     gray_image new_img(h, w, 0);
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             new_img.set_pixel(i, j, gray[i][h-j-1]);
@@ -1107,6 +1375,7 @@ gray_image gray_image::vflip() {
 gray_image gray_image::T() {
     gray_image new_img(w, h, 0);
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             new_img.set_pixel(j, i, gray[i][j]);
@@ -1121,6 +1390,8 @@ gray_image gray_image::T() {
  *------------------------------------------------------------------------*/
 
 gray_image::~gray_image() {
+
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         free(gray[i]);
     }
@@ -1155,6 +1426,7 @@ gray_image conv(image &img, std::vector< std::vector<std::vector <float> > > ker
 
     gray_image new_img(new_h, new_w, 0);
 
+    #pragma omp parallel for
     for (int i=0; i<new_w; i++) {
         for (int j=0; j<new_h; j++) {
             float sum = 0;
@@ -1216,6 +1488,7 @@ image conv(
 
     image new_img(new_h, new_w, 0);
 
+    #pragma omp parallel for
     for (int i=0; i<new_w; i++) {
         for (int j=0; j<new_h; j++) {
             float sum1 = 0;
@@ -1284,6 +1557,7 @@ image conv(
 
     image new_img(new_h, new_w, 0);
 
+    #pragma omp parallel for
     for (int i=0; i<new_w; i++) {
         for (int j=0; j<new_h; j++) {
             float sum1 = 0;
@@ -1332,6 +1606,7 @@ gray_image conv(gray_image &img, std::vector< std::vector<float> > kernel, int s
 
     gray_image new_img(new_h, new_w, 0);
 
+    #pragma omp parallel for
     for (int i=0; i<new_w; i++) {
         for (int j=0; j<new_h; j++) {
             float sum = 0;
@@ -1366,6 +1641,7 @@ gray_image to_gray_image(std::vector< std::vector<float> > vec) {
 
     gray_image img(h, w, 0);
 
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             img.set_pixel(i, j, (int)vec[i][j]);
