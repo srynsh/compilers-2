@@ -215,20 +215,21 @@ void image::paint() {
 
 void image::draw(std::string shape, std::vector<int> params) {
     if (shape == "circle") {
-        int r = params[2];
         int cx = params[0];
         int cy = params[1];
-        bool fill = params[3];
+        int r = params[2];
+        int fill = params[3];
+        assert(fill >= 0x000000 && fill <= 0xFFFFFF);
 
-        cout << cx << " " << cy << " " << r << endl;
-
+        // cout << cx << " " << cy << " " << r << endl;
+        
         for (int y=0; y<h; y++) {
             for (int x=0; x<w; x++) {
                 
                 if ((x-cx)*(x-cx) + (y-cy)*(y-cy) <= r*r) {
-                    red[x][y] = 120;
-                    green[x][y] = 120;
-                    blue[x][y] = 120;
+                    red[x][y] = (fill >> 16) & 0xFF;
+                    green[x][y] = (fill >> 8) & 0xFF;
+                    blue[x][y] = fill & 0xFF;
                 }
             }
         }

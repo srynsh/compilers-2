@@ -48,6 +48,10 @@ class image {
         char* FileBuffer;
         bool made;
 
+        // Private display functions
+        void frame_self(std::string filename);
+        void frame_pre(std::string filename);
+
     public:
         // Constructors
         image(int h, int w, int color);
@@ -58,8 +62,6 @@ class image {
 
         // Display functions
         void frame(std::string filename);
-        void frame_self(std::string filename);
-        void frame_pre(std::string filename);
         void paint();
 
         // Image manipulation functions

@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <ncurses.h>
 #include <unistd.h>
+#include "image.hpp"
 
 using namespace std;
 
@@ -10,7 +11,7 @@ int main(){
 
     ifstream ifs;
     ofstream ofs;
-    char input[80] = "./images/inputs/in.bmp";
+    char input[80] = "./images/outputs/vid/50.bmp";
     char output[80] = "output.txt";
 
     ifs.open(input, ios::binary);
@@ -118,20 +119,20 @@ int main(){
     // use ncurses to clear the screen 5 times and run a command "tiv -h 1000 -w 1000 ./images/inputs/in.bmp"
 
     // initscr();
-    string path = "";
-    for(int i=0; i<116; i++)
-    {
-        system("clear");
-        path = "./images/outputs/vid/" + to_string(i) + ".bmp";
-        system(("tiv -h 1000 -w 1000 " + path).c_str());
-        usleep(100000);
-    }
+    // string path = "";
+    // for(int i=0; i<116; i++)
+    // {
+    //     system("clear");
+    //     path = "./images/outputs/vid/" + to_string(i) + ".bmp";
+    //     system(("tiv -h 1000 -w 1000 " + path).c_str());
+    //     usleep(100000);
+    // }
     // system("tiv -h 1500 -w 1000 ./images/inputs/blackbuck.bmp");
 
     // endwin();
 
-    ifs.close();
-    ofs.close();
+    // ifs.close();
+    // ofs.close();
 
     return 0;
 
