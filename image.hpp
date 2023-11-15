@@ -41,9 +41,9 @@ class image {
         int h;
         int w;
 
-        uint8_t **red;
-        uint8_t **green;
-        uint8_t **blue;
+        int **red;
+        int **green;
+        int **blue;
         int buffer_size;
         char* FileBuffer;
         bool made;

@@ -1,18 +1,11 @@
+#include <_types/_uint8_t.h>
 #include <bits/stdc++.h>
+#include <sys/types.h>
 #include "image.hpp"
 #include "./frontend/headers/kernel.hpp"
 #include "./frontend/headers/load_bmp.hpp"
 
 /* To run: g++ --std=c++11 -o image frontend/headers/kernel.cpp frontend/headers/load_bmp.cpp image.cpp */
-
-// using namespace std;
-
-// // Forward declaration of classes
-// class gray_image;
-
-// // Forward declaration of non-member functions
-// gray_image conv(gray_image &img, std::vector< std::vector<float> > kernel, int stride, float padding);
-// gray_image to_gray_image(std::vector< std::vector<float> > vec);
 
 #define MAX_SIZE 2000
 
@@ -20,6 +13,16 @@ void swap(int &a, int &b) {
     int temp = a;
     a = b;
     b = temp;
+}
+
+uint8_t clip(int n) {
+    if (n < 0) {
+        return 0;
+    } else if (n > 255) {
+        return 255;
+    } else {
+        return (uint8_t)n;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -44,14 +47,14 @@ image::image(int h, int w, int color) {
     this->h = h;
     this->w = w;
 
-    red = new uint8_t*[w];
-    green = new uint8_t*[w];
-    blue = new uint8_t*[w];
+    red = new int*[w];
+    green = new int*[w];
+    blue = new int*[w];
 
     for (int i=0; i<w; i++) {
-        this->red[i] = new uint8_t[h];
-        this->green[i] = new uint8_t[h];
-        this->blue[i] = new uint8_t[h];
+        this->red[i] = new int[h];
+        this->green[i] = new int[h];
+        this->blue[i] = new int[h];
     }
 
     for(int i=0; i<w; i++) {
@@ -82,21 +85,22 @@ image::image(const image &img) {
     h = img.get_height();
     w = img.get_width();
 
-    red = new uint8_t*[w];
-    green = new uint8_t*[w];
-    blue = new uint8_t*[w];
+    red = new int*[w];
+    green = new int*[w];
+    blue = new int*[w];
 
     for (int i=0; i<w; i++) {
-        red[i] = new uint8_t[h];
-        green[i] = new uint8_t[h];
-        blue[i] = new uint8_t[h];
+        red[i] = new int[h];
+        green[i] = new int[h];
+        blue[i] = new int[h];
     }
 
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
-            red[i][j] = img.get_pixel(i, j, 0);
-            green[i][j] = img.get_pixel(i, j, 1);
-            blue[i][j] = img.get_pixel(i, j, 2);
+            // Clip all values to 0-255
+            red[i][j] = ::clip(img.get_pixel(i, j, 0));
+            green[i][j] = ::clip(img.get_pixel(i, j, 1));
+            blue[i][j] = ::clip(img.get_pixel(i, j, 2));
         }
     }
 
@@ -127,10 +131,48 @@ void image::load(std::string filename, bool init) {
         return;
     }
 
-    RGB_Allocate(this->red, this->h, this->w);
-    RGB_Allocate(this->green, this->h, this->w);
-    RGB_Allocate(this->blue, this->h, this->w);
-    GetPixlesFromBMP24( this->red,  this->green, this->blue, this->buffer_size, this->h, this->w, this->FileBuffer);
+    uint8_t** red_temp;// = new uint8_t*[w];
+    uint8_t** green_temp;// = new uint8_t*[w];
+    uint8_t** blue_temp;// = new uint8_t*[w];
+
+    // for (int i=0; i<w; i++) {
+    //     red_temp[i] = new uint8_t[h];
+    //     green_temp[i] = new uint8_t[h];
+    //     blue_temp[i] = new uint8_t[h];
+    // }
+
+    RGB_Allocate(red_temp, this->h, this->w);
+    RGB_Allocate(green_temp, this->h, this->w);
+    RGB_Allocate(blue_temp, this->h, this->w);
+    GetPixlesFromBMP24( red_temp,  green_temp, blue_temp, this->buffer_size, this->h, this->w, this->FileBuffer);
+
+    this->red = new int*[w];
+    this->green = new int*[w];
+    this->blue = new int*[w];
+
+    for (int i=0; i<w; i++) {
+        this->red[i] = new int[h];
+        this->green[i] = new int[h];
+        this->blue[i] = new int[h];
+    }
+
+    for(int i=0; i<w; i++) {
+        for(int j=0; j<h; j++){
+            this->red[i][j] = red_temp[i][j];
+            this->green[i][j] = green_temp[i][j];
+            this->blue[i][j] = blue_temp[i][j];
+        }
+    }
+
+    for (int i=0; i<w; i++) {
+        delete [] red_temp[i];
+        delete [] green_temp[i];
+        delete [] blue_temp[i];
+    }
+
+    delete [] red_temp;
+    delete [] green_temp;
+    delete [] blue_temp;
 
     this->made = 0;
     this->flip();
@@ -164,9 +206,9 @@ void image::frame_self(std::string filename) {
     for(int i=0; i<h; i++) {
         for(int j=0; j<w; j++) {
             int x=i; int y=j;
-            canvas[(y+x*w)*3+0] = (unsigned char)(blue[j][i]);
-            canvas[(y+x*w)*3+1] = (unsigned char)(green[j][i]);
-            canvas[(y+x*w)*3+2] = (unsigned char)(red[j][i]);
+            canvas[(y+x*w)*3+0] = (unsigned char)(::clip(blue[j][i]));
+            canvas[(y+x*w)*3+1] = (unsigned char)(::clip(green[j][i]));
+            canvas[(y+x*w)*3+2] = (unsigned char)(::clip(red[j][i]));
         } 
     }
 
@@ -202,7 +244,36 @@ void image::frame_self(std::string filename) {
 }
 
 void image::frame_pre(std::string filename) {
-    WriteOutBmp24(FileBuffer, filename.c_str(), buffer_size, h, w, red, green, blue);
+    uint8_t** red_temp = new uint8_t*[w];
+    uint8_t** green_temp = new uint8_t*[w];
+    uint8_t** blue_temp = new uint8_t*[w];
+
+    for (int i=0; i<w; i++) {
+        red_temp[i] = new uint8_t[h];
+        green_temp[i] = new uint8_t[h];
+        blue_temp[i] = new uint8_t[h];
+    }
+
+    for(int i=0; i<w; i++) {
+        for(int j=0; j<h; j++){
+            red_temp[i][j] = ::clip(red[i][j]);
+            green_temp[i][j] = ::clip(green[i][j]);
+            blue_temp[i][j] = ::clip(blue[i][j]);
+        }
+    }
+
+
+    WriteOutBmp24(FileBuffer, filename.c_str(), buffer_size, h, w, red_temp, green_temp, blue_temp);
+
+    for (int i=0; i<w; i++) {
+        delete [] red_temp[i];
+        delete [] green_temp[i];
+        delete [] blue_temp[i];
+    }
+
+    delete [] red_temp;
+    delete [] green_temp;
+    delete [] blue_temp;
 }
 
 void image::paint() {
@@ -276,104 +347,23 @@ image image::clip() {
 
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
-            int val = red[i][j]; 
-            if (val < 0) {
-                val = 0; // clip to 0 if value is negative
-            } else if (val > 255) {
-                val = 255; // clip to 255 if value exceeds 255
-            }
-            new_img.set_pixel(i, j, 0, val);
-
-            val = green[i][j]; 
-            if (val < 0) {
-                val = 0; // clip to 0 if value is negative
-            } else if (val > 255) {
-                val = 255; // clip to 255 if value exceeds 255
-            }
-            new_img.set_pixel(i, j, 1, val);
-
-            val = blue[i][j]; 
-            if (val < 0) {
-                val = 0; // clip to 0 if value is negative
-            } else if (val > 255) {
-                val = 255; // clip to 255 if value exceeds 255
-            }
-            new_img.set_pixel(i, j, 2, val);
+            new_img.set_pixel(i, j, 0, ::clip(red[i][j]));
+            new_img.set_pixel(i, j, 1, ::clip(green[i][j]));
+            new_img.set_pixel(i, j, 2, ::clip(blue[i][j]));
         }
     }
 
     return new_img;
 }
 
-/* Some cool shit happens */
-// image image::sharpen(int k) {
-//     std::vector<std::vector<float>> kernel(k, std::vector<float>(k, -1.0/(k*k))); // (kxk)
-//     kernel[(k-1)/2][(k-1)/2] = 1.0 - 1.0/(k*k);
-
-//     image new_img = conv(*this, kernel, kernel, kernel, 1, (k-1)/2.0); // same padding => (k-1)/2
-//     // new_img = *this + new_img;
-//     return new_img;
-// }
-
 image image::sharpen(int k) {
 
     image blurred = blur(k);
-    image new_img = (*this - blurred).clip();
-    image new_img_2 = *this;
+    image new_img = (*this - blurred) + *this;
 
-    // print all RGB vals of new_img
-
-    for(int i = new_img.get_width()/2; i < new_img.get_width(); i++){
-        for(int j = 0; j < new_img.get_height()/2; j++){
-            std::cout << "(" << new_img.get_pixel(i, j, 0) << " " << new_img.get_pixel(i, j, 1) << " " << new_img.get_pixel(i, j, 2) << ") "; 
-        }
-        std::cout << std::endl;
-    } 
-    std::cout << std::endl;std::cout << std::endl;std::cout << std::endl;
-    for(int i = new_img_2.get_width()/2; i < new_img_2.get_width(); i++){
-        for(int j = 0; j < new_img_2.get_height()/2; j++){
-            std::cout << "(" << new_img_2.get_pixel(i, j, 0) << " " << new_img_2.get_pixel(i, j, 1) << " " << new_img_2.get_pixel(i, j, 2) << ") "; 
-        }
-        std::cout << std::endl;
-    } 
-
-    image new_img_3 = new_img + new_img_2;
-    std::cout << std::endl;std::cout << std::endl;std::cout << std::endl;
-
-    for(int i = new_img_3.get_width()/2; i < new_img_3.get_width(); i++){
-        for(int j = 0; j < new_img_3.get_height()/2; j++){
-            std::cout << "(" << new_img_3.get_pixel(i, j, 0) << " " << new_img_3.get_pixel(i, j, 1) << " " << new_img_3.get_pixel(i, j, 2) << ") "; 
-        }
-        std::cout << std::endl;
-    } 
-
-
-    
     return new_img;
 }
 
-// /// @brief Sharpens image using standard filter
-// /// @param num Number of times to sharpen
-// /// @return 
-// image image::sharpen(int num) {
-//     assert(num > 0);
-
-//     vector<vector<float>> kernel(3, vector<float>(3, 0)); // (kxk)
-//     // kernel[0][0] = -1; kernel[0][1] = -1; kernel[0][2] = -1;
-//     // kernel[1][0] = -1; kernel[1][1] = 9; kernel[1][2] = -1;
-//     // kernel[2][0] = -1; kernel[2][1] = -1; kernel[2][2] = -1;
-//     kernel[0][0] = 0; kernel[0][1] = -1; kernel[0][2] = 0;
-//     kernel[1][0] = -1; kernel[1][1] = 5; kernel[1][2] = -1;
-//     kernel[2][0] = 0; kernel[2][1] = -1; kernel[2][2] = 0;
-
-//     image sharpened = conv(*this, kernel, kernel, kernel, 1, 1);
-
-//     for (int i = 0; i < num - 1; i++) {
-//         sharpened = conv(sharpened, kernel, kernel, kernel, 1, 1);
-//     }
-
-//     return sharpened;
-// }
 /*------------------------------------------------------------------------
  * Getters and Setters
  *------------------------------------------------------------------------*/
@@ -404,7 +394,6 @@ void image::set_pixel(int i, int j, int channel, int value) {
     assert(channel >= 0 && channel <= 2);
     assert(i >= 0 && i < w);
     assert(j >= 0 && j < h);
-    // assert(value >= 0 && value <= 255);
 
     if (channel == 0) {
         red[i][j] = value;
@@ -442,21 +431,22 @@ image& image::operator=(image const& img) {
     h = img.get_height();
     w = img.get_width();
 
-    red = new uint8_t*[w];
-    green = new uint8_t*[w];
-    blue = new uint8_t*[w];
+    red = new int*[w];
+    green = new int*[w];
+    blue = new int*[w];
 
     for (int i=0; i<w; i++) {
-        red[i] = new uint8_t[h];
-        green[i] = new uint8_t[h];
-        blue[i] = new uint8_t[h];
+        red[i] = new int[h];
+        green[i] = new int[h];
+        blue[i] = new int[h];
     }
 
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
-            red[i][j] = img.get_pixel(i, j, 0);
-            green[i][j] = img.get_pixel(i, j, 1);
-            blue[i][j] = img.get_pixel(i, j, 2);
+            // Clip all values to 0-255
+            red[i][j] = ::clip(img.get_pixel(i, j, 0));
+            green[i][j] = ::clip(img.get_pixel(i, j, 1));
+            blue[i][j] = ::clip(img.get_pixel(i, j, 2));
         }
     }
 
@@ -528,8 +518,6 @@ image::~image() {
         delete FileBuffer;
     }
 }
-
-
 
 void image::flip() {
     for (int i=0; i<this->w; i++) {
@@ -604,14 +592,7 @@ gray_image::gray_image(const gray_image &img) {
 
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
-            // gray[i][j] = img.get_pixel(i, j);
-            int pixel = img.get_pixel(i, j);
-            if (pixel < 0) {
-                pixel = 0; // clip to 0 if value is negative
-            } else if (pixel > 255) {
-                pixel = 255; // clip to 255 if value exceeds 255
-            }
-            gray[i][j] = pixel;
+            gray[i][j] = ::clip(img.get_pixel(i, j));
         }
     }
 }
@@ -644,7 +625,6 @@ int gray_image::get_pixel(int x, int y) const {
 
     return gray[x][y];
 }
-
 
 /// @brief Sets the pixel at (x, y) to given color
 void gray_image::set_pixel(int x, int y, int color) {
@@ -696,7 +676,7 @@ void gray_image::load(std::string filename, bool init) {
         return;
     }
 
-    int size = 3 * w * h;
+    int size = w * h;
     unsigned char* data = new unsigned char[size]; // allocate 3 bytes per pixel
     fread(data, sizeof(unsigned char), size, f); // read the rest of the data at once
     fclose(f);
@@ -711,7 +691,7 @@ void gray_image::load(std::string filename, bool init) {
         for(int j=0; j<h; j++){
             // Uses the NTSC formula to convert RGB to gray
             // See https://support.ptc.com/help/mathcad/r9.0/en/index.html#page/PTC_Mathcad_Help/example_grayscale_and_color_in_images.html
-            gray[i][j] = 0.299*data[(i+j*w)*3+2] + 0.587*data[(i+j*w)*3+1] + 0.114*data[(i+j*w)*3+0];
+            gray[i][j] = /*0.299**/data[(i+j*w)/**3+2*/]; // + 0.587*data[(i+j*w)*3+1] + 0.114*data[(i+j*w)*3+0];
         }
     }
 
@@ -732,17 +712,13 @@ void gray_image::frame(std::string filename) {
     FILE *f;
     int filesize = 54 + 3*w*h;  //w is your image width, h is image height, both int
     unsigned char *canvas = NULL;
-    canvas = (unsigned char *)malloc(3*w*h);
+    canvas = (unsigned char *)malloc(w*h);
     memset(canvas,0,3*w*h);
 
     // Clip all values to 0-255
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
-            if (gray[i][j] < 0) {
-                gray[i][j] = 0; // clip to 0 if value is negative
-            } else if (gray[i][j] > 255) {
-                gray[i][j] = 255; // clip to 255 if value exceeds 255
-            }
+            gray[i][j] = ::clip(gray[i][j]);
         }
     }
 
@@ -871,13 +847,7 @@ gray_image& gray_image::operator=(gray_image const& img) {
 
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
-            int pixel = img.get_pixel(i, j);
-            if (pixel < 0) {
-                pixel = 0; // clip to 0 if value is negative
-            } else if (pixel > 255) {
-                pixel = 255; // clip to 255 if value exceeds 255
-            }
-            gray[i][j] = pixel;
+            gray[i][j] = ::clip(img.get_pixel(i, j));
         }
     }
 

@@ -1,24 +1,29 @@
 #include <bits/stdc++.h>
+#include <sys/types.h>
 #include "image.hpp"
 #include "./frontend/headers/kernel.hpp"
 #include "./frontend/headers/load_bmp.hpp"
 
-// To run: g++ --std=c++11 test.cpp image.cpp frontend/headers/kernel.cpp frontend/headers/load_bmp.cpp
+using namespace std;
+
+// To run: g++-13 --std=c++11 test.cpp image.cpp frontend/headers/kernel.cpp frontend/headers/load_bmp.cpp
 
 // float return_parabola_point(float x){
 //     return ((-x*x + 40*x - 400)/16)+65;
 // }
 
 int main() {
-    image img("./images/inputs/snail.bmp");
-    gray_image new_img = img.grayscale();
-    image new_img2 = img.blur(5);
-    image new_img3 = img.sharpen(3);
+    gray_image img("./images/inputs/lena.bmp");
+    // gray_image new_img = img.grayscale();
+    // image new_img2 = img.blur(5);
+    // image new_img3 = img.sharpen(20);
 
     img.frame("./images/outputs_color/output_orig.bmp");
-    new_img.frame("./images/outputs_color/output_grayscale.bmp");
-    new_img2.frame("./images/outputs_color/output_blur.bmp");
-    new_img3.frame("./images/outputs_color/output_sharpen.bmp");
+    cout << img.get_height() << endl;
+    cout << img.get_width() << endl;
+    // new_img.frame("./images/outputs_color/output_grayscale.bmp");
+    // new_img2.frame("./images/outputs_color/output_blur.bmp");
+    // new_img3.frame("./images/outputs_color/output_sharpen.bmp");
 
     return 0;
 }
