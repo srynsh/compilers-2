@@ -379,29 +379,40 @@ array_element : '[' expr_pred ']' { $$ = new std::vector<int>(1, -1);}
         |  '[' expr_pred ',' expr_pred ',' expr_pred ']' { $$ = new std::vector<int>(3, -1);}
         ;
 
+expr_pred_list : 
+            expr_pred_list ',' expr_pred 
+                {
+                    $$ = $1 + 1;
+                }
+               | expr_pred 
+                { 
+                    $$ = 1;
+                }
+               ;
+
 brak_pred : '{' brak_pred_list '}'      
                 {
-                    // $$ = $2;
+                    $$ = $2;
                 }
           | '{' expr_pred_list '}'      
                 {
-                    // std::vector<int> *p = new std::vector<int>;
-                    // p->push_back($2);
-                    // $$ = p;
+                    std::vector<int> *p = new std::vector<int>;
+                    p->push_back($2);
+                    $$ = p;
                 }
           ;
 
 brak_pred_list : brak_pred_list ',' brak_pred 
                 {
-                    // std::vector<int> *p = $1;
-                    // std::vector<int> *q = $3;
+                    std::vector<int> *p = $1;
+                    std::vector<int> *q = $3;
                     
-                    // for (int i = 1; i<p->size(); i++){
-                    //     if (p->at(i) != q->at(i-1)){
-                    //         yyerror("dimension mismatch");
-                    //         exit(1);
-                    //     }
-                    // }
+                    for (int i = 1; i<p->size(); i++){
+                        if (p->at(i) != q->at(i-1)){
+                            yyerror("dimension mismatch");
+                            exit(1);
+                        }
+                    }
                 }
                | brak_pred
                 {
@@ -418,8 +429,6 @@ brak_pred -> {3,2}
 brak_pred_list -> {1,3,2}
 new_brak_pred -> check last n-1 dimensions, 3,2 matches!
 {2,3,2} */
-
- 
 
 /* const_list : const_list ',' const
          | const
@@ -444,17 +453,6 @@ id_list :
             $$ = p;
         }
         ;
-
-expr_pred_list : 
-            expr_pred_list ',' expr_pred 
-                {
-                //  $$ = $1 + 1;
-                }
-               | expr_pred 
-                { 
-                    //$$ = 1;
-                }
-               ;
 
 /*------------------------------------------------------------------------
 * Conditional Statements
