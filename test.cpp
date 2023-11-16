@@ -54,16 +54,6 @@ int main() {
     GetPixlesFromBMP8(gray, buffer_size, rows, cols, FileBuffer);
     WriteOutBmp8(FileBuffer, "./test.bmp", buffer_size, rows, cols, gray);
 
-    uint8_t** gray;
-    int buffer_size;
-    char* FileBuffer;
-    int cols, rows;
-    // Load the image
-    FillAndAllocate(FileBuffer, "./images/inputs/lena.bmp", rows, cols, buffer_size);
-    RGB_Allocate(gray, rows, cols);
-    GetPixlesFromBMP8(gray, buffer_size, rows, cols, FileBuffer);
-    WriteOutBmp8(FileBuffer, "./test.bmp", buffer_size, rows, cols, gray);
-
     return 0;
 }
 
