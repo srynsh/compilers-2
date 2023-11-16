@@ -1,4 +1,3 @@
-#include <_types/_uint8_t.h>
 #include <bits/stdc++.h>
 #include <sys/types.h>
 #include "image.hpp"
@@ -1532,12 +1531,12 @@ void video::play() {
 
 /// @brief Accesses the ith frame of the video
 image video::operator[](int i) const {
-    return frames_vec[i];
+    return frames_vec->at(i);
 }
 
 /// @brief assigns to the ith frame of the video
 image& video::operator[](int i) {
-    return frames_vec[i];
+    return frames_vec->at(i);
 }
 
 /// @brief Concatenates two videos
@@ -1579,9 +1578,6 @@ video& video::operator=(video const& vid) {
 
 /// @brief Converts a gray-scale video to 3 channel video, assigns
 video& video::operator=(gray_video const& vid) {
-    if (this == &vid) {
-        return *this; // handle self assignment
-    }
 
     this->h = vid.get_height();
     this->w = vid.get_width();
@@ -1589,7 +1585,8 @@ video& video::operator=(gray_video const& vid) {
 
     this->frames_vec->clear();
 
-    for (int i=0; i<vid.frames_vec->size(); i++) 
+    vector<gray_image> *vec = vid.get_frames();
+    for (int i=0; i < vec->size(); i++) 
         this->frames_vec->push_back(vid[i].to_image());
 
     return *this;
@@ -1624,7 +1621,7 @@ video video::operator+(image const& img) {
 }
 
 /// @brief Adds a frame (gray) to the video
-video video::operator+(gray_image const& img) {
+video video::operator+(gray_image& img) {
     int h = img.get_height();
     int w = img.get_width();
 
@@ -1659,6 +1656,9 @@ image video::get_frame(int i) const {
     return (*frames_vec)[i];
 }
 
+std::vector<image>* video::get_frames() const {
+    return frames_vec;
+}
 
 void video::set_fps(int fps) {
     this->fps = fps;
@@ -1717,12 +1717,12 @@ void gray_video::play() {
 
 /// @brief Accesses the ith frame of the video
 gray_image gray_video::operator[](int i) const {
-    return frames_vec[i];
+    return frames_vec->at(i);
 }
 
 /// @brief assigns to the ith frame of the video
 gray_image& gray_video::operator[](int i) {
-    return frames_vec[i];
+    return frames_vec->at(i);
 }
 
 /// @brief Concatenates two videos
@@ -1764,9 +1764,6 @@ gray_video& gray_video::operator=(gray_video const& vid) {
 
 /// @brief Converts a 3 channel video to gray-scale video, assigns
 gray_video& gray_video::operator=(video const& vid) {
-    if (this == &vid) {
-        return *this; // handle self assignment
-    }
 
     this->h = vid.get_height();
     this->w = vid.get_width();
@@ -1774,22 +1771,30 @@ gray_video& gray_video::operator=(video const& vid) {
 
     this->frames_vec->clear();
 
-    for (int i=0; i<vid.frames_vec->size(); i++) 
+    vector<image> *vec = vid.get_frames();
+
+    for (int i=0; i<vec->size(); i++) 
         this->frames_vec->push_back(vid[i].grayscale());
 
     return *this;
 }
 
 /// @brief Adds a frame to the video
-gray_video gray_video::operator+(image const& img) {
+video gray_video::operator+(image const& img) {
     int h = img.get_height();
     int w = img.get_width();
 
     assert(h == this->h); assert(w == this->w);
 
-    this->frames_vec->push_back(img.grayscale());
+    video new_vid(h, w, this->fps);
+    vector<image> *vec = new_vid.get_frames();
 
-    return *this;
+    for (int i=0; i<this->frames_vec->size(); i++) 
+        vec->push_back((*this)[i].to_image());
+    
+    vec->push_back(img);
+
+    return new_vid;
 }
 
 /// @brief Adds a frame (gray) to the video
@@ -1804,21 +1809,27 @@ gray_video gray_video::operator+(gray_image const& img) {
     return *this;
 }
 
-/// @brief Adds an rgb frame to the gray video, converting it to a video 
-video gray_video::operator+(image const& img) {
-    int h = img.get_height();
-    int w = img.get_width();
+/// @brief Concatenates a 3 channel video to a gray-scale video, making it 3 channel
+/// @param vid 
+/// @return 
+video gray_video::operator+(video const& vid) {
 
-    assert(h == this->h); assert(w == this->w);
+    int h = vid.get_height();
+    int w = vid.get_width();
+    int fps = vid.get_fps();
 
-    video new_vid(h, w, this->fps);
+    assert(h == this->h); assert(w == this->w); assert(fps == this->fps);
 
-    for (int i=0; i<this->frames_vec->size(); i++) 
-        new_vid.frames_vec->push_back((*this)[i].to_image());
+    gray_video new_vid(h, w, fps);
 
-    new_vid.frames_vec->push_back(img);
+    new_vid = vid;
+    new_vid = *this + new_vid;
 
-    return new_vid;
+    video new_vid2(h, w, fps);
+
+    new_vid2 = new_vid;
+
+    return new_vid2;
 }
 
 /*------------------------------------------------------------------------
@@ -1843,6 +1854,10 @@ int gray_video::get_num_frames() const {
 
 gray_image gray_video::get_frame(int i) const {
     return frames_vec->at(i);
+}
+
+std::vector<gray_image>* gray_video::get_frames() const {
+    return frames_vec;
 }
 
 
