@@ -16,6 +16,10 @@ void GetPixlesFromBMP24(unsigned char** reds, unsigned char** greens, unsigned c
 
 void WriteOutBmp24(char* FileBuffer, const char* NameOfFileToCreate, int BufferSize, int rows, int cols, unsigned char** reds, unsigned char** greens, unsigned char** blues);
 
+void WriteOutBmp8(char* FileBuffer, const char* NameOfFileToCreate, int BufferSize, int rows, int cols, unsigned char** gray);
+
+void GetPixlesFromBMP8(unsigned char** gray, int end, int rows, int cols, char* FileReadBuffer);
+
 #pragma pack(pop) 
 
 #endif // LOAD_BMP_HPP

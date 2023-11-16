@@ -109,7 +109,11 @@ image::image(const image &img) {
     }
 
     this->buffer_size = 54 + 3*this->w*this->h;
-    this->made = 1;
+    this->made = img.get_made();
+}
+
+bool image::get_made() const {
+    return this->made;
 }
 
 /// @brief Loads a .bmp
@@ -137,15 +141,9 @@ void image::load(std::string filename, bool init) {
         return;
     }
 
-    uint8_t** red_temp;// = new uint8_t*[w];
-    uint8_t** green_temp;// = new uint8_t*[w];
-    uint8_t** blue_temp;// = new uint8_t*[w];
-
-    // for (int i=0; i<w; i++) {
-    //     red_temp[i] = new uint8_t[h];
-    //     green_temp[i] = new uint8_t[h];
-    //     blue_temp[i] = new uint8_t[h];
-    // }
+    uint8_t** red_temp;
+    uint8_t** green_temp;
+    uint8_t** blue_temp;
 
     RGB_Allocate(red_temp, this->h, this->w);
     RGB_Allocate(green_temp, this->h, this->w);
@@ -940,6 +938,26 @@ void gray_image::load(std::string filename, bool init) {
     f = fopen(filename.c_str(), "rb");
     fread(info, sizeof(unsigned char), 54, f); // read the 54-byte header
 
+    for (int i = 0; i<54; i++) {
+        cout << i << ": " << (int)info[i] << " ";
+    }
+
+    cout << endl;
+
+    cout << (int)info[18] << " " << (int)info[22] << endl;
+
+    for (int i = 0; i<14; i++) {
+        cout << (int)info[i] << ", ";
+    }
+
+    cout << endl;
+
+    for (int i = 14; i<54; i++) {
+        cout << (int)info[i] << ", ";
+    }
+
+    cout << endl;
+
     // If init is false, deallocate memory
     if (!init) {    
         for (int i=0; i<w; i++) {
@@ -1002,10 +1020,10 @@ void gray_image::frame(std::string filename) {
     */
 
     FILE *f;
-    int filesize = 54 + 3*w*h;  //w is your image width, h is image height, both int
+    int filesize = 54 + w*h;  //w is your image width, h is image height, both int
     unsigned char *canvas = NULL;
     canvas = (unsigned char *)malloc(w*h);
-    memset(canvas,0,3*w*h);
+    memset(canvas,0,w*h);
 
     // Clip all values to 0-255
     #pragma omp parallel for
@@ -1019,14 +1037,14 @@ void gray_image::frame(std::string filename) {
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
             int x=i; int y=(h-1)-j;
-            canvas[(x+y*w)*3+2] = (unsigned char)(gray[i][j]);
-            canvas[(x+y*w)*3+1] = (unsigned char)(gray[i][j]);
-            canvas[(x+y*w)*3+0] = (unsigned char)(gray[i][j]);
+            canvas[(x+y*w)] = (unsigned char)(gray[i][j]);
+            // canvas[(x+y*w)*3+1] = (unsigned char)(gray[i][j]);
+            // canvas[(x+y*w)*3+0] = (unsigned char)(gray[i][j]);
         }
     }
 
-    unsigned char bmpfileheader[14] = {'B','M', 0,0,0,0, 0,0, 0,0, 54,0,0,0};
-    unsigned char bmpinfoheader[40] = {40,0,0,0, 0,0,0,0, 0,0,0,0, 1,0, 24,0};
+    unsigned char bmpfileheader[14] = {66, 77, 54, 4, 4, 0, 0, 0, 0, 0, 54, 4, 0, 0};
+    unsigned char bmpinfoheader[40] = {40, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 1, 0, 8, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0};
     unsigned char bmppad[3] = {0,0,0};
 
     bmpfileheader[ 2] = (unsigned char)(filesize    );
@@ -1048,7 +1066,7 @@ void gray_image::frame(std::string filename) {
     fwrite(bmpinfoheader, 1, 40, f);
 
     for(int i=0; i<h; i++) {
-        fwrite(canvas+(w*(h-i-1)*3),3,w,f);
+        fwrite(canvas+(w*(h-i-1)),1,w,f);
         fwrite(bmppad,1,(4-(w*3)%4)%4,f);
     }
 

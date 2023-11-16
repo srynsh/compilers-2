@@ -129,3 +129,38 @@ void WriteOutBmp24(char* FileBuffer, const char* NameOfFileToCreate, int BufferS
 
     write.write(FileBuffer, BufferSize);
 }
+
+void GetPixlesFromBMP8(unsigned char** gray, int end, int rows, int cols, char* FileReadBuffer) { // end is BufferSize (total size of file)
+    int count = 1;
+    int extra = cols % 4; // The nubmer of bytes in a row (cols) will be a multiple of 4.
+    
+    for (int i = 0; i < rows; i++){
+        count += extra;
+        
+        for (int j = cols - 1; j >= 0; j--) {
+            gray[j][i] = FileReadBuffer[end - count++];
+        }
+    }
+}
+
+void WriteOutBmp8(char* FileBuffer, const char* NameOfFileToCreate, int BufferSize, int rows, int cols, unsigned char** gray) {
+    ofstream write(NameOfFileToCreate);
+
+    if (!write) {
+        cout << "Failed to write " << NameOfFileToCreate << endl;
+        return;
+    }
+
+    int count = 1;
+    int extra = cols % 4; // The nubmer of bytes in a row (cols) will be a multiple of 4.
+
+    for (int i = 0; i < rows; i++) {
+        count += extra;
+        for (int j = cols - 1; j >= 0; j--) {
+            FileBuffer[BufferSize - count] = gray[j][i];
+            count++;
+        }
+    }
+
+    write.write(FileBuffer, BufferSize);
+}

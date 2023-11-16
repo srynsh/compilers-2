@@ -86,6 +86,7 @@ class image {
         int get_height() const;
         int get_width() const;
         int get_pixel(int i, int j, int channel) const;
+        bool get_made() const;
 
         void set_pixel(int i, int j, int channel, int value);
 
