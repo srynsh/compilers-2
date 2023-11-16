@@ -299,38 +299,125 @@ void image::draw(std::string shape, std::vector<int> params) {
         int cx = params[0];
         int cy = params[1];
         int r = params[2];
-        int fill = params[3];
-        assert(fill >= 0x000000 && fill <= 0xFFFFFF);
-
-        // cout << cx << " " << cy << " " << r << endl;
+        int color = params[3];
+        int fill = params[4];
+        assert(color >= 0x000000 && color <= 0xFFFFFF);
         
-        for (int y=0; y<h; y++) {
-            for (int x=0; x<w; x++) {
-                
-                if ((x-cx)*(x-cx) + (y-cy)*(y-cy) <= r*r) {
-                    red[x][y] = (fill >> 16) & 0xFF;
-                    green[x][y] = (fill >> 8) & 0xFF;
-                    blue[x][y] = fill & 0xFF;
+        if (fill) {
+            for (int y=max(0, cy-r); y<=min(h-1, cy+r); y++) {
+                for (int x=max(0, cx-r); x<=min(w-1, cx+r); x++) {
+                    if ((x-cx)*(x-cx) + (y-cy)*(y-cy) <= r*r) {
+                        red[x][y] = (color >> 16) & 0xFF;
+                        green[x][y] = (color >> 8) & 0xFF;
+                        blue[x][y] = color & 0xFF;
+                    }
                 }
             }
-        }
+        } else {
+            int x = r;
+            int y = 0;
+            int err = 0;
 
-        // TODO: draw circle, we will think of doing some efficient way later
+            while (x >= y) {
+                vector<int> x_vals = {cx + x, cx + y, cx - y, cx - x, cx - x, cx - y, cx + y, cx + x};
+                vector<int> y_vals = {cy + y, cy + x, cy + x, cy + y, cy - y, cy - x, cy - x, cy - y};
+
+                #pragma omp parallel for
+                for (int i=0; i<8; i++) {
+                    if (x_vals[i] >= 0 && x_vals[i] < w && y_vals[i] >= 0 && y_vals[i] < h) {
+                        red[x_vals[i]][y_vals[i]] = (color >> 16) & 0xFF;
+                        green[x_vals[i]][y_vals[i]] = (color >> 8) & 0xFF;
+                        blue[x_vals[i]][y_vals[i]] = color & 0xFF;
+                    }
+                }
+
+                if (err <= 0) {
+                    y += 1;
+                    err += 2*y + 1;
+                }
+
+                if (err > 0) {
+                    x -= 1;
+                    err -= 2*x + 1;
+                }
+            }
+
+        }
+    } else if (shape == "arc") {
+        int cx = params[0];
+        int cy = params[1];
+        int r = params[2];
+        int start_angle = params[3];
+        int end_angle = params[4];
+        int color = params[4];
+
+        int x = r;
+        int y = 0;
+
+        int err = 0;
+
+        while (x >= y) {
+            vector<int> x_vals = {cx + x, cx + y, cx - y, cx - x, cx - x, cx - y, cx + y, cx + x};
+            vector<int> y_vals = {cy + y, cy + x, cy + x, cy + y, cy - y, cy - x, cy - x, cy - y};
+
+            #pragma omp parallel for
+            for (int i=0; i<8; i++) {
+                if (x_vals[i] >= 0 && x_vals[i] < w && y_vals[i] >= 0 && y_vals[i] < h) {
+                    // check if the point is in the arc
+                    int angle = atan2(y_vals[i] - cy, x_vals[i] - cx) * 180 / M_PI;
+                    if (angle >= start_angle && angle <= end_angle) {
+                        red[x_vals[i]][y_vals[i]] = (color >> 16) & 0xFF;
+                        green[x_vals[i]][y_vals[i]] = (color >> 8) & 0xFF;
+                        blue[x_vals[i]][y_vals[i]] = color & 0xFF;
+                    }
+                }
+            }
+
+            if (err <= 0) {
+                y += 1;
+                err += 2*y + 1;
+            }
+
+            if (err > 0) {
+                x -= 1;
+                err -= 2*x + 1;
+            }
+        }     
     } else if (shape == "line") {
         int start_x = params[0];
         int start_y = params[1];
         int end_x = params[2];
         int end_y = params[3];
 
-        // TODO: draw line, we will think of doing some efficient way later
-    } else if (shape == "rectangle") {
-        int cx = params[0];
-        int cy = params[1];
-        int w = params[2];
-        int h = params[3];
-        bool fill = params[4];
+        int dx = abs(end_x - start_x);
+        int dy = abs(end_y - start_y);
 
-        // TODO: draw rectangle, we will think of doing some efficient way later
+        // this is the direction in which we are moving
+        int sx = (start_x < end_x) ? 1 : -1; 
+        int sy = (start_y < end_y) ? 1 : -1; 
+        int err = dx - dy;
+
+        while (start_x < w-1 && start_y < h-1 && start_x >= 0 && start_y >= 0) {
+            red[start_x][start_y] = 0;
+            green[start_x][start_y] = 0;
+            blue[start_x][start_y] = 0;
+
+            if (start_x == end_x && start_y == end_y) {
+                break;
+            }
+
+            int e2 = 2*err;
+
+            if (e2 > -dy) {
+                err -= dy;
+                start_x += sx;
+            }
+
+            if (e2 < dx) {
+                err += dx;
+                start_y += sy;
+            }
+        }
     }
 }
 
