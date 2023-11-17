@@ -67,7 +67,7 @@ class image {
         void paint();
 
         // Image manipulation functions
-        void draw(std::string shape, std::vector<int> params);
+        void draw(std::string shape, std::vector<float> params);
         gray_image grayscale();
         image blur(int k=2);
         image clip();

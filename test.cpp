@@ -2,13 +2,14 @@
 #include <sys/types.h>
 #include <vector>
 #include "image.hpp"
+#include "turtle.hpp"
 #include "./frontend/headers/kernel.hpp"
 #include "./frontend/headers/load_bmp.hpp"
 
 using namespace std;
 
-// To run: g++ --std=c++11 test.cpp image.cpp frontend/headers/kernel.cpp frontend/headers/load_bmp.cpp
-// For openmp with macos: g++-13 test.cpp image.cpp frontend/headers/kernel.cpp frontend/headers/load_bmp.cpp -ld_classic -fopenmp
+// To run: g++ --std=c++11 -w test.cpp image.cpp frontend/headers/kernel.cpp frontend/headers/load_bmp.cpp turtle.cpp 
+// For openmp with macos: g++-13 -w test.cpp image.cpp turtle.cpp frontend/headers/kernel.cpp frontend/headers/load_bmp.cpp -ld_classic -fopenmp
 
 
 // float return_parabola_point(float x){
@@ -17,27 +18,33 @@ using namespace std;
 
 int main() {
     image i1(50, 50, 0xffffff);
-    vector<int> l = {0, 0, 50, 50};
-    vector<int> l1 = {0, 0, 0, 20};
-    vector<int> l2 = {0, 0, 20, 0};
+    vector<float> l = {0, 0, 50, 50};
+    vector<float> l1 = {0, 0, 0, 20};
+    vector<float> l2 = {0, 0, 20, 0};
     i1.draw("line", l);
     i1.draw("line", l1);
     i1.draw("line", l2);
 
-    vector<int> c = {25, 25, 10, 0xfd12f1, 0};
+    vector<float> c = {25, 25, 10, 0xfd12f1, 0};
     i1.draw("circle", c);
     i1.frame("test1.bmp");
 
     image i2(1000, 1000, 0xffffff);
-    vector<int> bl = {0, 0, 1000, 1000};
-    vector<int> bl1 = {40, 40, 0, 700};
-    vector<int> bl2 = {40, 40, 700, 0};
+    vector<float> bl = {0, 0, 1000, 1000};
+    vector<float> bl1 = {40, 40, 0, 700};
+    vector<float> bl2 = {40, 40, 700, 0};
     i2.draw("line", bl);
     i2.draw("line", bl1);
     i2.draw("line", bl2);
 
-    vector<int> bc = {500, 500, 100, 0xfd12f1, 0};
-    vector<int> bc1 = {500, 500, 70, 0x69dead, 1};
+    int angles = 30;
+    int angles1 = 60;
+
+    vector<float> barc = {0, 0, 200, angles, angles1, 0};
+    i2.draw("arc", barc);
+
+    vector<float> bc = {500, 500, 100, 0xfd12f1, 0};
+    vector<float> bc1 = {500, 500, 70, 0x69dead, 1};
     i2.draw("circle", bc);
     i2.draw("circle", bc1);
     i2.frame("test2.bmp");

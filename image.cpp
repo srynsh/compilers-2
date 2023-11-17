@@ -294,7 +294,7 @@ void image::paint() {
  * Image manipulation functions
  *------------------------------------------------------------------------*/
 
-void image::draw(std::string shape, std::vector<int> params) {
+void image::draw(std::string shape, std::vector<float> params) {
     if (shape == "circle") {
         int cx = params[0];
         int cy = params[1];
@@ -319,8 +319,8 @@ void image::draw(std::string shape, std::vector<int> params) {
             int err = 0;
 
             while (x >= y) {
-                vector<int> x_vals = {cx + x, cx + y, cx - y, cx - x, cx - x, cx - y, cx + y, cx + x};
-                vector<int> y_vals = {cy + y, cy + x, cy + x, cy + y, cy - y, cy - x, cy - x, cy - y};
+                std::vector<int> x_vals = {cx + x, cx + y, cx - y, cx - x, cx - x, cx - y, cx + y, cx + x};
+                std::vector<int> y_vals = {cy + y, cy + x, cy + x, cy + y, cy - y, cy - x, cy - x, cy - y};
 
                 #pragma omp parallel for
                 for (int i=0; i<8; i++) {
@@ -347,24 +347,27 @@ void image::draw(std::string shape, std::vector<int> params) {
         int cx = params[0];
         int cy = params[1];
         int r = params[2];
-        int start_angle = params[3];
-        int end_angle = params[4];
-        int color = params[4];
+        float start_angle = params[3] * M_PI / 180;
+        float end_angle = params[4] * M_PI / 180;
+        int color = params[5];
 
         int x = r;
         int y = 0;
 
         int err = 0;
 
+        cout << start_angle << " " << end_angle << endl;
+        cout << sin(start_angle) << " " << sin(end_angle) << endl;
+
         while (x >= y) {
-            vector<int> x_vals = {cx + x, cx + y, cx - y, cx - x, cx - x, cx - y, cx + y, cx + x};
-            vector<int> y_vals = {cy + y, cy + x, cy + x, cy + y, cy - y, cy - x, cy - x, cy - y};
+            std::vector<int> x_vals = {cx + x, cx + y, cx - y, cx - x, cx - x, cx - y, cx + y, cx + x};
+            std::vector<int> y_vals = {cy + y, cy + x, cy + x, cy + y, cy - y, cy - x, cy - x, cy - y};
 
             #pragma omp parallel for
             for (int i=0; i<8; i++) {
                 if (x_vals[i] >= 0 && x_vals[i] < w && y_vals[i] >= 0 && y_vals[i] < h) {
                     // check if the point is in the arc
-                    int angle = atan2(y_vals[i] - cy, x_vals[i] - cx) * 180 / M_PI;
+                    float angle = atan2(y_vals[i] - cy, x_vals[i] - cx);
                     if (angle >= start_angle && angle <= end_angle) {
                         red[x_vals[i]][y_vals[i]] = (color >> 16) & 0xFF;
                         green[x_vals[i]][y_vals[i]] = (color >> 8) & 0xFF;
@@ -423,7 +426,7 @@ void image::draw(std::string shape, std::vector<int> params) {
 
 /// @brief Uses the NTSC formula to convert RGB to gray (See https://support.ptc.com/help/mathcad/r9.0/en/index.html#page/PTC_Mathcad_Help/example_grayscale_and_color_in_images.html)
 gray_image image::grayscale() {
-    vector<vector<vector <float> > > vec = {{{0.299, 0.587, 0.114}}};
+    std::vector<vector<vector <float> > > vec = {{{0.299, 0.587, 0.114}}};
 
     gray_image new_img = conv(*this, vec, 1, 0);
     return new_img;
