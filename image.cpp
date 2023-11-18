@@ -4,6 +4,7 @@
 #include "./frontend/headers/kernel.hpp"
 #include "./frontend/headers/load_bmp.hpp"
 #include <omp.h>
+#include <valarray>
 
 /* To run: g++ --std=c++11 -o image frontend/headers/kernel.cpp frontend/headers/load_bmp.cpp image.cpp */
 
@@ -294,6 +295,37 @@ void image::paint() {
  * Image manipulation functions
  *------------------------------------------------------------------------*/
 
+/// @brief Checks if the given point is in the range of the arc from start_angle to end_angle
+bool in_range(float s_an, float e_an, int x, int y) {
+    float angle = atan2(abs(y), abs(x));
+    
+    if (x >= 0 && y >= 0) {
+        angle = angle;
+    } else if (x < 0 && y >= 0) {
+        angle = M_PI - angle;
+    } else if (x < 0 && y < 0) {
+        angle = M_PI + angle;
+    } else {
+        angle = 2*M_PI - angle;
+    }
+
+    if (s_an > e_an) {
+        if (angle >= s_an && angle <= 2*M_PI) {
+            return true;
+        } else if (angle >= 0 && angle <= e_an) {
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        if (angle >= s_an && angle <= e_an) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
 void image::draw(std::string shape, std::vector<float> params) {
     if (shape == "circle") {
         int cx = params[0];
@@ -351,13 +383,30 @@ void image::draw(std::string shape, std::vector<float> params) {
         float end_angle = params[4] * M_PI / 180;
         int color = params[5];
 
+        // get angle in 0 - 2pi
+        if (start_angle < 0) {
+            start_angle += 2*M_PI;
+        }
+
+        if (end_angle < 0) {
+            end_angle += 2*M_PI;
+        }
+
+        if (start_angle > 2*M_PI) {
+            start_angle -= 2*M_PI;
+        }
+
+        if (end_angle > 2*M_PI) {
+            end_angle -= 2*M_PI;
+        }
+
         int x = r;
         int y = 0;
 
         int err = 0;
 
-        cout << start_angle << " " << end_angle << endl;
-        cout << sin(start_angle) << " " << sin(end_angle) << endl;
+        cout << "-----" << start_angle * 180 / M_PI  << " " << end_angle * 180/M_PI << endl;
+        cout << "-----" << sin(start_angle) << " " << sin(end_angle) << endl;
 
         while (x >= y) {
             std::vector<int> x_vals = {cx + x, cx + y, cx - y, cx - x, cx - x, cx - y, cx + y, cx + x};
@@ -366,9 +415,7 @@ void image::draw(std::string shape, std::vector<float> params) {
             #pragma omp parallel for
             for (int i=0; i<8; i++) {
                 if (x_vals[i] >= 0 && x_vals[i] < w && y_vals[i] >= 0 && y_vals[i] < h) {
-                    // check if the point is in the arc
-                    float angle = atan2(y_vals[i] - cy, x_vals[i] - cx);
-                    if (angle >= start_angle && angle <= end_angle) {
+                    if (in_range(start_angle, end_angle, x_vals[i] - cx, y_vals[i] - cy)) {
                         red[x_vals[i]][y_vals[i]] = (color >> 16) & 0xFF;
                         green[x_vals[i]][y_vals[i]] = (color >> 8) & 0xFF;
                         blue[x_vals[i]][y_vals[i]] = color & 0xFF;

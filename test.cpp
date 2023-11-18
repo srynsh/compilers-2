@@ -18,6 +18,7 @@ using namespace std;
 
 int main() {
     image i1(50, 50, 0xffffff);
+
     vector<float> l = {0, 0, 50, 50};
     vector<float> l1 = {0, 0, 0, 20};
     vector<float> l2 = {0, 0, 20, 0};
@@ -33,20 +34,41 @@ int main() {
     vector<float> bl = {0, 0, 1000, 1000};
     vector<float> bl1 = {40, 40, 0, 700};
     vector<float> bl2 = {40, 40, 700, 0};
-    i2.draw("line", bl);
-    i2.draw("line", bl1);
-    i2.draw("line", bl2);
+    // i2.draw("line", bl);
+    // i2.draw("line", bl1);
+    // i2.draw("line", bl2);
 
     int angles = 30;
-    int angles1 = 60;
+    int angles1 = 270;
 
-    vector<float> barc = {0, 0, 200, angles, angles1, 0};
+    vector<float> barc = {500, 500, 150, angles1, angles, 0};
     i2.draw("arc", barc);
 
     vector<float> bc = {500, 500, 100, 0xfd12f1, 0};
     vector<float> bc1 = {500, 500, 70, 0x69dead, 1};
-    i2.draw("circle", bc);
-    i2.draw("circle", bc1);
+    // i2.draw("circle", bc);
+    // i2.draw("circle", bc1);
+
+    turtle t1;
+    t1.set_image(&i2);
+    t1.forward(250);
+    t1.rotate(90);
+    t1.forward(400);
+    t1.pendown();
+    t1.rotate(300);
+    // t1.set_pen_color(0x000000);
+    // t1.forward(50); 
+    // t1.circle(30);
+    // t1.rotate(90);
+    // t1.rotate(90);
+    // t1.rotate(90);
+    // t1.forward(50);
+
+    // t1.rotate(270);
+    // t1.rotate(-90);
+    // t1.forward(50);
+    t1.arc(100, 90);
+
     i2.frame("test2.bmp");
 
     image img("./images/inputs/lena_color.bmp");

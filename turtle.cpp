@@ -1,6 +1,18 @@
 #include <bits/stdc++.h>
 #include "./turtle.hpp"
 
+float set_angle(float angle) {
+    if (angle > 2 * M_PI) {
+        angle -= 2 * M_PI;
+    }
+
+    if (angle < 0) {
+        angle += 2 * M_PI;
+    }
+
+    return angle;
+}
+
 turtle::turtle() {
     this->x = 0;
     this->y = 0;
@@ -35,7 +47,7 @@ void turtle::forward(int distance) {
 } 
 
 void turtle::rotate(float angle) {
-    this->angle += angle * M_PI / 180;
+    this->angle = set_angle(this->angle + angle * M_PI / 180);
 }
 
 void turtle::penup() {
@@ -59,11 +71,13 @@ void turtle::circle(int radius) {
 
 void turtle::arc(int radius, float angle) { // input is in degrees
     if (this->pen_position == DOWN) {
-        vector<float> arc = {this->x - radius * sin(this->angle), this->y + radius * cos(this->angle), radius, this->angle * 180 / M_PI, angle + this->angle * 180 / M_PI, this->pen_color};
+        vector<float> arc = {this->x - radius * sin(this->angle), this->y + radius * cos(this->angle), radius, this->angle * 180 / M_PI + 270, angle + 270 + this->angle * 180 / M_PI, this->pen_color};
         this->img->draw("arc", arc);
     }
 
+    std::cout << "center is :" << this->x - radius * sin(this->angle) << " " << this->y + radius * cos(this->angle) << std::endl;
+    cout << "angle is :" << this->angle * 180 / M_PI << " " << angle + this->angle * 180 / M_PI<< endl;
     this->x = this->x - radius * sin(this->angle) + radius * sin(this->angle + angle * M_PI / 180);
     this->y = this->y + radius * cos(this->angle) - radius * cos(this->angle + angle * M_PI / 180);
-    this->angle += angle * M_PI / 180;
+    this->angle = set_angle(this->angle + angle * M_PI / 180);
 }
