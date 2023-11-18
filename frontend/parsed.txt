@@ -1,0 +1,1 @@
+ink main()->void {    real[5, 2, 3] a, c, d    num e    num b = (5+3)*2 + e++    return void}

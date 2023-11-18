@@ -17,7 +17,7 @@ extern void yyerror(const char *s);
 number [-]?[1-9][0-9]*|0|0[xX][0-9a-fA-F]+
 real_number {number}(\.[0-9]+)?
 identifiers [_a-zA-Z][a-zA-Z0-9_]*
-keywords "img"|"gray_img"|"vid"|"gray_vid"|"num"|"real"|"spool"|"break"|"continue"|"return"|"ink"|"void"|"bool"|"true"|"false"
+keywords "img"|"gray_img"|"vid"|"gray_vid"|"num"|"real"|"spool"|"break"|"continue"|"return"|"ink"|"void"|"bool"|"true"|"false"|"sketch"
 logical_operator "and"|"or"|"!"
 relational_operator ">"|">="|"=="|"!="|"<"|"<=" 
 access_operator "."
@@ -100,7 +100,11 @@ path \'([^'\\])*\'
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"logical_operator: %s\n", yytext);
-        if (strcmp(yytext,"!")==0) return NEG_OP;
+        if (strcmp(yytext,"!")==0) {
+            OPERATOR op_temp = OPERATOR::NOT;
+            yylval.opval = op_temp;
+            return NEG_OP;
+        }
         return LOG_OP;
     }
 }
@@ -274,7 +278,7 @@ path \'([^'\\])*\'
             fprintf(fparser,"%s", yytext);
             fprintf(ftoken,"error: %s\n", yytext);
             yyerror("Invalid token");
-            exit(1);
+            // exit(1);
         }
     } else if (block_comment) {
         if (strcmp(yytext,"*#")==0) block_comment = 0;
@@ -294,7 +298,7 @@ path \'([^'\\])*\'
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"error: %s\n", yytext);
         yyerror("Invalid token");
-        exit(1);
+        // exit(1);
         // return *yytext;
     }
 }

@@ -2,9 +2,6 @@
 #define SYM_TAB_HPP
 
 #include <bits/stdc++.h>
-#include <string>
-#include <utility>
-#include <vector>
 
 /*------------------------------------------------------------------------*
  * Type Information                                                       *

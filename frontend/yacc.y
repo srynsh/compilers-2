@@ -4,22 +4,25 @@
     #include "headers/sym_tab.hpp"
     #include "headers/semantic.hpp"
     #include "headers/utils.hpp"
+    #include "headers/codegen.hpp"
 
     int yylex (void);
-    FILE* ftoken, *fparser;
+    FILE* ftoken, *fparser, *foutput;
     int lineno = 1; 
     void yyerror (const char*);
     
     symbol_table_function* SymbolTableFunction = new symbol_table_function();
     symbol_table_variable* SymbolTableVariable = new symbol_table_variable();
-    int current_scope = 0;
+    int current_scope = 0, error_counter = 0;
     bool return_flag = false;
+    std::vector<std::string> temp_str = std::vector<std::string>();
 %}
 
 %code requires {
     #include "headers/semantic.hpp"
     #include "headers/sym_tab.hpp"
     #include "headers/utils.hpp"
+    #include "headers/codegen.hpp"
 }
 
 %union {
@@ -37,12 +40,13 @@
     OPERATOR opval;
 }
 
-%type <dim_list> brak array_element
-%type <tval> datatype expr_pred expr_pred_list brak_pred brak_pred_list call_stmt
+%type <dim_list> brak array_element brak_pred brak_pred_list
+%type <tval> datatype expr_pred call_stmt
 %type <tval> RET_TYPE in_built_call_stmt
 %type <par_vec> par_list par 
 %type <arg_vec> arg_list arg
 %type <id_vec> id_list
+%type <ival> expr_pred_list
 
 %token <sval> ID /* Identifiers */
 
@@ -59,10 +63,11 @@
 %token <opval> LT
 %token <opval> LOG_OP
 %token <opval> REL_OP
+%token <opval> NEG_OP
 
 %token <tval> IMG GRAY_IMG VID GRAY_VID NUM REAL VOID BOOL /* Datatypes */
 %token IF ELSE_IF RETURN CONTINUE BREAK LOOP INK /* Control flow keywords */
-%token ARROW NEG_OP DOT_OP /* Operators */
+%token ARROW DOT_OP /* Operators */
 %token NEWLINE
 
 %token PATH 
@@ -88,11 +93,9 @@ S :
         ELETYPE last_ret_type = SymbolTableFunction->get_current_return_type();
         if (last_func != "main"){
             yyerror("last function is not main");
-            exit(1);
         }
         if (last_ret_type != ELETYPE::ELE_VOID){
             yyerror("last function does not return void");
-            exit(1);
         }
     }
     ;
@@ -118,10 +121,10 @@ function : function_definition optional_new_lines func_body decrement_scope
             {
                 if (return_flag == false) {
                     yyerror("function does not return");
-                    exit(1);
                 } else {
                     return_flag = false;
                 }
+                if (error_counter == 0) fprintf(foutput, "}\n");
             }
         ;
 
@@ -132,11 +135,13 @@ function_definition
             SymbolTableFunction->add_function_record(func_name, $8->eleType, $5); 
             assert(current_scope == 1);
             SymbolTableVariable->add_variable(*($5), current_scope);
+            if (error_counter == 0) fprintf(foutput, "%s {\n", codegen_function_definition($8->eleType, func_name, $5).c_str());
         }
     | INK ID  '(' increment_scope ')' ARROW RET_TYPE 
         {
             std::string func_name = *$2;
             SymbolTableFunction->add_function_record(func_name, $7->eleType);
+            if (error_counter == 0) fprintf(foutput, "%s {\n", codegen_function_definition($7->eleType, func_name, NULL).c_str());
         }
     ;
 
@@ -151,7 +156,7 @@ par_list :
     | par
     ;
 
-func_body : '{' increment_scope new_lines stmt_list '}' decrement_scope
+func_body : '{' increment_scope new_lines stmt_list '}' decrement_scope 
         ;
 
 /* Only simple types are returned */
@@ -243,11 +248,11 @@ decl_stmt : img_decl  new_lines
         | gray_img_decl new_lines
         | vid_decl new_lines
         | gray_vid_decl  new_lines
-        | num_decl new_lines
-        | bool_decl new_lines
-        | real_decl new_lines 
-        | num_array_decl new_lines
-        | real_array_decl new_lines
+        | num_decl new_lines {if (error_counter == 0) fprintf(foutput, ";\n");}
+        | bool_decl new_lines {if (error_counter == 0) fprintf(foutput, ";\n");}
+        | real_decl new_lines  {if (error_counter == 0) fprintf(foutput, ";\n");}
+        | num_array_decl new_lines {if (error_counter == 0) fprintf(foutput, ";\n");}
+        | real_array_decl new_lines {if (error_counter == 0) fprintf(foutput, ";\n");}
         ;
 
 img_decl : IMG ID LT NUM_CONST ',' NUM_CONST  GT                { declare_img(SymbolTableVariable, $1, *$2, $4, $6, 0, current_scope);}
@@ -275,13 +280,19 @@ num_decl :
         {
             struct type_info* t = $1;
             SymbolTableVariable->add_variable(*$2, t->type, t->eleType, current_scope);
+            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $2).c_str());
         }
     | NUM ID '=' expr_pred
         {
             struct type_info* t = $1, *t_res = new struct type_info;
             t_res = assignment_compatible(t, $4);
             SymbolTableVariable->add_variable(*$2, t_res->type, t_res->eleType, current_scope);
+            if (error_counter == 0) {
+                fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, temp_str[0], NULL).c_str());
+                temp_str.clear();
+            }
         }
+
         ;
 
 bool_decl : 
@@ -289,12 +300,17 @@ bool_decl :
         {
             struct type_info* t = $1;
             SymbolTableVariable->add_variable(*$2, t->type, t->eleType, current_scope);
+            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $2).c_str());
         }
     | BOOL ID '=' expr_pred
         {
             struct type_info* t = $1, *t_res = new struct type_info;
             t_res = assignment_compatible(t, $4);
             SymbolTableVariable->add_variable(*$2, t_res->type, t_res->eleType, current_scope);
+            if (error_counter == 0) {
+                fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, temp_str[0], NULL).c_str());
+                temp_str.clear();
+            }
         }
     ;
 
@@ -304,6 +320,7 @@ real_decl :
             std::vector<std::string> *p = $2;
             struct type_info* t = $1;
             SymbolTableVariable->add_variable(*$2, t->type, t->eleType, current_scope);
+            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $2).c_str());
         }
         
     | REAL ID '=' expr_pred
@@ -311,6 +328,10 @@ real_decl :
             struct type_info* t = $1, *t_res = new struct type_info;
             t_res = assignment_compatible(t, $4);
             SymbolTableVariable->add_variable(*$2, t_res->type, t_res->eleType, current_scope);
+            if (error_counter == 0) {
+                fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, temp_str[0], NULL).c_str());
+                temp_str.clear();
+            }
         }
     ;
 
@@ -319,28 +340,36 @@ num_array_decl :
     {
         struct type_info* t = $1;
         t->type = TYPE::ARRAY;
+        t->dim_list = new std::vector<int>;
+        std::vector<int> temp_dim_list = *$2;
+        for (int i = 0; i < temp_dim_list.size(); i++) {
+            t->dim_list->push_back(temp_dim_list[i]);
+        }
+
         SymbolTableVariable->add_variable(*$3, t->type, t->eleType, *$2, current_scope);
+        if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $3).c_str());
     }
     | NUM array_element ID '=' ID 
-        {
-            data_record* dr = SymbolTableVariable->get_variable(*$5, current_scope);
-            struct type_info* t1 = $1, *t_res = new struct type_info, *t2 = new struct type_info;
-            t2->type = dr->get_type();
-            t2->eleType = dr->get_ele_type();
-            std::vector<int> temp_dim_list = dr->get_dim_list();
+    {
+        data_record* dr = SymbolTableVariable->get_variable(*$5, current_scope);
+        struct type_info* t1 = $1, *t_res = new struct type_info, *t2 = new struct type_info;
+        t2->type = dr->get_type();
+        t2->eleType = dr->get_ele_type();
+        std::vector<int> temp_dim_list = dr->get_dim_list();
 
-            // t2->dim_list = &temp_dim_list;
-            t2->dim_list = new std::vector<int>;
-            for (int i = 0; i < temp_dim_list.size(); i++){
-                t2->dim_list->push_back(temp_dim_list[i]);
-            }
-
-            t1->type = TYPE::ARRAY;
-            t1->dim_list = $2;
-            
-            t_res = assignment_compatible(t1, t2);
-            SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
+        // t2->dim_list = &temp_dim_list;
+        t2->dim_list = new std::vector<int>;
+        for (int i = 0; i < temp_dim_list.size(); i++){
+            t2->dim_list->push_back(temp_dim_list[i]);
         }
+
+        t1->type = TYPE::ARRAY;
+        t1->dim_list = $2;
+        
+        t_res = assignment_compatible(t1, t2);
+        SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
+        if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *$5, NULL).c_str());
+    }
     | NUM array_element ID '=' brak_pred 
     ;
 
@@ -349,7 +378,14 @@ real_array_decl :
         {
             struct type_info* t = $1;
             t->type = TYPE::ARRAY;
-            SymbolTableVariable->add_variable(*$3, t->type, t->eleType, *$2, current_scope);    
+            t->dim_list = new std::vector<int>;
+            std::vector<int> temp_dim_list = *$2;
+            for (int i = 0; i < temp_dim_list.size(); i++) {
+                t->dim_list->push_back(temp_dim_list[i]);
+            }
+
+            SymbolTableVariable->add_variable(*$3, t->type, t->eleType, *$2, current_scope);  
+            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $3).c_str());  
         }
     | REAL array_element ID '=' ID 
         {
@@ -370,6 +406,7 @@ real_array_decl :
             
             t_res = assignment_compatible(t1, t2);
             SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
+            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *$5, NULL).c_str());
         }
     | REAL array_element ID '=' brak_pred  
     ;
@@ -379,21 +416,11 @@ array_element : '[' expr_pred ']' { $$ = new std::vector<int>(1, -1);}
         |  '[' expr_pred ',' expr_pred ',' expr_pred ']' { $$ = new std::vector<int>(3, -1);}
         ;
 
-expr_pred_list : 
-            expr_pred_list ',' expr_pred 
-                {
-                    $$ = $1 + 1;
-                }
-               | expr_pred 
-                { 
-                    $$ = 1;
-                }
+expr_pred_list : expr_pred_list ',' expr_pred { $$ = $1 + 1; }
+               | expr_pred { $$ = 1; }
                ;
 
-brak_pred : '{' brak_pred_list '}'      
-                {
-                    $$ = $2;
-                }
+brak_pred : '{' brak_pred_list '}' { $$ = $2; }
           | '{' expr_pred_list '}'      
                 {
                     std::vector<int> *p = new std::vector<int>;
@@ -410,17 +437,20 @@ brak_pred_list : brak_pred_list ',' brak_pred
                     for (int i = 1; i<p->size(); i++){
                         if (p->at(i) != q->at(i-1)){
                             yyerror("dimension mismatch");
-                            exit(1);
                         }
                     }
+
+                    p->push_back(q->at(q->size()-1));
+                    $$ = p;
                 }
                | brak_pred
                 {
-                    
+                    $$ = $1;
                 }
                ;
 
- /* {{{1, 1}, {1, 1}, {1, 1}}, {{1, 1}, {1, 1}, {1, 1}}}
+ /* 
+{{{1, 1}, {1, 1}, {1, 1}}, {{1, 1}, {1, 1}, {1, 1}}}
 2 -> expr_pred_list
 {2} -> brak_pred
 new_brak_pred -> check last n-1 dimensions 2 matches!
@@ -428,7 +458,8 @@ new_brak_pred -> check last n-1 dimensions 2 matches!
 brak_pred -> {3,2}
 brak_pred_list -> {1,3,2}
 new_brak_pred -> check last n-1 dimensions, 3,2 matches!
-{2,3,2} */
+{2,3,2} 
+*/
 
 /* const_list : const_list ',' const
          | const
@@ -551,7 +582,6 @@ expr_stmt :
         struct type_info* t = assignment_compatible(t2, t1);
         if (t == NULL) {
             yyerror("assignment not compatible");
-            exit(1);
         }
     }
         
@@ -575,6 +605,7 @@ expr_pred :
                 ti->name = *$1;
                 // print size of dim_list
                 $$ = ti;
+                temp_str.push_back(*$1);
             }
         | NUM_CONST
             {
@@ -582,6 +613,7 @@ expr_pred :
                 ti->type = TYPE::SIMPLE;
                 ti->eleType = ELETYPE::ELE_NUM;
                 $$ = ti;
+                temp_str.push_back(std::to_string($1));
             }
         | REAL_CONST
             {
@@ -589,6 +621,7 @@ expr_pred :
                 ti->type = TYPE::SIMPLE;
                 ti->eleType = ELETYPE::ELE_REAL;
                 $$ = ti;
+                temp_str.push_back(std::to_string($1));
             }
         | BOOL_CONST
             {
@@ -596,35 +629,44 @@ expr_pred :
                 ti->type = TYPE::SIMPLE;
                 ti->eleType = ELETYPE::ELE_BOOL;
                 $$ = ti;
+                if ($1 == 1) 
+                    temp_str.push_back("true");
+                else 
+                    temp_str.push_back("false");
+                
             }
         | expr_pred REL_OP expr_pred  
             {
                 struct type_info *t1 = $1, *t2 = $3, *t = new struct type_info;
                 t = relational_compatible(t1, t2, $2);
                 $$ = t;
+                temp_str = codegen_operator($2, &temp_str);
             }      
         | expr_pred LT expr_pred
             {
                 struct type_info *t1 = $1, *t2 = $3, *t = new struct type_info;
                 t = relational_compatible(t1, t2, $2);
                 $$ = t;
+                temp_str = codegen_operator($2, &temp_str);
             }
         | expr_pred GT expr_pred
             {
                 struct type_info *t1 = $1, *t2 = $3, *t = new struct type_info;
                 t = relational_compatible(t1, t2, $2);
                 $$ = t;
+                temp_str = codegen_operator($2, &temp_str);
             }
         | expr_pred LOG_OP expr_pred
             {
-                /*temp*/
-                // struct type_info *t1 = $1, *t2 = $3, *t = new struct type_info;
-                // t = relational_compatible(t1, t2, $2);
-                // $$ = t;
+                /*TEST*/
+                struct type_info *t1 = $1, *t2 = $3, *t = new struct type_info;
+                t = relational_compatible(t1, t2, $2);
+                $$ = t;
+                temp_str = codegen_operator($2, &temp_str);
             }
-        | '(' expr_pred ')'                 {$$ = $2;} 
-        | NEG_OP expr_pred                  {$$ = $2;} /*temp*/
-        | call_stmt                         
+        | '(' expr_pred ')'                 {$$ = $2; temp_str[0] = "(" + temp_str[0] + ")";} 
+        | NEG_OP expr_pred                  {$$ = $2; temp_str = codegen_operator($1, &temp_str);} 
+        | call_stmt                         {$$ = $1;}
         | in_built_call_stmt                {$$ = new struct type_info;} /*temp*/
         | ID array_element                  {$$ = new struct type_info;} /*temp*/
         | expr_pred BINARY_OP expr_pred
@@ -633,18 +675,21 @@ expr_pred :
                 // print address of t1's dim_list
                 t = binary_compatible(t1, t2, $2);
                 $$ = t;
+                temp_str = codegen_operator($2, &temp_str);
             }
         | expr_pred UNARY_OP 
             {
                 struct type_info *t1 = $1, *t = new struct type_info;
                 t = unary_compatible(t1, $2);
                 $$ = t;
+                temp_str = codegen_operator($2, &temp_str);
             }           
         | INV_OP expr_pred
             {
                 struct type_info *t1 = $2, *t = new struct type_info;
                 t = unary_compatible(t1, $1);
                 $$ = t;
+                temp_str = codegen_operator($1, &temp_str);
             }
         ;
 
@@ -764,7 +809,6 @@ unary_stmt : ID UNARY_OP new_lines
         struct type_info* t = unary_compatible(t1, $2, flag_type::stmt);
         if (t == NULL) {
             yyerror("unary operation not compatible");
-            exit(1);
         }
     }
     ;
@@ -776,7 +820,6 @@ return_stmt : RETURN expr_pred new_lines
             struct type_info* t = $2;
             if (last_ret_type != t->eleType) {
                 yyerror("return type must be same as function definition");
-                exit(1);
             }
         }
     | RETURN VOID new_lines 
@@ -785,7 +828,6 @@ return_stmt : RETURN expr_pred new_lines
             ELETYPE last_ret_type = SymbolTableFunction->get_current_return_type();
             if (last_ret_type != ELETYPE::ELE_VOID) {
                 yyerror("return type must be same as function definition");
-                exit(1);
             }
         }
     ;
@@ -811,13 +853,19 @@ int yywrap(){
 }
 void yyerror(const char* s){ 
     printf("\033[1;31mError at line %d:\033[0m %s\n", lineno, s);
+    error_counter++;
+    if (error_counter > 10){
+        printf("\033[1;31mToo many errors. Exiting.\033[0m\n");
+        exit(1);
+    }
     fprintf(fparser, " : invalid statement");
-    exit(1);
 }
 
 int main(int argc, char* argv[]){
     ftoken = fopen("token.txt", "w");
     fparser = fopen("parsed.txt", "w");
+    foutput = fopen("../output.cpp", "w");
+    fprintf(foutput, "%s", codegen_headers().c_str());
     yyparse();
     fclose(ftoken);
     fclose(fparser);

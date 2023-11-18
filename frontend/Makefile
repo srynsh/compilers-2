@@ -1,8 +1,8 @@
-OUTFILE = output
-
-HEADERS = ./headers/sym_tab.cpp ./headers/semantic.cpp ./headers/utils.cpp
+##@ Frontend
 
 C_COMPILER = g++
+# C_FLAGS = -Wall -Wextra -Werror -std=c++17 -g -I$(HEADER_PATH)
+C_FLAGS = -g
 
 YACC = bison
 YACC_FLAGS = -vd
@@ -12,26 +12,62 @@ LEX_FLAGS =
 
 TEST = test1.art
 
-run: output
+BINARY_PATH = ./bin
+HEADER_PATH = ./headers
+
+HEADERS = $(wildcard $(HEADER_PATH)/*.hpp) # might have to check if make works with this
+SOURCES := $(wildcard $(HEADER_PATH)/*.cpp)
+
+OBJ := $(patsubst $(HEADER_PATH)/%.cpp,$(BINARY_PATH)/%.o,$(SOURCES)) 
+
+EXECUTABLE = $(BINARY_PATH)/output
+
+all: yacc.tab.c lex.yy.c $(EXECUTABLE) ## compiles everything
+
+$(EXECUTABLE): $(OBJ) yacc.output ## makes final executable
 	@echo "------------------------------------"
-	$(info Usage: make TEST=filename.txt or make TEST=filename.txt run)
+	@echo "\033[36mLinking $@...\033[0m"
+	$(C_COMPILER) $(C_FLAGS) yacc.tab.c $(OBJ) -o $@
+	@echo "\033[32mDone! You can now run $(EXECUTABLE) \033[0m"
+	@echo "------------------------------------"
+
+
+$(BINARY_PATH)/%.o: $(HEADER_PATH)/%.cpp ## compiles all source files without linking
+	@echo "------------------------------------"
+	@echo "\033[36mCompiling $<...\033[0m"
+	$(C_COMPILER) $(C_FLAGS) -c $< -o $@
+	@echo "\033[32mDone!\033[0m"
+
+yacc.output: yacc.tab.c ## compiles yacc.tab.c
+	@echo "------------------------------------"
+	@echo "\033[36mCompiling $<...\033[0m"
+	$(C_COMPILER) $(C_FLAGS) -c yacc.tab.c
+	@echo "\033[32mDone!\033[0m"
+
+
+##@ Helpers
+
+.PHONY: help
+help: ## help command
+	@awk 'BEGIN {FS = ":.*##"; printf ("\n\033[1mUsage\033[0m\n  make \033[36m<target>\033[0m\n")} /^[a-zA-Z_0-9\.]+:.*?##/ { printf ("  \033[36m%-15s\033[0m %s\n", $$1, $$2) } /^##@/ { printf ("\n\033[1m%s\033[0m\n", substr($$0, 5)) } '  $(MAKEFILE_LIST)
 	
-	./output < $(TEST)
-	@echo "------------------------------------"
+	@echo "\n\033[1mVariables\033[0m"
+	@awk '/^[a-zA-Z0-9_-]+ *=/{printf "%-2s\033[36m%-30s\033[0m %s\n","",$$1, $$3}' $(MAKEFILE_LIST) | sort
 
-output: lex yacc
+yacc.tab.c: yacc.y ## Generate yacc.tab.c and yacc.tab.h
 	@echo "------------------------------------"
-	$(C_COMPILER) -g yacc.tab.c $(HEADERS) -o $(OUTFILE)
-
-yacc: yacc.y
-	@echo "------------------------------------"
+	@echo "\033[36mCompiling $<...\033[0m"
 	$(YACC) $(YACC_FLAGS) yacc.y
+	@echo "\033[32mDone!\033[0m"
 
-lex: lex.l 
+
+lex.yy.c: lex.l ## Generate lex.yy.c
 	@echo "------------------------------------"
+	@echo "\033[36mCompiling $<...\033[0m"
 	$(LEX) $(LEX_FLAGS) lex.l
+	@echo "\033[32mDone!\033[0m"
 
-
-clean:
+.PHONY: clean
+clean: ## Clean the output files
 	-rm output yacc.tab.h yacc.tab.c lex.yy.c yacc.output parsed.txt token.txt || true
 	

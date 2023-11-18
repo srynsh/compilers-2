@@ -16,7 +16,7 @@ using namespace std;
 //     return ((-x*x + 40*x - 400)/16)+65;
 // }
 
-int main() {
+int main() { 
     image i1(50, 50, 0xffffff);
 
     vector<float> l = {0, 0, 50, 50};

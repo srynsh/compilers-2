@@ -24,12 +24,12 @@ ELETYPE get_type(ELETYPE t1, ELETYPE t2) {
     if (t1 == ELETYPE::ELE_ERROR || t2 == ELETYPE::ELE_ERROR) 
     {
         yyerror("Operands are not compatible");
-        exit(1);
+        
     } 
     else if (t1 == ELETYPE::ELE_VOID || t2 == ELETYPE::ELE_VOID) 
     {
         yyerror("void type cannot be used in binary operation");
-        exit(1);
+        
     } 
     else if (t1 == ELETYPE::ELE_VID || t2 == ELETYPE::ELE_VID) 
     {
@@ -172,13 +172,13 @@ struct type_info* binary_compatible(struct type_info* t1, struct type_info* t2, 
         if (is_primitive(t1->eleType) && is_vid(t2->eleType) || is_primitive(t2->eleType) && is_vid(t1->eleType)) 
         {
             yyerror("Cannot perform binary operation on primitive and video");
-            exit(1);
+            
         }
 
         if ((op != OPERATOR::ADD) && (is_vid(t1->eleType) || is_vid(t2->eleType))) 
         {
             yyerror("Only + is defined for videos");
-            exit(1);
+            
         }
 
         if (is_primitive(t1->eleType) && is_primitive(t2->eleType)) 
@@ -207,7 +207,7 @@ struct type_info* binary_compatible(struct type_info* t1, struct type_info* t2, 
                     if (t1->dim_list->at(i) != t2->dim_list->at(i)) 
                     {
                         yyerror("Cannot perform binary operation on images of different dimensions (hxw)");
-                        exit(1);
+                        
                     }
                 }
             }
@@ -229,7 +229,7 @@ struct type_info* binary_compatible(struct type_info* t1, struct type_info* t2, 
                     if (t1->dim_list->at(i) != t2->dim_list->at(i)) 
                     {
                         yyerror("Cannot perform binary operation on images and videos of different dimensions (hxw)");
-                        exit(1);
+                        
                     }
                 }
             }
@@ -254,13 +254,13 @@ struct type_info* binary_compatible(struct type_info* t1, struct type_info* t2, 
                 if(!((t1->dim_list->at(0) == t2->dim_list->at(0)) && (t1->dim_list->at(1) == t2->dim_list->at(1)))) 
                 {
                     yyerror("Videos are not compatible. They must have same h and w");
-                    exit(1);
+                    
                 }
             } 
             if(t1->dim_list->at(3) != -1 && t2->dim_list->at(3) != -1) {
                 if (t1->dim_list->at(3) != t2->dim_list->at(3)) {
                     yyerror("Videos are not compatible. They must have same frame rate");
-                    exit(1);
+                    
                 }
             }
 
@@ -286,20 +286,20 @@ struct type_info* binary_compatible(struct type_info* t1, struct type_info* t2, 
             if (!is_primitive(t1->eleType) || !is_primitive(t2->eleType)) 
             {
                 yyerror("Cannot perform binary operation on non-primitive arrays");
-                exit(1);
+                
             }
         } 
         else 
         {
             yyerror("Cannot perform binary operation on arrays of different dimensions");
-            exit(1);
+            
         }
     } 
     else if (t2->type == TYPE::ARRAY && t1->type == TYPE::SIMPLE || t2->type == TYPE::SIMPLE && t1->type == TYPE::ARRAY) 
     { // arr with simple, simple has to be only num/real/bool
         if (!is_primitive(t1->eleType) || !is_primitive(t2->eleType)) {
             yyerror("Cannot perform binary operation on arrays and non-primitive");
-            exit(1);
+            
         }
 
         t_return->type = TYPE::ARRAY;
@@ -326,7 +326,7 @@ struct type_info* relational_compatible(struct type_info* t1, struct type_info* 
     // else
     if (t1->type == TYPE::ARRAY || t2->type == TYPE::ARRAY || !is_primitive(t1->eleType) || !is_primitive(t2->eleType)) {
         yyerror("Can only perform logical/relational operations on numeric types");
-        exit(1);
+        
     }
     struct type_info* t_return = new struct type_info;
     t_return->type = TYPE::SIMPLE;
@@ -373,7 +373,7 @@ struct type_info* unary_compatible(struct type_info* t1, OPERATOR op, flag_type 
                     lineno--;
                 yyerror("Cannot perform postinc/postdec unary operation on img/video");
                 lineno++;
-                exit(1);
+                
             }
             t_return->dim_list = new std::vector<int>(t1->dim_list->size());
             for (int i = 0; i < t1->dim_list->size(); i++) {
@@ -385,7 +385,7 @@ struct type_info* unary_compatible(struct type_info* t1, OPERATOR op, flag_type 
                 lineno--;
             yyerror("Cannot perform unary operation on bool");
             lineno++;
-            exit(1);
+            
         }
         else if (t1->eleType == ELETYPE::ELE_NUM || t1->eleType == ELETYPE::ELE_REAL) 
         {
@@ -395,7 +395,7 @@ struct type_info* unary_compatible(struct type_info* t1, OPERATOR op, flag_type 
                     lineno--;
                 yyerror("Cannot perform invert unary operation on num/real");
                 lineno++;
-                exit(1);
+                
             }
             // t_return->dim_list = new std::vector<int>(0);
         }
@@ -406,7 +406,7 @@ struct type_info* unary_compatible(struct type_info* t1, OPERATOR op, flag_type 
             lineno--;
         yyerror("Cannot perform unary operation on array");
         lineno++;
-        exit(1);
+        
     }
     return t_return;
 }
@@ -442,7 +442,7 @@ struct type_info* assignment_compatible(struct type_info* t1, struct type_info* 
                 else if (flag == flag_type::call_stmt)
                     yyerror("Cannot pass img/video to primitive");
                 // yyerror("Cannot assign img/video to primitive");
-                exit(1);
+                
             }
             t_return->type = TYPE::SIMPLE;
             t_return->eleType = t1->eleType;
@@ -456,7 +456,7 @@ struct type_info* assignment_compatible(struct type_info* t1, struct type_info* 
                     if (t1->dim_list->at(i) != t2->dim_list->at(i)) 
                     {
                         yyerror("Incompatible dimensions. Cannot perform assignment");
-                        exit(1);
+                        
                     }
                 }
             }
@@ -475,13 +475,13 @@ struct type_info* assignment_compatible(struct type_info* t1, struct type_info* 
                 if(!((t1->dim_list->at(0) == t2->dim_list->at(0)) && (t1->dim_list->at(1) == t2->dim_list->at(1)))) 
                 {
                     yyerror("Videos are not compatible. They must have same h and w");
-                    exit(1);
+                    
                 }
             } 
             if(t1->dim_list->at(3) != -1 && t2->dim_list->at(3) != -1) {
                 if (t1->dim_list->at(3) != t2->dim_list->at(3)) {
                     yyerror("Videos are not compatible. They must have same frame rate");
-                    exit(1);
+                    
                 }
             }
             t_return->type = TYPE::SIMPLE;
@@ -503,7 +503,7 @@ struct type_info* assignment_compatible(struct type_info* t1, struct type_info* 
                 s = "Passed arguments are incompatible";
             yyerror(s.c_str());
             lineno++;
-            exit(1);
+            
         }
     }
     else if (t1->type == t2->type && t1->type == TYPE::ARRAY) 
@@ -515,7 +515,7 @@ struct type_info* assignment_compatible(struct type_info* t1, struct type_info* 
             for (int i = 0; i < t1->dim_list->size(); i++) {
                 if (t1->dim_list->at(i) != -1 && t1->dim_list->at(i) != t2->dim_list->at(i)) {
                     yyerror("Dimension values mismatch in assignment");
-                    exit(1);
+                    
                 }
             }
             std::vector<int> * dim_list_temp = new std::vector<int>(t1->dim_list->size());
@@ -537,7 +537,7 @@ struct type_info* assignment_compatible(struct type_info* t1, struct type_info* 
             s = "Passed arguments are incompatible";
         yyerror(s.c_str());
         lineno++;
-        exit(1);
+        
     }
     
     return t_return;
@@ -554,7 +554,7 @@ struct type_info* assignment_compatible(struct type_info* t1, struct type_info* 
 //     struct type_info* t_return = new struct type_info;
 //     if (!is_primitive(t1->eleType) || !is_primitive(t2->eleType)) {
 //         yyerror("Cannot use non-primitive types as dimension list");
-//         exit(1);
+//         
 //     }
 //     // TODO
 // }
@@ -570,7 +570,7 @@ struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, st
     {
         std::string err = "Function doesn't match any declaration";
         yyerror(err.c_str());
-        exit(1);
+        
     }
     
     if (!compare_par_list_arg_list(func_list, *arg_vec))
@@ -578,7 +578,7 @@ struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, st
         
         std::string err = "Function Call Arguments doesn't match any function declaration";
         yyerror(err.c_str());
-        exit(1);
+        
     }
     struct type_info* t_return = new struct type_info;
     t_return->type = TYPE::SIMPLE;
@@ -608,7 +608,7 @@ struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, st
     {
         std::string err = "Function doesn't match any declaration";
         yyerror(err.c_str());
-        exit(1);
+        
     }
 
     struct type_info* t_return = new struct type_info;
@@ -648,51 +648,51 @@ struct type_info* check_inbuilt_func_call(struct type_info* ti, std::string func
             err = func_name + " is not an inbuilt function";
         }
         yyerror(err.c_str());
-        exit(1);
+        
     }
 
     if (func_name == "blur" || func_name == "sharpen" || func_name == "pixelate" || func_name == "noise"){
             if (arg_list->size() != 1) {
                 yyerror("in-built function takes exactly 1 argument");
-                exit(1);
+                
             }
             if (arg_list->at(0)->type != TYPE::SIMPLE && !is_primitive(arg_list->at(0)->eleType)) {
                 yyerror("in-built function takes only primitive arguments (type will be casted to num)");
-                exit(1);
+                
             }
             if (!is_img(ti->eleType)) {
                 yyerror("in-built function can only be applied to images");
-                exit(1);
+                
             }
     }
     else if (func_name == "T" || func_name == "invert" || func_name == "paint" || func_name == "sobel" || func_name == "vflip" || func_name == "hflip") {
         if (arg_list->size() != 0) {
                 yyerror("in-built function takes no arguments");
-                exit(1);
+                
             }
         if (!is_img(ti->eleType)) {
             yyerror("in-built function can only be applied to images");
-            exit(1);
+            
         }
     }
     else if (func_name == "bnw") {
         if (arg_list->size() != 1) {
                 yyerror("in-built function takes exactly 1 argument");
-                exit(1);
+                
         }
         if (arg_list->at(0)->eleType != ELETYPE::ELE_GRAY_IMG) {
             yyerror("in-built function can only be applied to gray images");
-            exit(1);
+            
         }
     }
     else if (func_name == "play") {
         if (arg_list->size() != 0) {
                 yyerror("in-built function takes no arguments");
-                exit(1);
+                
         }
         if (!is_vid(ti->eleType)) {
             yyerror("in-built function can only be applied to videos");
-            exit(1);
+            
         }
     }
     return nullptr; //temp

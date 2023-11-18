@@ -1,0 +1,9 @@
+loop semantic checks
+brak_pred
+add turtle
+make yacc go on and detect more errors (KG doing)
+codegen
+operator overloading (for images, gray images and multi-dimensional arrays)
+add convolution operator
+in-built call statement
+ID array_element in expr_pred

@@ -17,20 +17,20 @@ int return_color(int r, int g, int b){
 }
 
 int main(){
-    image new_img = image(200, 200, 4);
+    image new_img = image(250, 250, 4);
     // new_img.frame("./images/outputs/vid/base.bmp");
     // new_img.draw("circle", {10, 30, 20, 245});
     int multiplier = 0;
     int y = 0;
     int color = 0;
-    int divisions = 200/6;
+    int divisions = 250/6;
     int high = 244;
     int low = 38;
     int step = (high-low)/divisions;
-    for (int i=0;i<200;i++){
+    for (int i=0;i<250;i++){
         system("clear");
         // new_img.load("./images/outputs/vid/base.bmp");
-        image new_img = image(200, 200, 4);
+        image new_img = image(250, 250, 4);
         while ((y = return_parabola_point(i-multiplier*64))<0){
             multiplier++;
         }
@@ -57,7 +57,7 @@ int main(){
         }
         new_img.draw("circle", {i, y, 20, color});
         new_img.frame("./images/outputs/vid/vid.bmp");
-        system("tiv -h 1500 -w 1000 ./images/outputs/vid/vid.bmp");
-        usleep(70000);
+        system("tiv -h 1000 -w 1000 ./images/outputs/vid/vid.bmp");
+        usleep(100000);
     }
 }
