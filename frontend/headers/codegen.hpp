@@ -11,6 +11,7 @@ std::string basic_type_to_string(ELETYPE type);
 std::string type_to_string(struct type_info* t);
 std::string codegen_operator(OPERATOR op);
 std::vector<std::string> codegen_operator( OPERATOR op, std::vector<std::string>* ops);
+std::vector<std::string> join(std::vector<std::string>* vec, std::string delim);
 
 std::string codegen_function_definition(
     ELETYPE type, 
@@ -23,5 +24,6 @@ std::string codegen_decl_numeric(
     std::string expr,
     std::vector<std::string> * id_list
 );
+std::string codegen_decl_numeric_partial(struct type_info* t, std::string name);
 
 #endif

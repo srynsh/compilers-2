@@ -9,6 +9,20 @@ extern void yyerror(const char *s);
  * Declaration 
 ------------------------------------------------------------ */
 
+bool cast_bool(struct type_info* t) {
+    if (t->type == TYPE::ARRAY) {
+        return 0;
+    } else if (
+            t->eleType != ELETYPE::ELE_NUM &&
+            t->eleType != ELETYPE::ELE_BOOL &&
+            t->eleType != ELETYPE::ELE_REAL
+    ) {
+        return 0;
+    }
+
+    return 1;
+}
+
 void declare_img(symbol_table_variable* stv, struct type_info* ti, std::string name, int scope) {
     ti->dim_list = new std::vector<int>(3);
     (*ti->dim_list)[0] = -1; (*ti->dim_list)[1] = -1; (*ti->dim_list)[2] = 3;
@@ -161,3 +175,4 @@ void print_operator(OPERATOR op) {
             break;
     }
 }
+

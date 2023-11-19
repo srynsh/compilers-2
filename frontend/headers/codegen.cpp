@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include <string>
 #include "codegen.hpp"
 #include "semantic.hpp"
 #include "sym_tab.hpp"
@@ -153,6 +154,24 @@ std::vector<std::string> codegen_operator(OPERATOR op, std::vector<std::string>*
     return code;
 }
 
+/// @brief Joins a vector of strings into a single string, separated by a delimiter. Return a vector containing the joined string
+std::vector<std::string> join(std::vector<std::string>* vec, std::string delim) {
+    if (vec->size() == 1)
+        return *vec;
+    std::string code_str = "";
+    for (auto s : *vec) {
+        code_str += s + " " + delim + " ";
+    }
+    // Remove the last delimiter and space if parameters are present
+    if (vec->size() > 0) {
+        code_str.pop_back(); 
+        code_str.pop_back();
+    }
+    std::vector<std::string> code = {};
+    code.push_back(code_str);
+    return code;
+}
+
 /// @brief Generate the code in C++ for the function definition
 std::string codegen_function_definition(
     ELETYPE type, 
@@ -208,3 +227,10 @@ std::string codegen_decl_numeric(
     return code;
 }
 
+/// @brief Generates the code in C++ for numeric declarations partially 
+std::string codegen_decl_numeric_partial(struct type_info* t, std::string name) {
+    std::string code = "";
+    code += type_to_string(t) + " " + name;
+
+    return code;
+}

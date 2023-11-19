@@ -16,6 +16,7 @@
     int current_scope = 0, error_counter = 0;
     bool return_flag = false;
     std::vector<std::string> temp_str = std::vector<std::string>();
+    std::vector<std::string> temp_str_2 = std::vector<std::string>();
 %}
 
 %code requires {
@@ -41,12 +42,11 @@
 }
 
 %type <dim_list> brak array_element brak_pred brak_pred_list
-%type <tval> datatype expr_pred call_stmt
-%type <tval> RET_TYPE in_built_call_stmt
+%type <tval> datatype expr_pred call_stmt RET_TYPE in_built_call_stmt
 %type <par_vec> par_list par 
 %type <arg_vec> arg_list arg
 %type <id_vec> id_list
-%type <ival> expr_pred_list
+%type <ival> expr_pred_list array_ele
 
 %token <sval> ID /* Identifiers */
 
@@ -337,40 +337,53 @@ real_decl :
 
 num_array_decl : 
     NUM array_element id_list
-    {
-        struct type_info* t = $1;
-        t->type = TYPE::ARRAY;
-        t->dim_list = new std::vector<int>;
-        std::vector<int> temp_dim_list = *$2;
-        for (int i = 0; i < temp_dim_list.size(); i++) {
-            t->dim_list->push_back(temp_dim_list[i]);
-        }
+        {
+            struct type_info* t = $1;
+            t->type = TYPE::ARRAY;
+            t->dim_list = new std::vector<int>;
+            std::vector<int> temp_dim_list = *$2;
+            for (int i = 0; i < temp_dim_list.size(); i++) {
+                t->dim_list->push_back(temp_dim_list[i]);
+            }
 
-        SymbolTableVariable->add_variable(*$3, t->type, t->eleType, *$2, current_scope);
-        if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $3).c_str());
-    }
+            SymbolTableVariable->add_variable(*$3, t->type, t->eleType, *$2, current_scope);
+            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $3).c_str());
+        }
     | NUM array_element ID '=' ID 
-    {
-        data_record* dr = SymbolTableVariable->get_variable(*$5, current_scope);
-        struct type_info* t1 = $1, *t_res = new struct type_info, *t2 = new struct type_info;
-        t2->type = dr->get_type();
-        t2->eleType = dr->get_ele_type();
-        std::vector<int> temp_dim_list = dr->get_dim_list();
+        {
+            data_record* dr = SymbolTableVariable->get_variable(*$5, current_scope);
+            struct type_info* t1 = $1, *t_res = new struct type_info, *t2 = new struct type_info;
+            t2->type = dr->get_type();
+            t2->eleType = dr->get_ele_type();
+            std::vector<int> temp_dim_list = dr->get_dim_list();
 
-        // t2->dim_list = &temp_dim_list;
-        t2->dim_list = new std::vector<int>;
-        for (int i = 0; i < temp_dim_list.size(); i++){
-            t2->dim_list->push_back(temp_dim_list[i]);
+            // t2->dim_list = &temp_dim_list;
+            t2->dim_list = new std::vector<int>;
+            for (int i = 0; i < temp_dim_list.size(); i++){
+                t2->dim_list->push_back(temp_dim_list[i]);
+            }
+
+            t1->type = TYPE::ARRAY;
+            t1->dim_list = $2;
+            
+            t_res = assignment_compatible(t1, t2);
+            SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
+            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *$5, NULL).c_str());
         }
-
-        t1->type = TYPE::ARRAY;
-        t1->dim_list = $2;
-        
-        t_res = assignment_compatible(t1, t2);
-        SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
-        if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *$5, NULL).c_str());
-    }
-    | NUM array_element ID '=' brak_pred 
+    | NUM array_element ID '=' {struct type_info* t = $1; t->type = TYPE::ARRAY; fprintf(foutput, "%s = ", codegen_decl_numeric_partial(t, *$3));} brak_pred 
+        {
+            struct type_info *t_res = new struct type_info;
+            t_res->type = TYPE::ARRAY;
+            t_res->eleType = ELETYPE::ELE_REAL;
+            std::vector<int> *temp_dim_list = $2;
+            t_res->dim_list = new std::vector<int>;
+            for (int i = 0; i < temp_dim_list->size(); i++){
+                t_res->dim_list->push_back(temp_dim_list->at(i));
+            }
+            array_compatibility(*(t_res->dim_list), *$6);
+            SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
+            // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *$5, NULL).c_str());
+        }
     ;
 
 real_array_decl : 
@@ -408,19 +421,47 @@ real_array_decl :
             SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
             if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *$5, NULL).c_str());
         }
-    | REAL array_element ID '=' brak_pred  
+    | REAL array_element ID '=' {struct type_info* t = $1; t->type = TYPE::ARRAY; fprintf(foutput, "%s = ", codegen_decl_numeric_partial(t, *$3));} brak_pred
+        {
+            struct type_info *t_res = new struct type_info;
+            t_res->type = TYPE::ARRAY;
+            t_res->eleType = ELETYPE::ELE_REAL;
+            std::vector<int> *temp_dim_list = $2;
+            t_res->dim_list = new std::vector<int>;
+            for (int i = 0; i < temp_dim_list->size(); i++){
+                t_res->dim_list->push_back(temp_dim_list->at(i));
+            }
+            array_compatibility(*(t_res->dim_list), *$6);
+            SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
+            // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *$5, NULL).c_str());
+        }  
     ;
 
-array_element : '[' expr_pred ']' { $$ = new std::vector<int>(1, -1);}
-        |  '[' expr_pred ',' expr_pred ']' { $$ = new std::vector<int>(2, -1);}
-        |  '[' expr_pred ',' expr_pred ',' expr_pred ']' { $$ = new std::vector<int>(3, -1);}
+array_element : '[' array_ele ']' { $$ = new std::vector<int>(1); $$->at(0) = $2;}
+        |  '[' array_ele ',' array_ele ']' { $$ = new std::vector<int>(2); $$->at(0) = $2; $$->at(1) = $4;}
+        |  '[' array_ele ',' array_ele ',' array_ele ']' { $$ = new std::vector<int>(3); $$->at(0) = $2; $$->at(1) = $4; $$->at(2) = $6;}
         ;
 
-expr_pred_list : expr_pred_list ',' expr_pred { $$ = $1 + 1; }
-               | expr_pred { $$ = 1; }
+array_ele : ID  {$$ = -1;}
+        | NUM_CONST {$$ = $1;}
+
+ /* 
+{{{1, 1}, {1, 1}, {1, 1}}, {{1, 1}, {1, 1}, {1, 1}}}
+2 -> expr_pred_list
+{2} -> brak_pred
+new_brak_pred -> check last n-1 dimensions 2 matches!
+{3, 2} -> brak_pred_list
+brak_pred -> {3,2}
+brak_pred_list -> {1,3,2}
+new_brak_pred -> check last n-1 dimensions, 3,2 matches!
+{2,3,2} 
+*/
+
+expr_pred_list : expr_pred_list ',' expr_pred { $$ = $1 + 1; temp_str_2.push_back(temp_str[0]); temp_str.clear(); temp_str_2 = join(&temp_str_2, ",");}
+               | expr_pred { $$ = 1; temp_str_2.push_back(temp_str[0]); temp_str.clear();}
                ;
 
-brak_pred : '{' brak_pred_list '}' { $$ = $2; }
+brak_pred : '{' brak_pred_list '}' { $$ = $2; temp_str[0] = "{" + temp_str[0] + "}";}
           | '{' expr_pred_list '}'      
                 {
                     std::vector<int> *p = new std::vector<int>;
@@ -436,30 +477,23 @@ brak_pred_list : brak_pred_list ',' brak_pred
                     
                     for (int i = 1; i<p->size(); i++){
                         if (p->at(i) != q->at(i-1)){
-                            yyerror("dimension mismatch");
+                            yyerror("incorrect bracket format");
                         }
                     }
 
-                    p->push_back(q->at(q->size()-1));
+                    p->at(0) += 1;
                     $$ = p;
                 }
                | brak_pred
                 {
-                    $$ = $1;
+                    std::vector<int> *p = new std::vector<int>;
+                    p->push_back(1);
+                    for (auto i : *$1){
+                        p->push_back(i);
+                    }
+                    $$ = p;
                 }
                ;
-
- /* 
-{{{1, 1}, {1, 1}, {1, 1}}, {{1, 1}, {1, 1}, {1, 1}}}
-2 -> expr_pred_list
-{2} -> brak_pred
-new_brak_pred -> check last n-1 dimensions 2 matches!
-{3, 2} -> brak_pred_list
-brak_pred -> {3,2}
-brak_pred_list -> {1,3,2}
-new_brak_pred -> check last n-1 dimensions, 3,2 matches!
-{2,3,2} 
-*/
 
 /* const_list : const_list ',' const
          | const
@@ -468,7 +502,8 @@ new_brak_pred -> check last n-1 dimensions, 3,2 matches!
 /* const : NUM_CONST
     | REAL_CONST
     | BOOL_CONST
-    ; */
+    ; 
+*/
 
 id_list : 
     id_list ',' ID
@@ -495,14 +530,55 @@ conditional_stmt : if_block optional_new_lines else_if_block_list optional_new_l
                 | if_block optional_new_lines else {fprintf(fparser, "conditional");} new_lines
                 ;
 
-if_block : IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body 
+if_block : IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines if_codegen func_body 
+        {
+            if (!cast_bool($4)) {
+                yyerror("experssion cannot to evaluated to a boolean");
+            } else {
+                fprintf(foutput, "}\n");
+            }
+        }
         ;
 
-else_if_block_list : else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
-        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body 
+if_codegen : /* empty */
+        {
+            std::string exp = temp_str[0];
+            temp_str.clear();
+            std::string str = "if (" + exp + ") {\n)";
+            fprintf(foutput, str.c_str());
+        }
+        ;
+
+else_if_block_list : else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines else_if_codegen func_body {fprintf(foutput, "}\n");}
+        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines else_if_codegen func_body
+        {
+            if (!cast_bool($3)) {
+                yyerror("experssion cannot to evaluated to a boolean");
+            } else {
+                fprintf(foutput, "}\n");
+            }
+        } 
+        ;
+
+else_if_codegen : /* empty */
+        {
+            std::string exp = temp_str[0];
+            temp_str.clear();
+            std::string str = "else if (" + exp + ") {\n";
+            fprintf(foutput, str.c_str());
+        }
         ;
         
-else : ARROW optional_new_lines func_body
+else : ARROW optional_new_lines else_codegen func_body
+        {
+            fprintf(foutput, "}\n");
+        }
+        ;
+
+else_codegen : /* empty */
+        {
+            fprintf(foutput, "else {\n");
+        }
         ;
 
 /*------------------------------------------------------------------------

@@ -42,6 +42,7 @@ bool is_primitive(ELETYPE t);
 bool is_img(ELETYPE t);
 bool is_vid(ELETYPE t);
 bool is_dim_undefined(std::vector<int> &v, int len);
+bool array_compatibility(std::vector<int> &v1, std::vector<int> &v2);
 
 struct type_info* binary_compatible(struct type_info* t1, struct type_info* t2, OPERATOR op);
 struct type_info* unary_compatible(struct type_info* t1, OPERATOR op, flag_type flag=expr_pred);

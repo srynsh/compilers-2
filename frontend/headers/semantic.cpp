@@ -141,6 +141,21 @@ std::tuple<size_t, size_t> FindClosest(std::vector<std::string> const & strs, st
     return std::make_tuple(mini, minv);
 }
 
+bool array_compatibility(std::vector<int> &v1, std::vector<int> &v2) {
+    if (v1.size() != v2.size()) {
+        return false;
+    }
+    for(auto i = 0; i < v1.size(); i++) {
+        if (v1[i] != -1 && v2[i] != -1) {
+            if (v1[i] != v2[i]) {
+                yyerror("Array dimensions mismatch");
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 /* ---------------------------------------------------------- 
  * Binary Compatibility
 ------------------------------------------------------------ */

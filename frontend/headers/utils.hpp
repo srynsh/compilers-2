@@ -14,4 +14,5 @@ void declare_gray_vid(symbol_table_variable* stv, struct type_info* ti, std::str
 void print_eleType (ELETYPE eleType);
 void print_type(TYPE type);
 void print_operator(OPERATOR op);
+bool cast_bool(struct type_info* t);
 # endif
