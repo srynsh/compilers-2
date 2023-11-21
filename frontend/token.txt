@@ -1,0 +1,15 @@
+keyword: ink
+ID: main
+punctuation: (
+punctuation: )
+operator: ->
+keyword: void
+punctuation: {
+keyword: num
+ID: z
+ID: z
+operator: =
+ID: a
+keyword: return
+keyword: void
+punctuation: }
