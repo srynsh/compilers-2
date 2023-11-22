@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
-#include "./kernel.hpp"
-#include "./load_bmp.hpp"
+#include "./frontend/headers/kernel.hpp"
+#include "./frontend/headers/load_bmp.hpp"
 
 #ifndef IMAGE_HPP
 #define IMAGE_HPP
@@ -101,25 +101,38 @@ class image {
 
         image& operator=(int const val);
         image operator+(int const val);
+        friend image operator+(int const val, image const img);
         image operator-(int const val);
+        friend image operator-(int const val, image const img);
         image operator*(int const val);
+        friend image operator*(int const val, image const img);
         image operator/(int const val);
 
         void operator=(float const val);
         image operator+(float const val);
+        friend image operator+(float const val, image const img);
         image operator-(float const val);
+        friend image operator-(float const val, image const img);
         image operator*(float const val);
+        friend image operator*(float const val, image const img);
 
         void operator=(bool const val);
         image operator+(bool const val);
+        friend image operator+(bool const val, image const img);
         image operator-(bool const val);
+        friend image operator-(bool const val, image const img);
         image operator*(bool const val);
+        friend image operator*(bool const val, image const img);
         image operator/(bool const val);
 
         image operator+(gray_image const img);
+        friend image operator+(gray_image const img1, image const img2);
         image operator-(gray_image const img);
+        friend image operator-(gray_image const img1, image const img2);
         image operator*(gray_image const img);
+        friend image operator*(gray_image const img1, image const img2);
         image operator/(gray_image const img);
+        friend image operator/(gray_image const img1, image const img2);
 
         video operator+(video const vid);
         video operator+(gray_video const vid);
@@ -162,27 +175,34 @@ class gray_image {
 
         void operator=(int const val);
         gray_image operator+(int const val);
+        friend gray_image operator+(int const val, gray_image const img);
         gray_image operator-(int const val);
+        friend gray_image operator-(int const val, gray_image const img);
         gray_image operator*(int const val);
+        friend gray_image operator*(int const val, gray_image const img);
         gray_image operator/(int const val);
 
         void operator=(float const val);
         gray_image operator+(float const val);
+        friend gray_image operator+(float const val, gray_image const img);
         gray_image operator-(float const val);
+        friend gray_image operator-(float const val, gray_image const img);
         gray_image operator*(float const val);
+        friend gray_image operator*(float const val, gray_image const img);
 
         void operator=(bool const val);
         gray_image operator+(bool const val);
+        friend gray_image operator+(bool const val, gray_image const img);
         gray_image operator-(bool const val);
+        friend gray_image operator-(bool const val, gray_image const img);
         gray_image operator*(bool const val);
+        friend gray_image operator*(bool const val, gray_image const img);
         gray_image operator/(bool const val);
 
-        // TODO
+        gray_image& operator=(image val); 
 
-        gray_image& operator=(image const val);
-
-        video operator+(video const& vid);
-        gray_video operator+(gray_video const& vid);
+        video operator+(video const vid); 
+        gray_video operator+(gray_video const vid);
 
 
         // Getters and Setters
@@ -195,7 +215,7 @@ class gray_image {
         // Image manipulation functions
         std::vector<std::vector<float>> to_vector();
         gray_image blur(int k=2);
-        gray_image sharpen(int k);
+        gray_image sharpen(int k=1);
         gray_image sobel();
         gray_image pixelate(int k);
         gray_image invert();
@@ -204,7 +224,7 @@ class gray_image {
         gray_image hflip();
         gray_image vflip();
         gray_image T();
-        gray_image crystallize(int k=50);
+        gray_image crystallize(int k=500);
         image to_image();
 
         // Destructor
@@ -227,7 +247,7 @@ class video {
 
         // Operators
         image operator[](int i) const; // For access
-        image &operator[](int i); // For assignment
+        image& operator[](int i); // For assignment
         video operator+(video const vid); // Concatenation
         video& operator=(video const val);
         video& operator=(gray_video const val);

@@ -70,6 +70,8 @@ ELETYPE get_type(ELETYPE t1, ELETYPE t2) {
     {
         return ELETYPE::ELE_ERROR;
     }
+
+    return ELETYPE::ELE_ERROR;
 }
 
 /// @brief returns true if eletype is a num/real/bool
@@ -666,8 +668,9 @@ struct type_info* check_inbuilt_func_call(struct type_info* ti, std::string func
         
     }
 
-    if (func_name == "blur" || func_name == "sharpen" || func_name == "pixelate" || func_name == "noise"){
-            if (arg_list->size() != 1) {
+    // Takes 1 argument
+    if (func_name == "pixelate" || func_name == "noise"){
+            if (arg_list == NULL || arg_list->size() != 1) {
                 yyerror("in-built function takes exactly 1 argument");
                 
             }
@@ -677,38 +680,62 @@ struct type_info* check_inbuilt_func_call(struct type_info* ti, std::string func
             }
             if (!is_img(ti->eleType)) {
                 yyerror("in-built function can only be applied to images");
-                
+            }
+            struct type_info* t_return = new struct type_info;
+            t_return->type = TYPE::SIMPLE;
+            t_return->eleType = ti->eleType;
+            t_return->dim_list = new std::vector<int>(3);
+            for (int i = 0; i < 3; i++) {
+                t_return->dim_list->at(i) = ti->dim_list->at(i);
+            }
+            return t_return;
+    }
+
+    // Can have 0 or 1 argument
+    else if (func_name == "blur" || func_name == "sharpen" || func_name == "bnw" || func_name == "crystallize") {
+        if (arg_list != NULL && arg_list->size() != 1) {
+                yyerror("in-built function takes 1 or 0 arguments");
             }
     }
+
     else if (func_name == "T" || func_name == "invert" || func_name == "paint" || func_name == "sobel" || func_name == "vflip" || func_name == "hflip") {
-        if (arg_list->size() != 0) {
+        if (arg_list != NULL) {
                 yyerror("in-built function takes no arguments");
-                
             }
         if (!is_img(ti->eleType)) {
             yyerror("in-built function can only be applied to images");
-            
         }
-    }
-    else if (func_name == "bnw") {
-        if (arg_list->size() != 1) {
-                yyerror("in-built function takes exactly 1 argument");
-                
+        struct type_info* t_return = new struct type_info;
+        t_return->type = TYPE::SIMPLE;
+        t_return->eleType = ti->eleType;
+        t_return->dim_list = new std::vector<int>(3);
+        for (int i = 0; i < 3; i++) {
+                t_return->dim_list->at(i) = ti->dim_list->at(i);
         }
-        if (arg_list->at(0)->eleType != ELETYPE::ELE_GRAY_IMG) {
-            yyerror("in-built function can only be applied to gray images");
-            
+        if (func_name == "T") {
+            int temp = t_return->dim_list->at(0);
+            t_return->dim_list->at(0) = t_return->dim_list->at(1);
+            t_return->dim_list->at(1) = temp;
         }
+
+        // return void if paint
+        if (func_name == "paint") {
+            t_return->eleType = ELETYPE::ELE_VOID;
+        }
+
+        return t_return;
     }
     else if (func_name == "play") {
         if (arg_list->size() != 0) {
-                yyerror("in-built function takes no arguments");
-                
+                yyerror("in-built function takes no arguments"); 
         }
         if (!is_vid(ti->eleType)) {
             yyerror("in-built function can only be applied to videos");
-            
         }
+        struct type_info* t_return = new struct type_info;
+        t_return->type = TYPE::SIMPLE;
+        t_return->eleType = ELETYPE::ELE_VOID;
+        return t_return;
     }
     return nullptr; //temp
 }

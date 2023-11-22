@@ -234,3 +234,27 @@ std::string codegen_decl_numeric_partial(struct type_info* t, std::string name) 
 
     return code;
 }
+
+std::string codegen_decl_img(struct type_info* t, std::string name, int h, int w, int c) {
+    std::string code = "";
+    code += type_to_string(t) + " " + name + "(" + std::to_string(h) + ", " + std::to_string(w) + ", " + std::to_string(c) + ")";
+
+    return code;
+}
+
+std::string codegen_decl_img(struct type_info* t, std::string name, struct type_info* p) {
+    std::string code = "";
+    // change single quotes in p->name to double quotes
+    p->name[0] = '\"';
+    p->name[p->name.size()-1] = '\"';
+    code += type_to_string(t) + " " + name + "(" + p->name + ")";
+
+    return code;
+}
+
+std::string codegen_decl_vid(struct type_info* t, std::string name, int h, int w, int fps) {
+    std::string code = "";
+    code += type_to_string(t) + " " + name + "(" + std::to_string(h) + ", " + std::to_string(w) + ", " + std::to_string(fps) + ")";
+
+    return code;
+}

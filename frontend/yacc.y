@@ -83,12 +83,11 @@
 %token <opval> REL_OP
 %token <opval> NEG_OP
 
-%token <tval> IMG GRAY_IMG VID GRAY_VID NUM REAL VOID BOOL /* Datatypes */
+%token <tval> IMG GRAY_IMG VID GRAY_VID NUM REAL VOID BOOL PATH /* Datatypes */
 %token IF ELSE_IF RETURN CONTINUE BREAK LOOP INK /* Control flow keywords */
 %token ARROW DOT_OP /* Operators */
 %token NEWLINE
 
-%token PATH 
 %start S /* Start symbol */
 
 %left DOT_OP
@@ -115,7 +114,7 @@ S :
         if (last_ret_type != ELETYPE::ELE_VOID){
             yyerror("last function does not return void");
         }
-        if (error_counter == 0) fprintf(foutput, "%s", *$2);
+        if (error_counter == 0) fprintf(foutput, "%s", $2->c_str());
     }
     ;
 
@@ -128,7 +127,7 @@ program :
         {
             $$ = new std::string(*($1));
         }
-    ;/* empty */ 
+    ;
 
 
 new_lines : new_lines NEWLINE
@@ -283,35 +282,84 @@ stmt : decl_stmt /* new_lines is included in decl_stmt */ { $$ = new std::string
  * Declaration Statements                                                 *
  *------------------------------------------------------------------------*/
 
-decl_stmt : img_decl  new_lines
+decl_stmt : img_decl  new_lines { $$ = new std::string(*($1) + ";\n");}
         | gray_img_decl new_lines
         | vid_decl new_lines
         | gray_vid_decl  new_lines
-        | num_decl new_lines {if (error_counter == 0) fprintf(foutput, ";\n");}
-        | bool_decl new_lines {if (error_counter == 0) fprintf(foutput, ";\n");}
-        | real_decl new_lines  {if (error_counter == 0) fprintf(foutput, ";\n");}
-        | num_array_decl new_lines {if (error_counter == 0) fprintf(foutput, ";\n");}
-        | real_array_decl new_lines {if (error_counter == 0) fprintf(foutput, ";\n");}
+        | num_decl new_lines { $$ = new std::string(*($1) + ";\n");}
+        | bool_decl new_lines { $$ = new std::string(*($1) + ";\n");}
+        | real_decl new_lines { $$ = new std::string(*($1) + ";\n");}
+        | num_array_decl new_lines { $$ = new std::string(*($1) + ";\n");}
+        | real_array_decl new_lines { $$ = new std::string(*($1) + ";\n");}
         ;
 
-img_decl : IMG ID LT NUM_CONST ',' NUM_CONST  GT                { declare_img(SymbolTableVariable, $1, *$2, $4, $6, 0, current_scope);}
-        | IMG ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT    { declare_img(SymbolTableVariable, $1, *$2, $4, $6, $8, current_scope);}
-        | IMG ID LT PATH GT                                     { declare_img(SymbolTableVariable, $1, *$2, current_scope);}
-        | IMG ID '=' expr_pred                                  { struct type_info* t = assignment_compatible($1, $4.ti); declare_img(SymbolTableVariable, t, *$2, current_scope);}
+img_decl : 
+    IMG ID LT NUM_CONST ',' NUM_CONST  GT                
+        { 
+            declare_img(SymbolTableVariable, $1, *$2, $4, $6, 0, current_scope);
+            $$ = new std::string(codegen_decl_img($1, *$2, $4, $6, 0));
+        }
+    | IMG ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT    
+        { 
+            declare_img(SymbolTableVariable, $1, *$2, $4, $6, $8, current_scope);
+            $$ = new std::string(codegen_decl_img($1, *$2, $4, $6, $8));
+        }
+    | IMG ID LT PATH GT                                     
+        { 
+            declare_img(SymbolTableVariable, $1, *$2, current_scope);
+            $$ = new std::string(codegen_decl_img($1, *$2, $4));
+        }
+    | IMG ID '=' expr_pred                                  
+        { 
+            struct type_info* t = assignment_compatible($1, $4.ti); declare_img(SymbolTableVariable, t, *$2, current_scope);
+            $$ = new std::string("image " + *$2 + " = " + *($4.str));
+        }
         ; 
 
-gray_img_decl : GRAY_IMG ID LT NUM_CONST ',' NUM_CONST GT           { declare_gray_img(SymbolTableVariable, $1, *$2, $4, $6, 0, current_scope);}
-        | GRAY_IMG ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT   { declare_gray_img(SymbolTableVariable, $1, *$2, $4, $6, $8, current_scope);}
-        | GRAY_IMG ID LT PATH GT                                    { declare_gray_img(SymbolTableVariable, $1, *$2, current_scope);}
-        | GRAY_IMG ID '=' expr_pred                                 { struct type_info* t = assignment_compatible($1, $4.ti); declare_gray_img(SymbolTableVariable, t, *$2, current_scope);}
+gray_img_decl : GRAY_IMG ID LT NUM_CONST ',' NUM_CONST GT           
+        { 
+            declare_gray_img(SymbolTableVariable, $1, *$2, $4, $6, 0, current_scope);
+            $$ = new std::string(codegen_decl_img($1, *$2, $4, $6, 0));
+        }
+        | GRAY_IMG ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT   
+        { 
+            declare_gray_img(SymbolTableVariable, $1, *$2, $4, $6, $8, current_scope);
+            $$ = new std::string(codegen_decl_img($1, *$2, $4, $6, $8));
+        }
+        | GRAY_IMG ID LT PATH GT                                    
+        { 
+            declare_gray_img(SymbolTableVariable, $1, *$2, current_scope);
+            $$ = new std::string(codegen_decl_img($1, *$2, $4));
+        }
+        | GRAY_IMG ID '=' expr_pred                                 
+        { 
+            struct type_info* t = assignment_compatible($1, $4.ti); declare_gray_img(SymbolTableVariable, t, *$2, current_scope);
+            $$ = new std::string("image " + *$2 + " = " + *($4.str));
+        }
         ;
 
-vid_decl : VID ID LT NUM_CONST ',' NUM_CONST GT                     { declare_vid(SymbolTableVariable, $1, *$2, $4, $6, 30, current_scope);}
-        | VID ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT        { declare_vid(SymbolTableVariable, $1, *$2, $4, $6, $8, current_scope);}
+vid_decl : VID ID LT NUM_CONST ',' NUM_CONST GT                     
+        { 
+            declare_vid(SymbolTableVariable, $1, *$2, $4, $6, 30, current_scope);
+            $$ = new std::string(codegen_decl_vid($1, *$2, $4, $6, 30));
+        }
+        | VID ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT        
+        { 
+            declare_vid(SymbolTableVariable, $1, *$2, $4, $6, $8, current_scope);
+            $$ = new std::string(codegen_decl_vid($1, *$2, $4, $6, $8));
+        }
         ; // we can have an assignment here
 
-gray_vid_decl : GRAY_VID ID LT NUM_CONST ',' NUM_CONST GT           { declare_gray_vid(SymbolTableVariable, $1, *$2, $4, $6, 30, current_scope);}
-        | GRAY_VID ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT   { declare_gray_vid(SymbolTableVariable, $1, *$2, $4, $6, $8, current_scope);}
+gray_vid_decl : GRAY_VID ID LT NUM_CONST ',' NUM_CONST GT           
+        { 
+            declare_gray_vid(SymbolTableVariable, $1, *$2, $4, $6, 30, current_scope);
+            $$ = new std::string(codegen_decl_vid($1, *$2, $4, $6, 30));
+        }
+        | GRAY_VID ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT   
+        { 
+            declare_gray_vid(SymbolTableVariable, $1, *$2, $4, $6, $8, current_scope);
+            $$ = new std::string(codegen_decl_vid($1, *$2, $4, $6, $8));
+        }
         ; // we can have an assignment here
 
 num_decl : 
@@ -622,7 +670,7 @@ if_block : IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW opti
 
 else_if_block_list : else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body 
         {
-            if (!cast_bool($5)) {
+            if (!cast_bool($5.ti)) {
                 yyerror("experssion cannot to evaluated to a boolean");
             } else {
                 $$ = new std::string(*($1) + "else if (" + *($5.str) + ") {\n" + *($10) + "}\n");
@@ -653,11 +701,11 @@ loop_block : LOOP optional_new_lines '(' increment_scope optional_loop_expr ')' 
             {
                 if (*$5 == "") 
                     *$5 = "true";
-                $$ = new std::string("while (" + *($5.str) + ") {\n" + *($8) + "}\n");
+                $$ = new std::string("while (" + *($5) + ") {\n" + *($8) + "}\n");
             }
         | LOOP optional_new_lines '(' increment_scope optional_loop_decl ';' optional_loop_expr ';' optional_loop_expr ')' optional_new_lines loop_body decrement_scope 
             {
-                $$ = new std::string("for (" + *($5.str) + "; " + *($7.str) + "; " + *($9.str) + ") {\n" + *($12) + "}\n");
+                $$ = new std::string("for (" + *($5) + "; " + *($7) + "; " + *($9) + ") {\n" + *($12) + "}\n");
             }
         ;
 
@@ -991,14 +1039,14 @@ in_built_call_stmt :
     | in_built_call_stmt DOT_OP ID '(' arg_list ')'     
         { 
             // $$ = check_inbuilt_func_call($1, *$3, $5.arg_vec);
-            $$.ti = check_inbuilt_func_call($1, *$3, $5.arg_vec);
+            $$.ti = check_inbuilt_func_call($1.ti, *$3, $5.arg_vec);
             $$.str = new std::string(*($1.str) + "." + *$3 + "(" + *($5.str) + ")");
         }
     | in_built_call_stmt DOT_OP ID '(' ')'              
         { 
             std::vector<struct type_info*> *temp  = new std::vector<struct type_info*>;
             // $$ = check_inbuilt_func_call($1, *$3, temp);
-            $$.ti = check_inbuilt_func_call($1, *$3, temp);
+            $$.ti = check_inbuilt_func_call($1.ti, *$3, temp);
             $$.str = new std::string(*($1.str) + "." + *$3 + "()");
         }
         ;
@@ -1022,7 +1070,10 @@ arg_list : arg_list ',' arg
             }
         | arg 
             {
-                std::vector<struct type_info*> *p = new std::vector<struct type_info*>(1, $1.arg_vec);
+                std::vector<struct type_info*> *p = new std::vector<struct type_info*>();
+                for (auto x: *($1.arg_vec)){
+                    p->push_back(x);
+                }
                 $$.arg_vec = p;
                 $$.str = new std::string(*($1.str));
             }
@@ -1041,7 +1092,8 @@ arg : expr_pred
             t->type = TYPE::SIMPLE;
             t->eleType = ELETYPE::ELE_STR;
             std::vector<struct type_info*> *p = new std::vector<struct type_info*>(1, t); 
-            $$ = p;
+            $$.arg_vec = p;
+            $$.str = new std::string($1->name);
         }
     ;
 
@@ -1088,7 +1140,7 @@ return_stmt : RETURN expr_pred new_lines
                 yyerror("return type must be same as function definition");
             }
             // if (error_counter == 0) fprintf(foutput, "return;\n");
-            $$ = new std::string("return;\n");
+            $$ = new std::string("");
         }
     ;
 

@@ -2,6 +2,7 @@
 #define CODEGEN_HPP
 
 #include <bits/stdc++.h>
+#include <string>
 #include "sym_tab.hpp"
 #include "semantic.hpp"
 
@@ -12,6 +13,9 @@ std::string type_to_string(struct type_info* t);
 std::string codegen_operator(OPERATOR op);
 std::string codegen_operator( OPERATOR op, std::string op1, std::string op2);
 std::vector<std::string> join(std::vector<std::string>* vec, std::string delim);
+std::string codegen_decl_img(struct type_info* t, std::string name, int h, int w, int c);
+std::string codegen_decl_img(struct type_info* t, std::string name, struct type_info* p);
+std::string codegen_decl_vid(struct type_info* t, std::string name, int h, int w, int fps);
 
 std::string codegen_function_definition(
     ELETYPE type, 

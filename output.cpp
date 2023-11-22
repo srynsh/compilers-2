@@ -6,8 +6,10 @@
 
 using namespace std;
 
-int main() {
-vector<vector<int>> a = {{1 + 3 / 5, 2}, {3, 4}};
-int b = 5;
-b++ ;return;
+image foo(image i){
+image i2("foo.bmp");
+return i;
+}
+int main(){
+image a("/etc/bin/m.bmp");
 }

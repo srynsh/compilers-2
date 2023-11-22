@@ -327,6 +327,9 @@ void symbol_table_function::add_function_record(std::string name, ELETYPE return
                 exit(1);
             }
         }
+        std::string err = "Main function cannot have parameters";
+        yyerror(err.c_str());
+        exit(1);
     }
     else {
         for (auto i : this->function_list) {

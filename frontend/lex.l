@@ -172,6 +172,7 @@ path \'([^'\\])*\'
         fprintf(ftoken,"path: %s\n", yytext);
         struct type_info* tinfo = new struct type_info;
         tinfo->eleType = ELETYPE::ELE_STR;
+        tinfo->name = yytext;
         yylval.tval = tinfo;
         return PATH;
     }

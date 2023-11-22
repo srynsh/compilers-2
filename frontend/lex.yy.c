@@ -1,5 +1,5 @@
 
-#line 3 "lex.yy.c"
+#line 2 "lex.yy.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -526,8 +526,8 @@ int block_comment = 0;
 int inline_comment = 0;
 
 extern void yyerror(const char *s);
+#line 529 "lex.yy.c"
 #line 530 "lex.yy.c"
-#line 531 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -747,7 +747,7 @@ YY_DECL
 #line 34 "lex.l"
 
 
-#line 751 "lex.yy.c"
+#line 750 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -975,6 +975,7 @@ YY_RULE_SETUP
         fprintf(ftoken,"path: %s\n", yytext);
         struct type_info* tinfo = new struct type_info;
         tinfo->eleType = ELETYPE::ELE_STR;
+        tinfo->name = yytext;
         yylval.tval = tinfo;
         return PATH;
     }
@@ -982,7 +983,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 180 "lex.l"
+#line 181 "lex.l"
 {
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
@@ -1060,7 +1061,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 255 "lex.l"
+#line 256 "lex.l"
 {
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
@@ -1072,7 +1073,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 264 "lex.l"
+#line 265 "lex.l"
 {
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
@@ -1085,7 +1086,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 274 "lex.l"
+#line 275 "lex.l"
 {
     if (!inline_comment && !block_comment) {
         if (strcmp(yytext,"#*")==0) block_comment = 1;
@@ -1103,7 +1104,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 289 "lex.l"
+#line 290 "lex.l"
 {
     if (!inline_comment && !block_comment) {
         fprintf(ftoken, "punctuation: %s\n", yytext);
@@ -1114,7 +1115,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 297 "lex.l"
+#line 298 "lex.l"
 {
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
@@ -1127,7 +1128,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 307 "lex.l"
+#line 308 "lex.l"
 ECHO;
 	YY_BREAK
 #line 1134 "lex.yy.c"
@@ -2135,5 +2136,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 307 "lex.l"
+#line 308 "lex.l"
 
