@@ -7,13 +7,5 @@
 using namespace std;
 
 int main() {
-int a;
-if (a) {
-}
-else if (1) {
-}
-else if (a) {
-}
-else {
-}
+vector<vector<int>> a = {{1 + 3 / 5, 2}, {3, 4}};
 }

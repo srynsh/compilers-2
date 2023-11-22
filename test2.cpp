@@ -1,6 +1,14 @@
 #include <bits/stdc++.h>
 
+using namespace std;
+
+void a(string* s){
+    string str = "hi";
+    *s = str;
+}
+
 int main(){
-    a = 5;
-    b = 6;
+    string *s;
+    a(s);
+    std::cout << *s << std::endl;
 }

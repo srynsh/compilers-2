@@ -39,12 +39,11 @@
     std::vector<struct type_info*> *arg_vec;
 
     struct {
-        int val;
-        std::string str;
-        std::vector<int> *vector_int;
-        struct type_info* ti;
-    } lang_element;
-    // struct codegen_struct lang_element;
+    int val;
+    std::string *str;
+    std::vector<int> *vector_int;
+    struct type_info* ti;
+} lang_element;
     // struct 
 
     OPERATOR opval;
@@ -300,7 +299,7 @@ num_decl :
             SymbolTableVariable->add_variable(*$2, t_res->type, t_res->eleType, current_scope);
             if (error_counter == 0) {
                 // fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, temp_str[0], NULL).c_str());
-                fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, $4.str, NULL).c_str());
+                fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, *($4.str), NULL).c_str());
                 // temp_str.clear();
             }
         }
@@ -321,7 +320,7 @@ bool_decl :
             SymbolTableVariable->add_variable(*$2, t_res->type, t_res->eleType, current_scope);
             if (error_counter == 0) {
                 // fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, temp_str[0], NULL).c_str());
-                fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, $4.str, NULL).c_str());
+                fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, *($4.str), NULL).c_str());
                 // temp_str.clear();
             }
         }
@@ -343,7 +342,7 @@ real_decl :
             SymbolTableVariable->add_variable(*$2, t_res->type, t_res->eleType, current_scope);
             if (error_counter == 0) {
                 // fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, temp_str[0], NULL).c_str());
-                fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, $4.str, NULL).c_str());
+                fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, *($4.str), NULL).c_str());
                 // temp_str.clear();
             }
         }
@@ -388,17 +387,15 @@ num_array_decl :
         {
             struct type_info *t_res = new struct type_info;
             t_res->type = TYPE::ARRAY;
-            t_res->eleType = ELETYPE::ELE_REAL;
+            t_res->eleType = ELETYPE::ELE_NUM;
             std::vector<int> *temp_dim_list = $2;
             t_res->dim_list = new std::vector<int>;
             for (int i = 0; i < temp_dim_list->size(); i++){
                 t_res->dim_list->push_back(temp_dim_list->at(i));
             }
             array_compatibility(*(t_res->dim_list), *($5.vector_int));
-            std::cout << lineno << std::endl;
             SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
-            std::cout << lineno << std::endl;
-            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, $5.str, NULL).c_str());
+            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *($5.str), NULL).c_str());
         }
     ;
 
@@ -449,7 +446,7 @@ real_array_decl :
             }
             array_compatibility(*(t_res->dim_list), *($5.vector_int));
             SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
-            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, $5.str, NULL).c_str());
+            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *($5.str), NULL).c_str());
         }  
     ;
 
@@ -478,14 +475,16 @@ expr_pred_list : expr_pred_list ',' expr_pred
                         $$.val = $1.val + 1; 
                         // temp_str_2.push_back(temp_str[0]); temp_str.clear(); 
                         // temp_str_2 = join(&temp_str_2, ",");
-                        $$.str = $1.str + ", " + $3.str;
+                        $$.str = new std::string(*($1.str) + ", " + *($3.str));
+                        // *($$.str) = *($1.str) + ", " + *($3.str);
                     }
                | expr_pred 
                     { 
                         $$.val = 1; 
                         // temp_str_2.push_back(temp_str[0]); 
                         // temp_str.clear();
-                        $$.str = $1.str;
+                        $$.str = new std::string(*($1.str));
+                        // *($$.str) = *($1.str);
                     }
                ;
 
@@ -493,14 +492,16 @@ brak_pred : '{' brak_pred_list '}'
                 { 
                     $$.vector_int = $2.vector_int; 
                     // temp_str[0] = "{" + temp_str[0] + "}";
-                    $$.str = "{" + $2.str + "}";
+                    $$.str = new std::string("{" + *($2.str) + "}");
+                    // *($$.str) = "{" + *($2.str) + "}";
                 }
           | '{' expr_pred_list '}'      
                 {
                     std::vector<int> *p = new std::vector<int>;
                     p->push_back($2.val);
                     $$.vector_int = p;
-                    $$.str = "{" + $2.str + "}";
+                    $$.str = new std::string("{" + *($2.str) + "}");
+                    // *($$.str) = "{" + *($2.str) + "}";
                 }
           ;
 
@@ -517,7 +518,8 @@ brak_pred_list : brak_pred_list ',' brak_pred
 
                     p->at(0) += 1;
                     $$.vector_int = p;
-                    $$.str = $1.str + ", " + $3.str;
+                    $$.str = new std::string(*($1.str) + ", " + *($3.str));
+                    // *($$.str) = *($1.str) + ", " + *($3.str);
                 }
                | brak_pred
                 {
@@ -527,7 +529,8 @@ brak_pred_list : brak_pred_list ',' brak_pred
                         p->push_back(i);
                     }
                     $$.vector_int = p;
-                    $$.str = $1.str;
+                    $$.str = new std::string(*($1.str));
+                    // *($$.str) = *($1.str);
                 }
                ;
 
@@ -718,7 +721,8 @@ expr_pred :
                 ti->name = *$1;
                 // print size of dim_list
                 $$.ti = ti; 
-                $$.str = *$1;
+                // *($$.str) = *$1;
+                $$.str = new std::string(*$1);
                 // $$ = ti;
                 // temp_str.push_back(*$1);
             }
@@ -728,7 +732,8 @@ expr_pred :
                 ti->type = TYPE::SIMPLE;
                 ti->eleType = ELETYPE::ELE_NUM;
                 $$.ti = ti;
-                $$.str = std::to_string($1);
+                // *($$.str) = std::to_string($1);
+                $$.str = new std::string(std::to_string($1));
                 // temp_str.push_back(std::to_string($1));
             }
         | REAL_CONST
@@ -737,7 +742,8 @@ expr_pred :
                 ti->type = TYPE::SIMPLE;
                 ti->eleType = ELETYPE::ELE_REAL;
                 $$.ti = ti;
-                $$.str = std::to_string($1);
+                // *($$.str) = std::to_string($1);
+                $$.str = new std::string(std::to_string($1));
                 // temp_str.push_back(std::to_string($1));
             }
         | BOOL_CONST
@@ -750,10 +756,14 @@ expr_pred :
                 //     temp_str.push_back("true");
                 // else 
                 //     temp_str.push_back("false");
+                // if ($1 == 1) 
+                //     *($$.str) = "true";
+                // else 
+                //     *($$.str) = "false";       
                 if ($1 == 1) 
-                    $$.str = "true";
+                    $$.str = new std::string("true");
                 else 
-                    $$.str = "false";       
+                    $$.str = new std::string("false");
             }
         | expr_pred REL_OP expr_pred  
             {
@@ -761,7 +771,8 @@ expr_pred :
                 t = relational_compatible(t1, t2, $2);
                 $$.ti = t;
                 // temp_str = codegen_operator($2, &temp_str);
-                $$.str = codegen_operator($2, $1.str, $3.str);
+                // *($$.str) = codegen_operator($2, *($1.str), *($3.str));
+                $$.str = new std::string(codegen_operator($2, *($1.str), *($3.str)));
             }      
         | expr_pred LT expr_pred
             {
@@ -769,7 +780,8 @@ expr_pred :
                 t = relational_compatible(t1, t2, $2);
                 $$.ti = t;
                 // temp_str = codegen_operator($2, &temp_str);
-                $$.str = codegen_operator($2, $1.str, $3.str);
+                $$.str = new std::string(codegen_operator($2, *($1.str), *($3.str)));
+                // *($$.str) = codegen_operator($2, *($1.str), *($3.str));
             }
         | expr_pred GT expr_pred
             {
@@ -777,7 +789,8 @@ expr_pred :
                 t = relational_compatible(t1, t2, $2);
                 $$.ti = t;
                 // temp_str = codegen_operator($2, &temp_str);
-                $$.str = codegen_operator($2, $1.str, $3.str);
+                // *($$.str) = codegen_operator($2, *($1.str), *($3.str));
+                $$.str = new std::string(codegen_operator($2, *($1.str), *($3.str)));
             }
         | expr_pred LOG_OP expr_pred
             {
@@ -786,19 +799,22 @@ expr_pred :
                 t = relational_compatible(t1, t2, $2);
                 $$.ti = t;
                 // temp_str = codegen_operator($2, &temp_str);
-                $$.str = codegen_operator($2, $1.str, $3.str);
+                // *($$.str) = codegen_operator($2, *($1.str), *($3.str));
+                $$.str = new std::string(codegen_operator($2, *($1.str), *($3.str)));
             }
         | '(' expr_pred ')'                 
             {
                 $$.ti = $2.ti; 
                 // temp_str[0] = "(" + temp_str[0] + ")";
-                $$.str = "(" + $2.str + ")";
+                // *($$.str) = "(" + *($2.str) + ")";
+                $$.str = new std::string("(" + *($2.str) + ")");
             } 
         | NEG_OP expr_pred                  
             {
                 $$.ti = $2.ti; 
                 // temp_str = codegen_operator($1, &temp_str);
-                $$.str = codegen_operator($1, $2.str, "");
+                $$.str = new std::string(codegen_operator($1, *($2.str), ""));
+                // *($$.str) = codegen_operator($1, *($2.str), "");
             } 
         | call_stmt                         
             {
@@ -819,7 +835,8 @@ expr_pred :
                 t = binary_compatible(t1, t2, $2);
                 $$.ti = t;
                 // temp_str = codegen_operator($2, &temp_str);
-                $$.str = codegen_operator($2, $1.str, $3.str);
+                $$.str = new std::string(codegen_operator($2, *($1.str), *($3.str)));
+                // *($$.str) = codegen_operator($2, *($1.str), *($3.str));
             }
         | expr_pred UNARY_OP 
             {
@@ -827,7 +844,8 @@ expr_pred :
                 t = unary_compatible(t1, $2);
                 $$.ti = t;
                 // temp_str = codegen_operator($2, &temp_str);
-                $$.str = codegen_operator($2, $1.str, "");
+                $$.str = new std::string(codegen_operator($2, *($1.str), ""));
+                // *($$.str) = codegen_operator($2, *($1.str), "");
             }           
         | INV_OP expr_pred
             {
@@ -835,7 +853,8 @@ expr_pred :
                 t = unary_compatible(t1, $1);
                 $$.ti = t;
                 // temp_str = codegen_operator($1, &temp_str);
-                $$.str = codegen_operator($1, $2.str, "");
+                $$.str = new std::string(codegen_operator($1, *($2.str), ""));
+                // *($$.str) = codegen_operator($1, *($2.str), "");
             }
         ;
 
