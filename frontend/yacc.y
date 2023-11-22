@@ -121,7 +121,7 @@ S :
 program : 
     function new_lines program
         {
-            $$ = new std::string(*($1) + "\n" + *($3));
+            $$ = new std::string(*($1) + "\n\n" + *($3));
         }
     | function optional_new_lines
         {
@@ -933,7 +933,7 @@ expr_pred :
             } /*temp*/
         | in_built_call_stmt                
             {
-                $$.ti = new struct type_info;
+                $$.ti = $1.ti;
                 $$.str = new std::string(*($1.str));
             } /*temp*/
         | ID array_element                  
@@ -1031,9 +1031,9 @@ in_built_call_stmt :
             for (int i = 0; i < temp_dim_list.size(); i++){
                 t1->dim_list->push_back(temp_dim_list[i]);
             }
-            std::vector<struct type_info*> *temp  = new std::vector<struct type_info*>;
+            // std::vector<struct type_info*> *temp  = new std::vector<struct type_info*>;
             // $$ = check_inbuilt_func_call(t1,*$3, temp);
-            $$.ti = check_inbuilt_func_call(t1,*$3, temp);
+            $$.ti = check_inbuilt_func_call(t1,*$3, NULL);
             $$.str = new std::string(*$1 + "." + *$3 + "()");
         }
     | in_built_call_stmt DOT_OP ID '(' arg_list ')'     
@@ -1044,9 +1044,9 @@ in_built_call_stmt :
         }
     | in_built_call_stmt DOT_OP ID '(' ')'              
         { 
-            std::vector<struct type_info*> *temp  = new std::vector<struct type_info*>;
+            // std::vector<struct type_info*> *temp  = new std::vector<struct type_info*>;
             // $$ = check_inbuilt_func_call($1, *$3, temp);
-            $$.ti = check_inbuilt_func_call($1.ti, *$3, temp);
+            $$.ti = check_inbuilt_func_call($1.ti, *$3, NULL);
             $$.str = new std::string(*($1.str) + "." + *$3 + "()");
         }
         ;
@@ -1093,6 +1093,8 @@ arg : expr_pred
             t->eleType = ELETYPE::ELE_STR;
             std::vector<struct type_info*> *p = new std::vector<struct type_info*>(1, t); 
             $$.arg_vec = p;
+            // Change first and last character of string to "
+            $1->name[0] = '"'; $1->name[($1->name.length()-1)] = '"';
             $$.str = new std::string($1->name);
         }
     ;
@@ -1127,6 +1129,8 @@ return_stmt : RETURN expr_pred new_lines
             ELETYPE last_ret_type = SymbolTableFunction->get_current_return_type();
             struct type_info* t = $2.ti;
             if (last_ret_type != t->eleType) {
+                print_eleType(last_ret_type);
+                print_eleType(t->eleType);
                 yyerror("return type must be same as function definition");
             }
             // if (error_counter == 0) fprintf(foutput, "return %s;\n", *($2.str)); 

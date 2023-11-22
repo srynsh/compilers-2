@@ -123,7 +123,7 @@ void symbol_table_variable::add_variable(std::vector<std::string> &names, TYPE t
 
 void symbol_table_variable::add_variable(std::vector<std::pair<std::string, type_info*> > &var_list, int scope){
     for (auto i : var_list) {
-        if (i.second-> type == TYPE::ARRAY) 
+        if (i.second-> type == TYPE::ARRAY || is_img(i.second->eleType) || is_vid(i.second->eleType))
             this->add_variable(i.first, i.second->type, i.second->eleType, *(i.second->dim_list), scope);
         else 
             this->add_variable(i.first, i.second->type, i.second->eleType, scope);

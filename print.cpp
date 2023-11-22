@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
-#include <ncurses.h>
 #include <unistd.h>
 #include "image.hpp"
 

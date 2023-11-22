@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
-#include "./frontend/headers/kernel.hpp"
-#include "./frontend/headers/load_bmp.hpp"
+#include "kernel.hpp"
+#include "load_bmp.hpp"
 
 #ifndef IMAGE_HPP
 #define IMAGE_HPP
@@ -137,6 +137,8 @@ class image {
         video operator+(video const vid);
         video operator+(gray_video const vid);
 
+        char* get_buffer () const;
+        int get_buffer_size () const;
         // Destructor
         ~image();
 

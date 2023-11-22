@@ -6,6 +6,7 @@
 #include <omp.h>
 #include <valarray>
 
+
 /* To run: g++ --std=c++11 -o image frontend/headers/kernel.cpp frontend/headers/load_bmp.cpp image.cpp */
 
 #define MAX_SIZE 2000
@@ -75,6 +76,7 @@ image::image(int h, int w, int color) {
 /// @brief Initializes an image from a given file
 image::image(std::string filename) {
     this->load(filename, true);
+    this->made = 0;
 }
 
 /// @brief Copy constructor
@@ -109,8 +111,12 @@ image::image(const image &img) {
         }
     }
 
-    this->buffer_size = 54 + 3*this->w*this->h;
+    this->buffer_size = img.get_buffer_size();
     this->made = img.get_made();
+    if (!this->made) {
+        this->FileBuffer = new char[this->buffer_size];
+        memcpy(this->FileBuffer, img.get_buffer(), this->buffer_size);
+    }
 }
 
 bool image::get_made() const {
@@ -743,12 +749,20 @@ image image::crystallize(int k) {
  * Getters and Setters
  *------------------------------------------------------------------------*/
 
+ char* image::get_buffer() const {
+    return this->FileBuffer;
+ }
+
 int image::get_height() const{
     return h;
 }
 
 int image::get_width() const{
     return w;
+}
+
+int image::get_buffer_size() const {
+    return buffer_size;
 }
 
 int image::get_pixel(int i, int j, int channel) const {
@@ -783,7 +797,7 @@ void image::set_pixel(int i, int j, int channel, int value) {
  * Operators
  *------------------------------------------------------------------------*/
 
-image& image::operator=(image const img) {
+image& image::operator=(image const img) { 
 
     if (this == &img) {
         return *this; // handle self assignment
@@ -806,24 +820,31 @@ image& image::operator=(image const img) {
     h = img.get_height();
     w = img.get_width();
 
-    red = new int*[w];
-    green = new int*[w];
-    blue = new int*[w];
+    this->red = new int*[w];
+    this->green = new int*[w];
+    this->blue = new int*[w];
+
+    if (!img.get_made()) {
+        this->FileBuffer = new char[img.get_buffer_size()];
+        memcpy(this->FileBuffer, img.get_buffer(), img.get_buffer_size());
+    }
+
+    this->made = img.get_made();
 
     #pragma omp parallel for
     for (int i=0; i<w; i++) {
-        red[i] = new int[h];
-        green[i] = new int[h];
-        blue[i] = new int[h];
+        this->red[i] = new int[h];
+        this->green[i] = new int[h];
+        this->blue[i] = new int[h];
     }
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
             // Clip all values to 0-255
-            red[i][j] = ::clip(img.get_pixel(i, j, 0));
-            green[i][j] = ::clip(img.get_pixel(i, j, 1));
-            blue[i][j] = ::clip(img.get_pixel(i, j, 2));
+            this->red[i][j] = ::clip(img.get_pixel(i, j, 0));
+            this->green[i][j] = ::clip(img.get_pixel(i, j, 1));
+            this->blue[i][j] = ::clip(img.get_pixel(i, j, 2));
         }
     }
 
@@ -834,14 +855,14 @@ image& image::operator=(image const img) {
 image& image::operator=(gray_image const img) {
     
         for (int i=0; i<w; i++) {
-            delete [] red[i];
-            delete [] green[i];
-            delete [] blue[i];
+            delete [] this->red[i];
+            delete [] this->green[i];
+            delete [] this->blue[i];
         }
     
-        delete [] red;
-        delete [] green;
-        delete [] blue;
+        delete [] this->red;
+        delete [] this->green;
+        delete [] this->blue;
     
         if (!made) {
             delete FileBuffer;
@@ -850,24 +871,24 @@ image& image::operator=(gray_image const img) {
         h = img.get_height();
         w = img.get_width();
     
-        red = new int*[w];
-        green = new int*[w];
-        blue = new int*[w];
+        this->red = new int*[w];
+        this->green = new int*[w];
+        this->blue = new int*[w];
     
         #pragma omp parallel for
         for (int i=0; i<w; i++) {
-            red[i] = new int[h];
-            green[i] = new int[h];
-            blue[i] = new int[h];
+            this->red[i] = new int[h];
+            this->green[i] = new int[h];
+            this->blue[i] = new int[h];
         }
     
         #pragma omp parallel for collapse(2)
         for(int i=0; i<w; i++) {
             for(int j=0; j<h; j++) {
                 // Clip all values to 0-255
-                red[i][j] = ::clip(img.get_pixel(i, j));
-                green[i][j] = ::clip(img.get_pixel(i, j));
-                blue[i][j] = ::clip(img.get_pixel(i, j));
+                this->red[i][j] = ::clip(img.get_pixel(i, j));
+                this->green[i][j] = ::clip(img.get_pixel(i, j));
+                this->blue[i][j] = ::clip(img.get_pixel(i, j));
             }
         }
 
@@ -1574,14 +1595,14 @@ video image::operator+(gray_video const vid){
 
 image::~image() {
     for (int i=0; i<w; i++) {
-        delete [] red[i];
-        delete [] green[i];
-        delete [] blue[i];
+        delete [] this->red[i];
+        delete [] this->green[i];
+        delete [] this->blue[i];
     }
 
-    delete [] red;
-    delete [] green;
-    delete [] blue;
+    delete [] this->red;
+    delete [] this->green;
+    delete [] this->blue;
 
     if (!made) {
         delete FileBuffer;
@@ -2681,10 +2702,45 @@ video::video(int h, int w, int fps) {
 
 /// @brief Plays the video on the terminal
 void video::play() {
-    #pragma omp parallel for num_threads(5)
-    for (int i=0; i<frames_vec.size(); i+=5) {
+    int file_to_be_saved = 0;
+    int n = 8;
+    std::vector <int> file_update_status = vector<int>(n, 0);
+    int file_to_be_printed = 0;
+    #pragma omp parallel for num_threads(n) ordered
+    for (int i=0; i<frames_vec.size(); i++) {
         int thread_id = omp_get_thread_num();
+        int image_id = 0;
+        #pragma omp critical
+        {
+            image_id = file_to_be_saved;
+            file_to_be_saved = (file_to_be_saved + 1) % n;
+            // file_to_be_saved = (file_to_be_saved + 1) % omp_get_num_threads();
+        }
+        frames_vec[i].frame("temp" + std::to_string(thread_id) + ".bmp");
         
+        #pragma omp critical
+        {
+            file_update_status[image_id] = 1;
+        }
+
+        int file_printed = 0;
+        #pragma omp critical
+        {
+            file_printed = file_to_be_printed;
+            file_to_be_printed = (file_to_be_printed + 1) % n;
+            while (file_update_status[file_printed] == 0) {
+                usleep(1000);
+            }
+            system("clear");
+            std::string s = "tiv -w 1000 -h 1000 temp" + std::to_string(thread_id) + ".bmp"; 
+            system(s.c_str());
+            // system("rm temp" + std::to_string(thread_id) + ".bmp");
+            file_update_status[file_printed] = 0;
+            usleep(1000000/1);
+            // usleep(1000000/fps);
+        }
+
+
     }
 }
 

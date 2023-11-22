@@ -1,10 +1,11 @@
-ink foo(img i) -> img {
-    img i2< 'foo.bmp'>
-    return i
+ink blur(img i) -> img {
+    return i.blur(10)
 }
 
 ink main()->void {
-    img a< '/etc/bin/m.bmp'>
-
+    img a<'./images/inputs/blackbuck.bmp'>
+    a = blur(a)
+    a.paint()
+    a.frame('./lesgooooo.bmp')
     return void
 }

@@ -1,15 +1,16 @@
-#include <bits/stdc++.h>
 #include "image.hpp"
+#include "kernel.hpp"
+#include "load_bmp.hpp"
 #include "turtle.hpp"
-#include "./frontend/headers/kernel.hpp"
-#include "./frontend/headers/load_bmp.hpp"
+#include <bits/stdc++.h>
 
 using namespace std;
 
-image foo(image i){
-image i2("foo.bmp");
-return i;
-}
-int main(){
-image a("/etc/bin/m.bmp");
+image blur(image i) { return i.blur(30); }
+
+int main() {
+  image a("./images/inputs/blackbuck.bmp");
+  a = blur(a);
+  a.paint();
+  a.frame("./lesgooooo.bmp");
 }

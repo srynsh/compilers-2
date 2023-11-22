@@ -1,4 +1,6 @@
 #include <bits/stdc++.h>
+#include <omp.h>
+#include "kernel.hpp"
 
 using namespace std;
 /* Operator overloading for vectors */
@@ -20,6 +22,7 @@ vector<vector<float>> operator+(vector<vector<float>> const& vec1, vector<vector
 
     vector<vector<float>> new_vec(w, vector<float>(h));
 
+    #pragma omp parallel for collapse(2)
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             new_vec [i][j] = vec1[i][j] + vec2[i][j];
@@ -45,6 +48,7 @@ vector<vector<float>> operator-(vector<vector<float>> const& vec1, vector<vector
 
     vector<vector<float>> new_vec(w, vector<float>(h));
 
+    #pragma omp parallel for collapse(2)
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             new_vec [i][j] = vec1[i][j] - vec2[i][j];
@@ -71,6 +75,7 @@ vector<vector<float>> operator*(vector<vector<float>> const& vec1, vector<vector
 
     vector<vector<float>> new_vec(w, vector<float>(h));
 
+    #pragma omp parallel for collapse(2)
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             new_vec [i][j] = vec1[i][j] * vec2[i][j];
@@ -96,6 +101,7 @@ vector<vector<float>> operator/(vector<vector<float>> const& vec1, vector<vector
 
     vector<vector<float>> new_vec(w, vector<float>(h));
 
+    #pragma omp parallel for collapse(2)
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             new_vec [i][j] = vec1[i][j] / vec2[i][j];
@@ -117,6 +123,7 @@ vector<vector<float>> vec_sqrt(vector<vector<float>> const& vec) {
 
     vector<vector<float>> new_vec(w, vector<float>(h));
 
+    #pragma omp parallel for collapse(2)
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             new_vec [i][j] = std::sqrt(vec[i][j]);
@@ -192,6 +199,7 @@ vector<float> operator+(vector<float> const& vec1, vector<float> const& vec2) {
 
     vector<float> new_vec(w);
 
+    #pragma omp parallel for collapse(1)
     for (int i=0; i<w; i++) {
         new_vec [i] = vec1[i] + vec2[i];
     }
@@ -214,6 +222,7 @@ vector<float> operator-(vector<float> const& vec1, vector<float> const& vec2) {
 
     vector<float> new_vec(w);
 
+    #pragma omp parallel for collapse(1)
     for (int i=0; i<w; i++) {
         new_vec [i] = vec1[i] - vec2[i];
     }
@@ -236,6 +245,7 @@ vector<float> operator*(vector<float> const& vec1, vector<float> const& vec2) {
 
     vector<float> new_vec(w);
 
+    #pragma omp parallel for collapse(1)
     for (int i=0; i<w; i++) {
         new_vec [i] = vec1[i] * vec2[i];
     }
@@ -258,6 +268,7 @@ vector<float> operator/(vector<float> const& vec1, vector<float> const& vec2) {
 
     vector<float> new_vec(w);
 
+    #pragma omp parallel for collapse(1)
     for (int i=0; i<w; i++) {
         new_vec [i] = vec1[i] / vec2[i];
     }
@@ -276,6 +287,7 @@ vector<float> vec_sqrt(vector<float> const& vec) {
 
     vector<float> new_vec(w);
 
+    #pragma omp parallel for collapse(1)
     for (int i=0; i<w; i++) {
         new_vec [i] = std::sqrt(vec[i]);
     }
@@ -303,8 +315,9 @@ vector<vector<vector<float>>> operator+(vector<vector<vector<float>>> const& vec
     int h = vec1[0].size();
     int f = vec1[0][0].size();
 
-    vector<vector<vector<float>>> new_vec(w, vector<float>(h), vector<vector<float>>(f));
+    vector<vector<vector<float>>> new_vec(w, vector<vector<float>>(h, vector<float>(f)));
 
+    #pragma omp parallel for collapse(3)
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             for (int k=0; k<f; k++) {
@@ -313,122 +326,176 @@ vector<vector<vector<float>>> operator+(vector<vector<vector<float>>> const& vec
         }
     }
 
-//     return new_vec;
-// }
+    return new_vec;
+}
 
-// // - operator
-// vector<vector<vector<float>>> operator-(vector<vector<vector<float>>> const& vec1, vector<vector<vector<float>>> const& vec2) {
-//     /*
-//         params:
-//             vec1: 3D vector of floats (of dimension (width x height x frame_rate))
-//             vec2: 3D vector of floats (of dimension (width x height x frame_rate))
-//             vec3: 3D vector of floats (of dimension (width x height x frame_rate))
-//     */
+// - operator
+vector<vector<vector<float>>> operator-(vector<vector<vector<float>>> const& vec1, vector<vector<vector<float>>> const& vec2) {
+    /*
+        params:
+            vec1: 3D vector of floats (of dimension (width x height x frame_rate))
+            vec2: 3D vector of floats (of dimension (width x height x frame_rate))
+            vec3: 3D vector of floats (of dimension (width x height x frame_rate))
+    */
 
-//     assert(vec1.size() == vec2.size());
-//     assert(vec1[0].size() == vec2[0].size());
-//     assert(vec1[0][0].size() == vec2[0][0].size());
-
-
-//     int w = vec1.size();
-//     int h = vec1[0].size();
-//     int f = vec1[0][0].size();
-
-//     vector<vector<vector<float>>> new_vec(w, vector<float>(h), vector<vector<float>>(f));
-
-//     for (int i=0; i<w; i++) {
-//         for (int j=0; j<h; j++) {
-//             for (int k=0; k<f; k++) {
-//                 new_vec [i][j][k] = vec1[i][j][k] - vec2[i][j][k];
-//             }
-//         }
-//     }
-
-//     return new_vec;
-// }
-
-// // * operator
-// vector<vector<vector<float>>> operator*(vector<vector<vector<float>>> const& vec1, vector<vector<vector<float>>> const& vec2) {
-//     /*
-//         params:
-//             vec1: 3D vector of floats (of dimension (width x height x frame_rate))
-//             vec2: 3D vector of floats (of dimension (width x height x frame_rate))
-//             vec3: 3D vector of floats (of dimension (width x height x frame_rate))
-//     */
-
-//     assert(vec1.size() == vec2.size());
-//     assert(vec1[0].size() == vec2[0].size());
-//     assert(vec1[0][0].size() == vec2[0][0].size());
+    assert(vec1.size() == vec2.size());
+    assert(vec1[0].size() == vec2[0].size());
+    assert(vec1[0][0].size() == vec2[0][0].size());
 
 
-//     int w = vec1.size();
-//     int h = vec1[0].size();
-//     int f = vec1[0][0].size();
+    int w = vec1.size();
+    int h = vec1[0].size();
+    int f = vec1[0][0].size();
 
-//     vector<vector<vector<float>>> new_vec(w, vector<float>(h), vector<vector<float>>(f));
+    vector<vector<vector<float>>> new_vec(w, vector<vector<float>>(h, vector<float>(f)));
 
-//     for (int i=0; i<w; i++) {
-//         for (int j=0; j<h; j++) {
-//             for (int k=0; k<f; k++) {
-//                 new_vec [i][j][k] = vec1[i][j][k] * vec2[i][j][k];
-//             }
-//         }
-//     }
+    #pragma omp parallel for collapse(3)
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+            for (int k=0; k<f; k++) {
+                new_vec [i][j][k] = vec1[i][j][k] - vec2[i][j][k];
+            }
+        }
+    }
 
-//     return new_vec;
-// }
+    return new_vec;
+}
 
-// // / operator
-// vector<vector<vector<float>>> operator/(vector<vector<vector<float>>> const& vec1, vector<vector<vector<float>>> const& vec2) {
-//     /*
-//         params:
-//             vec1: 3D vector of floats (of dimension (width x height x frame_rate))
-//             vec2: 3D vector of floats (of dimension (width x height x frame_rate))
-//             vec3: 3D vector of floats (of dimension (width x height x frame_rate))
-//     */
+// * operator
+vector<vector<vector<float>>> operator*(vector<vector<vector<float>>> const& vec1, vector<vector<vector<float>>> const& vec2) {
+    /*
+        params:
+            vec1: 3D vector of floats (of dimension (width x height x frame_rate))
+            vec2: 3D vector of floats (of dimension (width x height x frame_rate))
+            vec3: 3D vector of floats (of dimension (width x height x frame_rate))
+    */
 
-//     assert(vec1.size() == vec2.size());
-//     assert(vec1[0].size() == vec2[0].size());
-//     assert(vec1[0][0].size() == vec2[0][0].size());
+    assert(vec1.size() == vec2.size());
+    assert(vec1[0].size() == vec2[0].size());
+    assert(vec1[0][0].size() == vec2[0][0].size());
 
 
-//     int w = vec1.size();
-//     int h = vec1[0].size();
-//     int f = vec1[0][0].size();
+    int w = vec1.size();
+    int h = vec1[0].size();
+    int f = vec1[0][0].size();
 
-//     vector<vector<vector<float>>> new_vec(w, vector<float>(h), vector<vector<float>>(f));
+    vector<vector<vector<float>>> new_vec(w, vector<vector<float>>(h, vector<float>(f)));
 
-//     for (int i=0; i<w; i++) {
-//         for (int j=0; j<h; j++) {
-//             for (int k=0; k<f; k++) {
-//                 new_vec [i][j][k] = vec1[i][j][k] / vec2[i][j][k];
-//             }
-//         }
-//     }
+    #pragma omp parallel for collapse(3)
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+            for (int k=0; k<f; k++) {
+                new_vec [i][j][k] = vec1[i][j][k] * vec2[i][j][k];
+            }
+        }
+    }
 
-//     return new_vec;
-// }
+    return new_vec;
+}
 
-// // sqrt function
-// vector<vector<vector<float>>> vec_sqrt(vector<vector<vector<float>>> const& vec) {
-//     /*
-//         params:
-//             vec: 3D vector of floats (of dimension (width x height x frame_rate))
-//     */
+// / operator
+vector<vector<vector<float>>> operator/(vector<vector<vector<float>>> const& vec1, vector<vector<vector<float>>> const& vec2) {
+    /*
+        params:
+            vec1: 3D vector of floats (of dimension (width x height x frame_rate))
+            vec2: 3D vector of floats (of dimension (width x height x frame_rate))
+            vec3: 3D vector of floats (of dimension (width x height x frame_rate))
+    */
 
-//     int w = vec.size();
-//     int h = vec[0].size();
-//     int f = vec[0][0].size();
+    assert(vec1.size() == vec2.size());
+    assert(vec1[0].size() == vec2[0].size());
+    assert(vec1[0][0].size() == vec2[0][0].size());
 
-//     vector<vector<vector<float>>> new_vec(w, vector<float>(h), vector<vector<float>>(f));
 
-//     for (int i=0; i<w; i++) {
-//         for (int j=0; j<h; j++) {
-//             for (int k=0; k<f; k++) {
-//                 new_vec [i][j][k] = std::sqrt(vec[i][j][k]);
-//             }
-//         }
-//     }
+    int w = vec1.size();
+    int h = vec1[0].size();
+    int f = vec1[0][0].size();
 
-//     return new_vec;
-// }
+    vector<vector<vector<float>>> new_vec(w, vector<vector<float>>(h, vector<float>(f)));
+
+    #pragma omp parallel for collapse(3)
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+            for (int k=0; k<f; k++) {
+                new_vec [i][j][k] = vec1[i][j][k] / vec2[i][j][k];
+            }
+        }
+    }
+
+    return new_vec;
+}
+
+// sqrt function
+vector<vector<vector<float>>> vec_sqrt(vector<vector<vector<float>>> const& vec) {
+    /*
+        params:
+            vec: 3D vector of floats (of dimension (width x height x frame_rate))
+    */
+
+    int w = vec.size();
+    int h = vec[0].size();
+    int f = vec[0][0].size();
+
+    vector<vector<vector<float>>> new_vec(w, vector<vector<float>>(h, vector<float>(f)));
+
+    #pragma omp parallel for collapse(3)
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+            for (int k=0; k<f; k++) {
+                new_vec [i][j][k] = std::sqrt(vec[i][j][k]);
+            }
+        }
+    }
+
+    return new_vec;
+}
+
+// Assignment operator
+
+vector<float>& vectors::operator=(vector<float> const& vec)
+{
+    if (&this->vec1 == &vec) {
+        return this->vec1; // handle self assignment
+    }
+
+    #pragma omp parallel for collapse(1)
+    for (int i=0; i<vec.size(); i++) {
+        this->vec1[i] = vec[i];
+    }
+
+    return this->vec1;
+}
+
+vector<vector<float>>& vectors::operator=(vector<vector<float>> const& vec)
+{
+    if (&this->vec2 == &vec) {
+        return this->vec2; // handle self assignment
+    }
+
+    #pragma omp parallel for collapse(2)
+    for (int i=0; i<vec.size(); i++) {
+        for (int j=0; j<vec[0].size(); j++) {
+            this->vec2[i][j] = vec[i][j];
+        }
+    }
+
+    return this->vec2;
+}
+
+vector<vector<vector<float>>>& vectors::operator=(vector<vector<vector<float>>> const& vec)
+{
+    if (&this->vec3 == &vec) {
+        return this->vec3; // handle self assignment
+    }
+
+    #pragma omp parallel for collapse(3)
+    for (int i=0; i<vec.size(); i++) {
+        for (int j=0; j<vec[0].size(); j++) {
+            for (int k=0; k<vec[0][0].size(); k++) {
+                this->vec3[i][j][k] = vec[i][j][k];
+            }
+        }
+    }
+
+    return this->vec3;
+}

@@ -1,14 +1,9 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <omp.h>
+#include "image.hpp"
 
-using namespace std;
-
-void a(string* s){
-    string str = "hi";
-    *s = str;
-}
-
-int main(){
-    for(;;){
-        std::cout << "hi" << std::endl;
-    }
+int main() {
+    video v(100, 100, 1);
+    
+    return 0;
 }

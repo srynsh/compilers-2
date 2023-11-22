@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 #include <vector>
-#include "./frontend/headers/kernel.hpp"
-#include "./frontend/headers/load_bmp.hpp"
+#include "kernel.hpp"
+#include "load_bmp.hpp"
 #include "./image.hpp"
 
 #ifndef TURTLE_HPP
