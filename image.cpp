@@ -2702,45 +2702,19 @@ video::video(int h, int w, int fps) {
 
 /// @brief Plays the video on the terminal
 void video::play() {
-    int file_to_be_saved = 0;
-    int n = 8;
-    std::vector <int> file_update_status = vector<int>(n, 0);
-    int file_to_be_printed = 0;
-    #pragma omp parallel for num_threads(n) ordered
-    for (int i=0; i<frames_vec.size(); i++) {
-        int thread_id = omp_get_thread_num();
-        int image_id = 0;
-        #pragma omp critical
-        {
-            image_id = file_to_be_saved;
-            file_to_be_saved = (file_to_be_saved + 1) % n;
-            // file_to_be_saved = (file_to_be_saved + 1) % omp_get_num_threads();
+    int n = 4;
+    int divisions = this->get_num_frames()/n;
+    for(int i=0; i<divisions; i++) {
+        #pragma omp parallel for num_threads(n)
+        for(int j=0; j<n; j++) {
+            frames_vec[i*n + j].frame("temp" + std::to_string(j) + ".bmp");
         }
-        frames_vec[i].frame("temp" + std::to_string(thread_id) + ".bmp");
-        
-        #pragma omp critical
-        {
-            file_update_status[image_id] = 1;
-        }
-
-        int file_printed = 0;
-        #pragma omp critical
-        {
-            file_printed = file_to_be_printed;
-            file_to_be_printed = (file_to_be_printed + 1) % n;
-            while (file_update_status[file_printed] == 0) {
-                usleep(1000);
-            }
+        for (int j=0; j<n; j++) {
             system("clear");
-            std::string s = "tiv -w 1000 -h 1000 temp" + std::to_string(thread_id) + ".bmp"; 
+            std::string s = "tiv -w 1000 -h 1000 temp" + std::to_string(j) + ".bmp";
             system(s.c_str());
-            // system("rm temp" + std::to_string(thread_id) + ".bmp");
-            file_update_status[file_printed] = 0;
-            usleep(1000000/1);
-            // usleep(1000000/fps);
+            usleep(50000/fps);
         }
-
-
     }
 }
 

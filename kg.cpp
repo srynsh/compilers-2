@@ -16,20 +16,20 @@ int return_color(int r, int g, int b){
 }
 
 int main(){
-    image new_img = image(100, 100, 4);
+    image new_img = image(200, 200, 4);
     // new_img.frame("./images/outputs/vid/base.bmp");
     // new_img.draw("circle", {10, 30, 20, 245});
     int multiplier = 0;
     float y = 0;
     float color = 0;
-    int divisions = 100/6;
+    int divisions = 200/6;
     int high = 244;
     int low = 38;
     int step = (high-low)/divisions;
-    video new_vid = video(100, 100, 1);
-    for (float i=0;i<20;i++){
+    video new_vid = video(200, 200, 1);
+    for (float i=0;i<50;i++){
         // new_img.load("./images/outputs/vid/base.bmp");
-        image new_img = image(100, 100, 4);
+        image new_img = image(200, 200, 4);
         cout << i << endl;
         while ((y = return_parabola_point(i-multiplier*64))<0){
             multiplier++;
@@ -58,6 +58,7 @@ int main(){
         new_img.draw("circle", {i, y, 20, color, 1});
         new_vid = new_vid + new_img;
     }
+    cout << new_vid.get_fps() << endl;
     new_vid.play();
 
 }
