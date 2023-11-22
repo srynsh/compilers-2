@@ -696,6 +696,20 @@ struct type_info* check_inbuilt_func_call(struct type_info* ti, std::string func
         if (arg_list != NULL && arg_list->size() != 1) {
                 yyerror("in-built function takes 1 or 0 arguments");
             }
+        if (arg_list != NULL && arg_list->at(0)->type != TYPE::SIMPLE && !is_primitive(arg_list->at(0)->eleType)) {
+                yyerror("in-built function takes only primitive arguments (type will be casted to num)");
+            }
+        if (!is_img(ti->eleType)) {
+            yyerror("in-built function can only be applied to images");
+        }
+        struct type_info* t_return = new struct type_info;
+        t_return->type = TYPE::SIMPLE;
+        t_return->eleType = ti->eleType;
+        t_return->dim_list = new std::vector<int>(3);
+        for (int i = 0; i < 3; i++) {
+            t_return->dim_list->at(i) = ti->dim_list->at(i);
+        }
+        return t_return;
     }
 
     else if (func_name == "T" || func_name == "invert" || func_name == "paint" || func_name == "sobel" || func_name == "vflip" || func_name == "hflip") {
