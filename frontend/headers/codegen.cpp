@@ -11,8 +11,8 @@ std::string codegen_headers() {
     code += "#include <bits/stdc++.h>\n";
     code += "#include \"image.hpp\"\n";
     code += "#include \"turtle.hpp\"\n";
-    code += "#include \"./frontend/headers/kernel.hpp\"\n";
-    code += "#include \"./frontend/headers/load_bmp.hpp\"\n";
+    code += "#include \"kernel.hpp\"\n";
+    code += "#include \"load_bmp.hpp\"\n";
     code += '\n';
     code += "using namespace std;\n\n";
 

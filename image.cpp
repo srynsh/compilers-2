@@ -1,8 +1,8 @@
 #include <bits/stdc++.h>
 #include <sys/types.h>
 #include "image.hpp"
-#include "./frontend/headers/kernel.hpp"
-#include "./frontend/headers/load_bmp.hpp"
+#include "./kernel.hpp"
+#include "./load_bmp.hpp"
 #include <omp.h>
 #include <valarray>
 
