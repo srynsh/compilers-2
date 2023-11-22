@@ -8,7 +8,7 @@ void a(string* s){
 }
 
 int main(){
-    string *s;
-    a(s);
-    std::cout << *s << std::endl;
+    for(;;){
+        std::cout << "hi" << std::endl;
+    }
 }

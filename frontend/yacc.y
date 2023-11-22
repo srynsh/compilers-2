@@ -39,22 +39,30 @@
     std::vector<struct type_info*> *arg_vec;
 
     struct {
-    int val;
-    std::string *str;
-    std::vector<int> *vector_int;
-    struct type_info* ti;
-} lang_element;
+        int val;
+        std::string *str;
+        std::vector<int> *vector_int;
+        struct type_info* ti;
+        std::vector<struct type_info*> *arg_vec;
+    } lang_element;
     // struct 
 
     OPERATOR opval;
 }
 
-%type <lang_element> brak_pred brak_pred_list expr_pred_list expr_pred
+%type <lang_element> brak_pred brak_pred_list expr_pred_list expr_pred call_stmt arg arg_list in_built_call_stmt
+%type <sval> func_body loop_body real_array_decl num_array_decl real_decl num_decl bool_decl gray_vid_decl vid_decl gray_img_decl img_decl loop_stmt loop_stmt_list
+%type <sval> return_stmt unary_stmt stmt stmt_list expr_stmt decl_stmt loop_block
+%type <sval> function_definition function 
+%type <sval> program
+%type <sval> if_block else_if_block_list else conditional_stmt
+%type <sval> optional_loop_expr expr_or_decl_stmt optional_loop_decl
+%type <sval> loop_else loop_conditional_stmt loop_if_block loop_else_if_block_list loop_expr_stmt
 
 %type <dim_list> array_element brak
-%type <tval> datatype call_stmt RET_TYPE in_built_call_stmt
+%type <tval> datatype RET_TYPE 
 %type <par_vec> par_list par 
-%type <arg_vec> arg_list arg
+/* %type <arg_vec> arg_list arg */
 %type <id_vec> id_list
 %type <ival> array_ele
 
@@ -107,12 +115,20 @@ S :
         if (last_ret_type != ELETYPE::ELE_VOID){
             yyerror("last function does not return void");
         }
+        if (error_counter == 0) fprintf(foutput, "%s", *$2);
     }
     ;
 
-program : function new_lines program
-        | function optional_new_lines
-        ;/* empty */ 
+program : 
+    function new_lines program
+        {
+            $$ = new std::string(*($1) + "\n" + *($3));
+        }
+    | function optional_new_lines
+        {
+            $$ = new std::string(*($1));
+        }
+    ;/* empty */ 
 
 
 new_lines : new_lines NEWLINE
@@ -134,7 +150,8 @@ function : function_definition optional_new_lines func_body decrement_scope
                 } else {
                     return_flag = false;
                 }
-                if (error_counter == 0) fprintf(foutput, "}\n");
+                // if (error_counter == 0) fprintf(foutput, "}\n");
+                $$ = new std::string(*($1) + *($3));
             }
         ;
 
@@ -145,13 +162,15 @@ function_definition
             SymbolTableFunction->add_function_record(func_name, $8->eleType, $5); 
             assert(current_scope == 1);
             SymbolTableVariable->add_variable(*($5), current_scope);
-            if (error_counter == 0) fprintf(foutput, "%s {\n", codegen_function_definition($8->eleType, func_name, $5).c_str());
+            // if (error_counter == 0) fprintf(foutput, "%s {\n", codegen_function_definition($8->eleType, func_name, $5).c_str());
+            $$ = new std::string(codegen_function_definition($8->eleType, func_name, $5));
         }
     | INK ID  '(' increment_scope ')' ARROW RET_TYPE 
         {
             std::string func_name = *$2;
             SymbolTableFunction->add_function_record(func_name, $7->eleType);
-            if (error_counter == 0) fprintf(foutput, "%s {\n", codegen_function_definition($7->eleType, func_name, NULL).c_str());
+            // if (error_counter == 0) fprintf(foutput, "%s {\n", codegen_function_definition($7->eleType, func_name, NULL).c_str());
+            $$ = new std::string(codegen_function_definition($7->eleType, func_name, NULL));
         }
     ;
 
@@ -166,8 +185,12 @@ par_list :
     | par
     ;
 
-func_body : '{' increment_scope new_lines stmt_list '}' decrement_scope 
-        ;
+func_body : 
+        '{' increment_scope new_lines stmt_list '}' decrement_scope 
+            {
+                $$ = new std::string("{\n" + *($4) + "}");
+            }
+            ;
 
 /* Only simple types are returned */
 RET_TYPE : datatype 
@@ -234,20 +257,26 @@ brak : '[' ']'                  {$$ = new std::vector<int>(1, -1);}
 ///////////////////////////////////////////////////////////////////
 
 stmt_list : stmt 
-        | stmt_list stmt 
+            { 
+                $$ = new std::string(*($1));
+            }
+        | stmt_list stmt  
+            {
+                $$ = new std::string(*($1) + *($2));
+            }
         ;
 
-stmt : decl_stmt /* new_lines is included in expr_stmt */
-        | conditional_stmt /* new_lines is included in conditional_stmt */
-        | call_stmt new_lines
-        | in_built_call_stmt new_lines
-        | expr_stmt new_lines 
-        | return_stmt /* new_lines is included in expr_stmt */
-        | loop_block new_lines
-        | '{'increment_scope new_lines stmt_list '}' decrement_scope new_lines /* This allows nested scopes */
-        | '{' increment_scope new_lines '}' decrement_scope new_lines
-        | '{' '}' new_lines
-        | unary_stmt  /* new_lines is included in expr_stmt */
+stmt : decl_stmt /* new_lines is included in decl_stmt */ { $$ = new std::string(*($1));}
+        | conditional_stmt /* new_lines is included in conditional_stmt */ { $$ = new std::string(*($1));}
+        | call_stmt new_lines { $$ = new std::string(*($1.str) + ";\n");}
+        | in_built_call_stmt new_lines { $$ = new std::string(*($1.str) + ";\n");}
+        | expr_stmt new_lines  { $$ = new std::string(*($1) + ";\n");}
+        | return_stmt /* new_lines is included in expr_stmt */ { $$ = new std::string(*($1));}
+        | loop_block new_lines { $$ = new std::string(*($1) + "\n");}
+        | '{'increment_scope new_lines stmt_list '}' decrement_scope new_lines /* This allows nested scopes */ { $$ = new std::string("{\n" + *($4) + "}\n");}
+        | '{' increment_scope new_lines '}' decrement_scope new_lines { $$ = new std::string("{\n}\n");}
+        | '{' '}' new_lines { $$ = new std::string("{}\n");}
+        | unary_stmt  /* new_lines is included in expr_stmt */ { $$ = new std::string(*($1));}
         ; 
 
 /*------------------------------------------------------------------------*
@@ -290,18 +319,16 @@ num_decl :
         {
             struct type_info* t = $1;
             SymbolTableVariable->add_variable(*$2, t->type, t->eleType, current_scope);
-            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $2).c_str());
+            // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $2).c_str());
+            $$ = new std::string(codegen_decl_numeric(t, "", "", $2));
         }
     | NUM ID '=' expr_pred
         {
             struct type_info* t = $1, *t_res = new struct type_info;
             t_res = assignment_compatible(t, $4.ti);
             SymbolTableVariable->add_variable(*$2, t_res->type, t_res->eleType, current_scope);
-            if (error_counter == 0) {
-                // fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, temp_str[0], NULL).c_str());
-                fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, *($4.str), NULL).c_str());
-                // temp_str.clear();
-            }
+            // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, *($4.str), NULL).c_str());
+            $$ = new std::string(codegen_decl_numeric(t, *$2, *($4.str), NULL));
         }
 
         ;
@@ -311,18 +338,16 @@ bool_decl :
         {
             struct type_info* t = $1;
             SymbolTableVariable->add_variable(*$2, t->type, t->eleType, current_scope);
-            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $2).c_str());
+            // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $2).c_str());
+            $$ = new std::string(codegen_decl_numeric(t, "", "", $2));
         }
     | BOOL ID '=' expr_pred
         {
             struct type_info* t = $1, *t_res = new struct type_info;
             t_res = assignment_compatible(t, $4.ti);
             SymbolTableVariable->add_variable(*$2, t_res->type, t_res->eleType, current_scope);
-            if (error_counter == 0) {
-                // fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, temp_str[0], NULL).c_str());
-                fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, *($4.str), NULL).c_str());
-                // temp_str.clear();
-            }
+            // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, *($4.str), NULL).c_str());
+            $$ = new std::string(codegen_decl_numeric(t, *$2, *($4.str), NULL));
         }
     ;
 
@@ -332,7 +357,8 @@ real_decl :
             std::vector<std::string> *p = $2;
             struct type_info* t = $1;
             SymbolTableVariable->add_variable(*$2, t->type, t->eleType, current_scope);
-            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $2).c_str());
+            // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $2).c_str());
+            $$ = new std::string(codegen_decl_numeric(t, "", "", $2));
         }
         
     | REAL ID '=' expr_pred
@@ -340,11 +366,8 @@ real_decl :
             struct type_info* t = $1, *t_res = new struct type_info;
             t_res = assignment_compatible(t, $4.ti);
             SymbolTableVariable->add_variable(*$2, t_res->type, t_res->eleType, current_scope);
-            if (error_counter == 0) {
-                // fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, temp_str[0], NULL).c_str());
-                fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, *($4.str), NULL).c_str());
-                // temp_str.clear();
-            }
+            // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, *($4.str), NULL).c_str());
+            $$ = new std::string(codegen_decl_numeric(t, *$2, *($4.str), NULL));
         }
     ;
 
@@ -360,7 +383,8 @@ num_array_decl :
             }
 
             SymbolTableVariable->add_variable(*$3, t->type, t->eleType, *$2, current_scope);
-            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $3).c_str());
+            // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $3).c_str());
+            $$ = new std::string(codegen_decl_numeric(t, "", "", $3));
         }
     | NUM array_element ID '=' ID 
         {
@@ -381,7 +405,8 @@ num_array_decl :
             
             t_res = assignment_compatible(t1, t2);
             SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
-            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *$5, NULL).c_str());
+            // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *$5, NULL).c_str());
+            $$ = new std::string(codegen_decl_numeric(t_res, *$3, *$5, NULL));
         }
     | NUM array_element ID '=' brak_pred 
         {
@@ -395,7 +420,8 @@ num_array_decl :
             }
             array_compatibility(*(t_res->dim_list), *($5.vector_int));
             SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
-            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *($5.str), NULL).c_str());
+            // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *($5.str), NULL).c_str());
+            $$ = new std::string(codegen_decl_numeric(t_res, *$3, *($5.str), NULL));
         }
     ;
 
@@ -411,7 +437,8 @@ real_array_decl :
             }
 
             SymbolTableVariable->add_variable(*$3, t->type, t->eleType, *$2, current_scope);  
-            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $3).c_str());  
+            // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $3).c_str());  
+            $$ = new std::string(codegen_decl_numeric(t, "", "", $3));
         }
     | REAL array_element ID '=' ID 
         {
@@ -432,7 +459,8 @@ real_array_decl :
             
             t_res = assignment_compatible(t1, t2);
             SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
-            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *$5, NULL).c_str());
+            // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *$5, NULL).c_str());
+            $$ = new std::string(codegen_decl_numeric(t_res, *$3, *$5, NULL));
         }
     | REAL array_element ID '=' brak_pred
         {
@@ -446,7 +474,8 @@ real_array_decl :
             }
             array_compatibility(*(t_res->dim_list), *($5.vector_int));
             SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
-            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *($5.str), NULL).c_str());
+            // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *($5.str), NULL).c_str());
+            $$ = new std::string(codegen_decl_numeric(t_res, *$3, *($5.str), NULL));
         }  
     ;
 
@@ -563,115 +592,154 @@ id_list :
 * Conditional Statements
 *------------------------------------------------------------------------*/
 
-conditional_stmt : if_block optional_new_lines else_if_block_list optional_new_lines else { fprintf(fparser, "conditional");} new_lines
-                | if_block new_lines {fprintf(fparser, "conditional");}
-                | if_block optional_new_lines else_if_block_list new_lines {fprintf(fparser, "conditional");}
-                | if_block optional_new_lines else {fprintf(fparser, "conditional");} new_lines
+conditional_stmt : if_block optional_new_lines else_if_block_list optional_new_lines else new_lines
+                {
+                    $$ = new std::string(*($1) + *($3) + *($5));
+                }
+                | if_block new_lines
+                {
+                    $$ = new std::string(*($1));
+                }
+                | if_block optional_new_lines else_if_block_list new_lines
+                {
+                    $$ = new std::string(*($1) + *($3));
+                }
+                | if_block optional_new_lines else new_lines
+                {
+                    $$ = new std::string(*($1) + *($3));
+                }
                 ;
 
-if_block : IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines if_codegen func_body 
+if_block : IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body 
         {
             if (!cast_bool($4.ti)) {
                 yyerror("experssion cannot to evaluated to a boolean");
             } else {
-                // fprintf(foutput, "}\n");
+                $$ = new std::string("if (" + *($4.str) + ") {\n" + *($9) + "}\n");
             }
         }
         ;
 
-if_codegen : /* empty */
+else_if_block_list : else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body 
         {
-            // std::string exp = temp_str[0];
-            // temp_str.clear();
-            // std::string str = "if (" + exp + ") {\n";
-            // fprintf(foutput, str.c_str());
+            if (!cast_bool($5)) {
+                yyerror("experssion cannot to evaluated to a boolean");
+            } else {
+                $$ = new std::string(*($1) + "else if (" + *($5.str) + ") {\n" + *($10) + "}\n");
+            }
         }
-        ;
-
-else_if_block_list : else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines else_if_codegen func_body {fprintf(foutput, "}\n");}
-        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines else_if_codegen func_body
+        | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
         {
             if (!cast_bool($3.ti)) {
                 yyerror("experssion cannot to evaluated to a boolean");
             } else {
-                // fprintf(foutput, "}\n");
+                $$ = new std::string("else if (" + *($3.str) + ") {\n" + *($8) + "}\n");
             }
         } 
         ;
-
-else_if_codegen : /* empty */
-        {
-            // std::string exp = temp_str[0];
-            // temp_str.clear();
-            // std::string str = "else if (" + exp + ") {\n";
-            // fprintf(foutput, str.c_str());
-        }
-        ;
         
-else : ARROW optional_new_lines else_codegen func_body
+else : ARROW optional_new_lines func_body
         {
-            // fprintf(foutput, "}\n");
+            $$ = new std::string("else {\n" + *($3) + "}\n");
         }
         ;
 
-else_codegen : /* empty */
-        {
-            // fprintf(foutput, "else {\n");
-        }
-        ;
 
 /*------------------------------------------------------------------------
 * Loop Statements
 *------------------------------------------------------------------------*/
 
-loop_block : LOOP optional_new_lines '(' increment_scope optional_loop_expr ')' optional_new_lines loop_body decrement_scope {fprintf(fparser, "loop");}
-        | LOOP optional_new_lines '(' increment_scope optional_loop_decl ';' optional_loop_expr ';' optional_loop_expr ')' optional_new_lines loop_body decrement_scope {fprintf(fparser, "loop");}
+loop_block : LOOP optional_new_lines '(' increment_scope optional_loop_expr ')' optional_new_lines loop_body decrement_scope 
+            {
+                if (*$5 == "") 
+                    *$5 = "true";
+                $$ = new std::string("while (" + *($5.str) + ") {\n" + *($8) + "}\n");
+            }
+        | LOOP optional_new_lines '(' increment_scope optional_loop_decl ';' optional_loop_expr ';' optional_loop_expr ')' optional_new_lines loop_body decrement_scope 
+            {
+                $$ = new std::string("for (" + *($5.str) + "; " + *($7.str) + "; " + *($9.str) + ") {\n" + *($12) + "}\n");
+            }
         ;
 
-optional_loop_expr : expr_pred
-        | /* empty */
+optional_loop_expr : expr_pred 
+        { 
+            if (!cast_bool($1.ti)) {
+                yyerror("experssion cannot to evaluated to a boolean");
+            } else {
+                $$ = new std::string(*($1.str));
+            }
+        }
+        | { $$ = new std::string("");}
         ;
 
-optional_loop_decl : expr_or_decl_stmt 
-        | /* empty */
+optional_loop_decl : expr_or_decl_stmt  { $$ = new std::string(*($1));}
+        | /* empty */ { $$ = new std::string("");}
         ;
 
-loop_body : '{' new_lines loop_stmt_list '}'
-        ;
+loop_body : 
+    '{' new_lines loop_stmt_list '}'  
+        {
+            $$ = new std::string("{\n" + *($3) + "}\n");
+        }   
+    ;
 
-loop_stmt_list : loop_stmt
-        | loop_stmt_list loop_stmt
+loop_stmt_list : loop_stmt { $$ = new std::string(*($1));}
+        | loop_stmt_list loop_stmt { $$ = new std::string(*($1) + *($2));}
         ;
         
-loop_stmt : decl_stmt /* new_lines is included in decl_stmt */
+loop_stmt : decl_stmt /* new_lines is included in decl_stmt */ { $$ = new std::string(*($1));}
         | loop_conditional_stmt /* new_lines is included in conditional_stmt */
-        | call_stmt new_lines
-        | in_built_call_stmt new_lines
-        | expr_stmt new_lines
-        | return_stmt /* new_lines is included in expr_stmt */
-        | loop_block new_lines
-        | '{' increment_scope new_lines loop_stmt_list '}' decrement_scope new_lines /* This allows nested scopes */
-        | '{' increment_scope new_lines '}' decrement_scope new_lines
-        | '{' '}' new_lines
-        | unary_stmt  /* new_lines is included in expr_stmt */
-        | BREAK new_lines
-        | CONTINUE new_lines
+        | call_stmt new_lines { $$ = new std::string(*($1.str) + ";\n");}
+        | in_built_call_stmt new_lines { $$ = new std::string(*($1.str) + ";\n");}
+        | expr_stmt new_lines { $$ = new std::string(*($1) + ";\n");}
+        | return_stmt /* new_lines is included in expr_stmt */ { $$ = new std::string(*($1));}
+        | loop_block new_lines { $$ = new std::string(*($1) + "\n");}
+        | '{' increment_scope new_lines loop_stmt_list '}' decrement_scope new_lines /* This allows nested scopes */ { $$ = new std::string("{\n" + *($4) + "}\n");}
+        | '{' increment_scope new_lines '}' decrement_scope new_lines { $$ = new std::string("{\n}\n");}
+        | '{' '}' new_lines { $$ = new std::string("{}\n");}
+        | unary_stmt  /* new_lines is included in expr_stmt */ { $$ = new std::string(*($1));}
+        | BREAK new_lines { $$ = new std::string("break;\n");}
+        | CONTINUE new_lines { $$ = new std::string("continue;\n");}
         ;
 
 loop_if_block : IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body 
+        {
+            $$ = new std::string("if (" + *($4.str) + ") {\n" + *($9) + "}\n");
+        }
         ;
 
-loop_else : ARROW optional_new_lines loop_body
+loop_else : ARROW optional_new_lines loop_body 
+        {
+            $$ = new std::string("else {\n" + *($3) + "}\n");
+        }
         ;
 
 loop_else_if_block_list : loop_else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body
+        {
+            $$ = new std::string(*($1) + "else if (" + *($5.str) + ") {\n" + *($10) + "}\n");
+        }
         | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body 
+        {
+            $$ = new std::string("else if (" + *($3.str) + ") {\n" + *($8) + "}\n");
+        }
         ;
 
-loop_conditional_stmt : loop_if_block optional_new_lines loop_else_if_block_list optional_new_lines loop_else { fprintf(fparser, "conditional");} new_lines
-                | loop_if_block new_lines {fprintf(fparser, "conditional");}
-                | loop_if_block optional_new_lines loop_else_if_block_list new_lines {fprintf(fparser, "conditional");}
-                | loop_if_block optional_new_lines loop_else {fprintf(fparser, "conditional");} new_lines
+loop_conditional_stmt : loop_if_block optional_new_lines loop_else_if_block_list optional_new_lines loop_else new_lines
+                {
+                    $$ = new std::string(*($1) + *($3) + *($5));
+                }
+                | loop_if_block new_lines
+                {
+                    $$ = new std::string(*($1));
+                }
+                | loop_if_block optional_new_lines loop_else_if_block_list new_lines 
+                {
+                    $$ = new std::string(*($1) + *($3));
+                }
+                | loop_if_block optional_new_lines loop_else new_lines
+                {
+                    $$ = new std::string(*($1) + *($3));
+                }
                 ;
 
 loop_expr_stmt : ID '=' expr_pred 
@@ -698,6 +766,7 @@ expr_stmt :
         if (t == NULL) {
             yyerror("assignment not compatible");
         }
+        $$ = new std::string(*$1 + " = " + *($3.str));
     }
         
     | ID array_element '=' expr_pred 
@@ -721,10 +790,7 @@ expr_pred :
                 ti->name = *$1;
                 // print size of dim_list
                 $$.ti = ti; 
-                // *($$.str) = *$1;
                 $$.str = new std::string(*$1);
-                // $$ = ti;
-                // temp_str.push_back(*$1);
             }
         | NUM_CONST
             {
@@ -732,9 +798,7 @@ expr_pred :
                 ti->type = TYPE::SIMPLE;
                 ti->eleType = ELETYPE::ELE_NUM;
                 $$.ti = ti;
-                // *($$.str) = std::to_string($1);
                 $$.str = new std::string(std::to_string($1));
-                // temp_str.push_back(std::to_string($1));
             }
         | REAL_CONST
             {
@@ -742,9 +806,7 @@ expr_pred :
                 ti->type = TYPE::SIMPLE;
                 ti->eleType = ELETYPE::ELE_REAL;
                 $$.ti = ti;
-                // *($$.str) = std::to_string($1);
                 $$.str = new std::string(std::to_string($1));
-                // temp_str.push_back(std::to_string($1));
             }
         | BOOL_CONST
             {
@@ -818,11 +880,13 @@ expr_pred :
             } 
         | call_stmt                         
             {
-                $$.ti = $1;
+                $$.ti = $1.ti;
+                $$.str = new std::string(*($1.str));
             } /*temp*/
         | in_built_call_stmt                
             {
                 $$.ti = new struct type_info;
+                $$.str = new std::string(*($1.str));
             } /*temp*/
         | ID array_element                  
             {
@@ -858,16 +922,16 @@ expr_pred :
             }
         ;
 
-expr_or_decl_stmt : num_decl
-        | real_decl
-        | bool_decl
-        | img_decl  
-        | gray_img_decl 
-        | vid_decl 
-        | gray_vid_decl  
-        | num_array_decl 
-        | real_array_decl 
-        | loop_expr_stmt
+expr_or_decl_stmt : num_decl { $$ = new std::string(*($1));}
+        | real_decl { $$ = new std::string(*($1));}
+        | bool_decl { $$ = new std::string(*($1));}
+        | img_decl  { $$ = new std::string(*($1));}
+        | gray_img_decl { $$ = new std::string(*($1));}
+        | vid_decl { $$ = new std::string(*($1));}
+        | gray_vid_decl  { $$ = new std::string(*($1));}
+        | num_array_decl { $$ = new std::string(*($1));}
+        | real_array_decl { $$ = new std::string(*($1));}
+        | loop_expr_stmt { $$ = new std::string(*($1));}
         ;
 
 /*------------------------------------------------------------------------
@@ -877,14 +941,17 @@ expr_or_decl_stmt : num_decl
 call_stmt : ID '(' arg_list ')' // Archit
                 {
                     struct type_info* t = new struct type_info;
-                    t = check_func_call(SymbolTableFunction, *$1, $3);
-                    $$ = t;
+                    t = check_func_call(SymbolTableFunction, *$1, $3.arg_vec);
+                    // $$ = t;
+                    $$.ti = t;
+                    $$.str = new std::string(*$1 + "(" + *($3.str) + ")");
                 }
         | ID '(' ')' // Archit
                 {
                     struct type_info* t = new struct type_info;
-                    $$ = check_func_call(SymbolTableFunction, *$1);
-                    $$ = t;
+                    t = check_func_call(SymbolTableFunction, *$1);
+                    $$.ti = t;
+                    $$.str = new std::string(*$1 + "()");
                 }
         ;
 
@@ -901,7 +968,8 @@ in_built_call_stmt :
                 t1->dim_list->push_back(temp_dim_list[i]);
             }
             // t1->dim_list = &temp_dim_list;
-            $$ = check_inbuilt_func_call(t1, *$3, $5);
+            $$.ti = check_inbuilt_func_call(t1, *$3, $5.arg_vec);
+            $$.str = new std::string(*$1 + "." + *$3 + "(" + *($5.str) + ")");
         }
     | ID DOT_OP ID '(' ')'
         {
@@ -916,35 +984,56 @@ in_built_call_stmt :
                 t1->dim_list->push_back(temp_dim_list[i]);
             }
             std::vector<struct type_info*> *temp  = new std::vector<struct type_info*>;
-            $$ = check_inbuilt_func_call(t1,*$3, temp);
+            // $$ = check_inbuilt_func_call(t1,*$3, temp);
+            $$.ti = check_inbuilt_func_call(t1,*$3, temp);
+            $$.str = new std::string(*$1 + "." + *$3 + "()");
         }
     | in_built_call_stmt DOT_OP ID '(' arg_list ')'     
         { 
-            $$ = check_inbuilt_func_call($1, *$3, $5);
+            // $$ = check_inbuilt_func_call($1, *$3, $5.arg_vec);
+            $$.ti = check_inbuilt_func_call($1, *$3, $5.arg_vec);
+            $$.str = new std::string(*($1.str) + "." + *$3 + "(" + *($5.str) + ")");
         }
     | in_built_call_stmt DOT_OP ID '(' ')'              
         { 
             std::vector<struct type_info*> *temp  = new std::vector<struct type_info*>;
-            $$ = check_inbuilt_func_call($1, *$3, temp);
+            // $$ = check_inbuilt_func_call($1, *$3, temp);
+            $$.ti = check_inbuilt_func_call($1, *$3, temp);
+            $$.str = new std::string(*($1.str) + "." + *$3 + "()");
         }
         ;
 
 // Archit
-arg_list : arg_list ',' arg {
-                std::vector<struct type_info*> *p = $1;
+arg_list : arg_list ',' arg 
+            {
+                std::vector<struct type_info*> *p = $1.arg_vec;
+                std::vector<struct type_info*> *q = $3.arg_vec;
 
-                std::vector<struct type_info*> *q = $3;
-                p->push_back(q->at(0));
-                $$ = p;
+                std::vector<struct type_info*> *r = new std::vector<struct type_info*>;
+                for (int i = 0; i < p->size(); i++){
+                    r->push_back(p->at(i));
+                }
+                for (int i = 0; i < q->size(); i++){
+                    r->push_back(q->at(i));
+                }
+                $$.arg_vec = r;
+                $$.str = new std::string(*($1.str) + ", " + *($3.str));
+                // $$ = p;
             }
         | arg 
+            {
+                std::vector<struct type_info*> *p = new std::vector<struct type_info*>(1, $1.arg_vec);
+                $$.arg_vec = p;
+                $$.str = new std::string(*($1.str));
+            }
         ;
 
 // Archit  
 arg : expr_pred  
         { 
             std::vector<struct type_info*> *p = new std::vector<struct type_info*>(1, $1.ti); 
-            $$ = p;
+            $$.arg_vec = p;
+            $$.str = new std::string(*($1.str));
         }
     | PATH 
         { 
@@ -975,6 +1064,8 @@ unary_stmt : ID UNARY_OP new_lines
         if (t == NULL) {
             yyerror("unary operation not compatible");
         }
+        // if (error_counter == 0) fprintf(foutput, "%s;\n", codegen_operator($2, *$1, "").c_str());
+        $$ = new std::string(codegen_operator($2, *$1, "") + ";\n");
     }
     ;
 
@@ -986,6 +1077,8 @@ return_stmt : RETURN expr_pred new_lines
             if (last_ret_type != t->eleType) {
                 yyerror("return type must be same as function definition");
             }
+            // if (error_counter == 0) fprintf(foutput, "return %s;\n", *($2.str)); 
+            $$ = new std::string("return " + *($2.str) + ";\n");
         }
     | RETURN VOID new_lines 
         {
@@ -994,6 +1087,8 @@ return_stmt : RETURN expr_pred new_lines
             if (last_ret_type != ELETYPE::ELE_VOID) {
                 yyerror("return type must be same as function definition");
             }
+            // if (error_counter == 0) fprintf(foutput, "return;\n");
+            $$ = new std::string("return;\n");
         }
     ;
 

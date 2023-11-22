@@ -30,6 +30,12 @@ punctuation: ,
 constant: 4
 punctuation: }
 punctuation: }
+keyword: num
+ID: b
+operator: =
+constant: 5
+ID: b
+operator: ++
 keyword: return
 keyword: void
 punctuation: }

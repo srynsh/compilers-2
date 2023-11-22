@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
-#include "./frontend/headers/kernel.hpp"
-#include "./frontend/headers/load_bmp.hpp"
+#include "./kernel.hpp"
+#include "./load_bmp.hpp"
 
 #ifndef IMAGE_HPP
 #define IMAGE_HPP
@@ -91,40 +91,39 @@ class image {
         void set_pixel(int i, int j, int channel, int value);
 
         // Operators
-        image& operator=(image const& img);
-        image operator+(image const& img);
-        image operator-(image const& img);
-        image operator*(image const& img);
-        image operator/(float const& val);
+        image& operator=(image const img);
+        image operator+(image const img);
+        image operator-(image const img);
+        image operator*(image const img);
+        image operator/(float const val);
 
-        image& operator=(gray_image const& img);
+        image& operator=(gray_image const img);
 
-        //TODO
-        image& operator=(int const& val);
-        image operator+(int const& val);
-        image operator-(int const& val);
-        image operator*(int const& val);
-        image operator/(int const& val);
+        image& operator=(int const val);
+        image operator+(int const val);
+        image operator-(int const val);
+        image operator*(int const val);
+        image operator/(int const val);
 
-        image& operator=(float const& val);
-        image operator+(float const& val);
-        image operator-(float const& val);
-        image operator*(float const& val);
+        void operator=(float const val);
+        image operator+(float const val);
+        image operator-(float const val);
+        image operator*(float const val);
 
-        image& operator=(bool const& val);
-        image operator+(bool const& val);
-        image operator-(bool const& val);
-        image operator*(bool const& val);
-        image operator/(bool const& val);
+        void operator=(bool const val);
+        image operator+(bool const val);
+        image operator-(bool const val);
+        image operator*(bool const val);
+        image operator/(bool const val);
 
-        image operator+(gray_image const& img);
-        image operator-(gray_image const& img);
-        image operator*(gray_image const& img);
-        image operator/(gray_image const& img);
+        image operator+(gray_image const img);
+        image operator-(gray_image const img);
+        image operator*(gray_image const img);
+        image operator/(gray_image const img);
 
-        video operator+(video const& vid);
-        video operator+(gray_video const& vid);
-        
+        video operator+(video const vid);
+        video operator+(gray_video const vid);
+
         // Destructor
         ~image();
 
@@ -153,33 +152,34 @@ class gray_image {
         void paint();
 
         // Operators
-        gray_image operator+(gray_image const& img);
-        gray_image operator-(gray_image const& img);
-        gray_image operator*(gray_image const& img);
-        gray_image operator/(float const& val);
-        gray_image& operator=(gray_image const& img);
+        gray_image operator+(gray_image const img);
+        gray_image operator-(gray_image const img);
+        gray_image operator*(gray_image const img);
+        gray_image operator/(float const val);
+        gray_image& operator=(gray_image const img);
         gray_image sqrt();
         gray_image operator*(std::vector<std::vector<float>> kernel);  // performs a stride 1 convolution with given kernel and no padding
 
+        void operator=(int const val);
+        gray_image operator+(int const val);
+        gray_image operator-(int const val);
+        gray_image operator*(int const val);
+        gray_image operator/(int const val);
+
+        void operator=(float const val);
+        gray_image operator+(float const val);
+        gray_image operator-(float const val);
+        gray_image operator*(float const val);
+
+        void operator=(bool const val);
+        gray_image operator+(bool const val);
+        gray_image operator-(bool const val);
+        gray_image operator*(bool const val);
+        gray_image operator/(bool const val);
+
         // TODO
-        gray_image& operator=(int const& val);
-        gray_image operator+(int const& val);
-        gray_image operator-(int const& val);
-        gray_image operator*(int const& val);
-        gray_image operator/(int const& val);
 
-        gray_image& operator=(float const& val);
-        gray_image operator+(float const& val);
-        gray_image operator-(float const& val);
-        gray_image operator*(float const& val);
-
-        gray_image& operator=(bool const& val);
-        gray_image operator+(bool const& val);
-        gray_image operator-(bool const& val);
-        gray_image operator*(bool const& val);
-        gray_image operator/(bool const& val);
-
-        gray_image& operator=(image const& val);
+        gray_image& operator=(image const val);
 
         video operator+(video const& vid);
         gray_video operator+(gray_video const& vid);
@@ -229,8 +229,8 @@ class video {
         image operator[](int i) const; // For access
         image &operator[](int i); // For assignment
         video operator+(video const vid); // Concatenation
-        video& operator=(video const& val);
-        video& operator=(gray_video const& val);
+        video& operator=(video const val);
+        video& operator=(gray_video const val);
         video operator+(gray_video const vid); // Concatenation
         video operator+(image const img); // Concatenation
         video operator+(gray_image img); // Concatenation
@@ -267,8 +267,8 @@ class gray_video {
         gray_image operator[](int i) const; // For access
         gray_image &operator[](int i); // For assignment
         gray_video operator+(gray_video const vid); // Concatenation
-        gray_video& operator=(video const& val);
-        gray_video& operator=(gray_video const& val);
+        gray_video& operator=(video const val);
+        gray_video& operator=(gray_video const val);
         gray_video operator+(gray_image const img); // Concatenation
         video operator+(image const img); // Concatenation
         video operator+(video const vid); // Concatenation

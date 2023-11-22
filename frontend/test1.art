@@ -1,5 +1,9 @@
 ink main()->void {
     num[2, 2] a = {{1+3/5, 2}, {3, 4}}
+    num b= 5
+    b++
+    a[1][1] = 5
+
 
     return void
 }

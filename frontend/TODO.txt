@@ -1,9 +1,15 @@
 loop semantic checks: DONE
-brak_pred: only codegen left
+brak_pred: (DONE)
 add turtle
 codegen
-operator overloading (for images, gray images and multi-dimensional arrays)
+    call stmt
+    return stmt (DONE)
+    unary stmt (DONE)
+    array_element stuff 
+    conditional stmt
+    loop_conditional stmt
 add convolution operator
+operator overloading (for images, gray images and multi-dimensional arrays)
 in-built call statement
 ID array_element in expr_pred
 where do we stop at yyerror, and where do we not?
