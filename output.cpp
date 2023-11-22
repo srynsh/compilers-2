@@ -7,4 +7,13 @@
 using namespace std;
 
 int main() {
-int z;
+int a;
+if (a) {
+}
+else if (1) {
+}
+else if (a) {
+}
+else {
+}
+}

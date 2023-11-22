@@ -385,7 +385,7 @@ struct type_info* unary_compatible(struct type_info* t1, OPERATOR op, flag_type 
             if (op != OPERATOR::INV )
             {
                 if (flag == flag_type::stmt)
-                    lineno--;
+                    lineno--; // why?
                 yyerror("Cannot perform postinc/postdec unary operation on img/video");
                 lineno++;
                 

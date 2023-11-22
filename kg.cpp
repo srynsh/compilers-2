@@ -8,7 +8,7 @@
 
 using namespace std;
 
-int return_parabola_point(int x){
+int return_parabola_point(float x){
     return -1*(x*x + 400 - 40*x - 16*65)/16;
 }
 
@@ -17,25 +17,26 @@ int return_color(int r, int g, int b){
 }
 
 int main(){
-    image new_img = image(250, 250, 4);
+    image new_img = image(100, 100, 4);
     // new_img.frame("./images/outputs/vid/base.bmp");
     // new_img.draw("circle", {10, 30, 20, 245});
     int multiplier = 0;
-    int y = 0;
-    int color = 0;
-    int divisions = 250/6;
+    float y = 0;
+    float color = 0;
+    int divisions = 100/6;
     int high = 244;
     int low = 38;
     int step = (high-low)/divisions;
-    for (int i=0;i<250;i++){
-        system("clear");
+    video new_vid = video(100, 100, 1);
+    for (float i=0;i<20;i++){
         // new_img.load("./images/outputs/vid/base.bmp");
-        image new_img = image(250, 250, 4);
+        image new_img = image(100, 100, 4);
+        cout << i << endl;
         while ((y = return_parabola_point(i-multiplier*64))<0){
             multiplier++;
         }
         if (i<1*divisions){
-            color = return_color(high, low+step*i, low);
+            color = return_color(high, low+step*i, low); 
         }
         else if (i<2*divisions){
             color = return_color(high-step*(i-1*divisions), high, low);
@@ -55,9 +56,9 @@ int main(){
         else{
             color = return_color(high, low, low);
         }
-        new_img.draw("circle", {i, y, 20, color});
-        new_img.frame("./images/outputs/vid/vid.bmp");
-        system("tiv -h 1000 -w 1000 ./images/outputs/vid/vid.bmp");
-        usleep(100000);
+        new_img.draw("circle", {i, y, 20, color, 1});
+        new_vid = new_vid + new_img;
     }
+    new_vid.play();
+
 }

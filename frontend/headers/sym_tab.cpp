@@ -60,11 +60,11 @@ void data_record::print() {
 void symbol_table_variable::add_variable(std::string name, TYPE type, ELETYPE ele_type, std::vector<int> &dim_list, int scope) {
     for (auto x : this->variable_list) {
         if (x->get_name() == name && (x->get_scope() == scope || x->get_scope() == 1)) {
-            lineno--;
+            lineno--; //sus
             std::string err = "Variable " + name + " already declared";
             yyerror(err.c_str());
             lineno++;
-            
+            exit(1);
         }
     }
     
@@ -79,6 +79,7 @@ void symbol_table_variable::add_variable(std::string name, TYPE type, ELETYPE el
             std::string err = "Variable " + name + " already declared";
             yyerror(err.c_str());
             lineno++;
+            exit(1);
         }
     }
 
@@ -94,6 +95,7 @@ void symbol_table_variable::add_variable(std::vector<std::string> &names, TYPE t
                 std::string err = "Variable " + i + " already declared";
                 yyerror(err.c_str());
                 lineno++;
+                exit(1);
             }
         }
 
@@ -106,10 +108,11 @@ void symbol_table_variable::add_variable(std::vector<std::string> &names, TYPE t
     for (auto i : names) {
         for (auto x : this->variable_list) {
             if (x->get_name() == i && (x->get_scope() == scope || x->get_scope() == 1)) {
-                lineno--;
+                lineno--; //sus2
                 std::string err = "Variable " + i + " already declared";
                 yyerror(err.c_str());
                 lineno++;
+                exit(1);
             }
         }
 
@@ -149,6 +152,7 @@ data_record* symbol_table_variable::get_variable(std::string name, int scope) {
 
     std::string err = "Variable " + name + " not declared";
     yyerror(err.c_str());
+    exit(1);
     return nullptr;
 }
 
@@ -290,7 +294,7 @@ void symbol_table_function::add_function_record(std::string name, ELETYPE return
             if (i->get_name() == name) {
                 std::string err = "Main function already declared";
                 yyerror(err.c_str());
-                
+                exit(1);
             }
         }
     }
@@ -300,7 +304,7 @@ void symbol_table_function::add_function_record(std::string name, ELETYPE return
             if (i->get_name() == name && i->get_parameter_list().size() == 0) {
                 std::string err = "Function " + name + " already declared";
                 yyerror(err.c_str());
-                
+                exit(1);
             }
         }
     }
@@ -320,7 +324,7 @@ void symbol_table_function::add_function_record(std::string name, ELETYPE return
             if (i->get_name() == name) {
                 std::string err = "Main function already declared";
                 yyerror(err.c_str());
-                
+                exit(1);
             }
         }
     }
@@ -330,7 +334,7 @@ void symbol_table_function::add_function_record(std::string name, ELETYPE return
             if (i->get_name() == name && compare_parameter_list(temp, par_vec)) {
                 std::string err = "Function " + name + " already declared";
                 yyerror(err.c_str());
-                
+                exit(1);
             }
         }
     }
@@ -341,7 +345,7 @@ void symbol_table_function::add_function_record(std::string name, ELETYPE return
         if (i->get_name() == name && compare_parameter_list(temp, par_vec)) {
             std::string err = "Function " + name + " already declared";
             yyerror(err.c_str());
-            
+            exit(1);
         }
     }
 

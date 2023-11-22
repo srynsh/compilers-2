@@ -38,6 +38,7 @@ path \'([^'\\])*\'
         if (inline_comment) 
             inline_comment = 0;
         lineno++;   // increment line number on encountering new line
+        // std::cout << "Line number: " << yylineno << std::endl;
     }
     return NEWLINE;
 }

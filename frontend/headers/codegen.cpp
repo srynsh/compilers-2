@@ -116,40 +116,40 @@ std::string codegen_operator(OPERATOR op) {
 }
 
 /// @brief combines an operator and two operands
-std::vector<std::string> codegen_operator(OPERATOR op, std::vector<std::string>* ops) {
-    std::vector<std::string> code = {};
+std::string codegen_operator(OPERATOR op, std::string op1, std::string op2) {
+    std::string code;
     if (op == OPERATOR::ADD)
-        code.push_back(ops->at(0) + " + " + ops->at(1));
+        code = op1 + " + " + op2;
     else if (op == OPERATOR::SUB)
-        code.push_back(ops->at(0) + " - " + ops->at(1));
+        code = op1 + " - " + op2;
     else if (op == OPERATOR::MUL)
-        code.push_back(ops->at(0) + " * " + ops->at(1));
+        code = op1 + " * " + op2;
     else if (op == OPERATOR::DIV)
-        code.push_back(ops->at(0) + " / " + ops->at(1));
+        code = op1 + " / " + op2;
     else if (op == OPERATOR::XOR)
-        code.push_back(ops->at(0) + " ^ " + ops->at(1));
+        code = op1 + " ^ " + op2;
     else if (op == OPERATOR::POST_INCR)
-        code.push_back(ops->at(0) + "++");
+        code = op1 + "++ ";
     else if (op == OPERATOR::POST_DECR)
-        code.push_back(ops->at(0) + "--");
+        code = op1 + "-- ";
     else if (op == OPERATOR::INV)
-        code.push_back(ops->at(0) + ".invert()");
+        code = "~" + op1;
     else if (op == OPERATOR::NOT)
-        code.push_back("!" + ops->at(0));
+        code = "!" + op1;
     else if (op == OPERATOR::NEQ)
-        code.push_back(ops->at(0) + " != " + ops->at(1));
+        code = op1 + " != " + op2;
     else if (op == OPERATOR::GTEQ)
-        code.push_back(ops->at(0) + " >= " + ops->at(1));
+        code = op1 + " >= " + op2;
     else if (op == OPERATOR::LTEQ)
-        code.push_back(ops->at(0) + " <= " + ops->at(1));
+        code = op1 + " <= " + op2;
     else if (op == OPERATOR::GREATER)
-        code.push_back(ops->at(0) + " > " + ops->at(1));
+        code = op1 + " > " + op2;
     else if (op == OPERATOR::LESSER)
-        code.push_back(ops->at(0) + " < " + ops->at(1));
+        code = op1 + " < " + op2;
     else if (op == OPERATOR::EQUAL)
-        code.push_back(ops->at(0) + " == " + ops->at(1));
+        code = op1 + " == " + op2;
     else
-        code.push_back("unknown_operator");
+        code = "unknown_operator";
 
     return code;
 }

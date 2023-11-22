@@ -1,8 +1,8 @@
 ##@ Frontend
 
 C_COMPILER = g++
-# C_FLAGS = -Wall -Wextra -Werror -std=c++17 -g -I$(HEADER_PATH)
-C_FLAGS = -g
+# C_FLAGS = -Wall -Wextra -Werror -std=c++17 -g
+C_FLAGS = -g -std=c++17
 
 YACC = bison
 YACC_FLAGS = -vd

@@ -1,5 +1,15 @@
 ink main()->void {
-    num z
-    z = a
+    num a
+
+    $ (a) -> {
+        a = 1
+    } $$ (a) -> {
+        a++
+    } $$ (a) -> {
+        a++
+    } -> {
+        a++
+    }
+
     return void
 }

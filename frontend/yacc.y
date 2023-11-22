@@ -15,8 +15,8 @@
     symbol_table_variable* SymbolTableVariable = new symbol_table_variable();
     int current_scope = 0, error_counter = 0;
     bool return_flag = false;
-    std::vector<std::string> temp_str = std::vector<std::string>();
-    std::vector<std::string> temp_str_2 = std::vector<std::string>();
+    // std::vector<std::string> temp_str = std::vector<std::string>();
+    // std::vector<std::string> temp_str_2 = std::vector<std::string>();
 %}
 
 %code requires {
@@ -38,15 +38,26 @@
     std::vector<std::pair<std::string, struct type_info*>> *par_vec;
     std::vector<struct type_info*> *arg_vec;
 
+    struct {
+        int val;
+        std::string str;
+        std::vector<int> *vector_int;
+        struct type_info* ti;
+    } lang_element;
+    // struct codegen_struct lang_element;
+    // struct 
+
     OPERATOR opval;
 }
 
-%type <dim_list> brak array_element brak_pred brak_pred_list
-%type <tval> datatype expr_pred call_stmt RET_TYPE in_built_call_stmt
+%type <lang_element> brak_pred brak_pred_list expr_pred_list expr_pred
+
+%type <dim_list> array_element brak
+%type <tval> datatype call_stmt RET_TYPE in_built_call_stmt
 %type <par_vec> par_list par 
 %type <arg_vec> arg_list arg
 %type <id_vec> id_list
-%type <ival> expr_pred_list array_ele
+%type <ival> array_ele
 
 %token <sval> ID /* Identifiers */
 
@@ -258,13 +269,13 @@ decl_stmt : img_decl  new_lines
 img_decl : IMG ID LT NUM_CONST ',' NUM_CONST  GT                { declare_img(SymbolTableVariable, $1, *$2, $4, $6, 0, current_scope);}
         | IMG ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT    { declare_img(SymbolTableVariable, $1, *$2, $4, $6, $8, current_scope);}
         | IMG ID LT PATH GT                                     { declare_img(SymbolTableVariable, $1, *$2, current_scope);}
-        | IMG ID '=' expr_pred                                  { struct type_info* t = assignment_compatible($1, $4); declare_img(SymbolTableVariable, t, *$2, current_scope);}
+        | IMG ID '=' expr_pred                                  { struct type_info* t = assignment_compatible($1, $4.ti); declare_img(SymbolTableVariable, t, *$2, current_scope);}
         ; 
 
 gray_img_decl : GRAY_IMG ID LT NUM_CONST ',' NUM_CONST GT           { declare_gray_img(SymbolTableVariable, $1, *$2, $4, $6, 0, current_scope);}
         | GRAY_IMG ID LT NUM_CONST ',' NUM_CONST ',' NUM_CONST GT   { declare_gray_img(SymbolTableVariable, $1, *$2, $4, $6, $8, current_scope);}
         | GRAY_IMG ID LT PATH GT                                    { declare_gray_img(SymbolTableVariable, $1, *$2, current_scope);}
-        | GRAY_IMG ID '=' expr_pred                                 { struct type_info* t = assignment_compatible($1, $4); declare_gray_img(SymbolTableVariable, t, *$2, current_scope);}
+        | GRAY_IMG ID '=' expr_pred                                 { struct type_info* t = assignment_compatible($1, $4.ti); declare_gray_img(SymbolTableVariable, t, *$2, current_scope);}
         ;
 
 vid_decl : VID ID LT NUM_CONST ',' NUM_CONST GT                     { declare_vid(SymbolTableVariable, $1, *$2, $4, $6, 30, current_scope);}
@@ -285,11 +296,12 @@ num_decl :
     | NUM ID '=' expr_pred
         {
             struct type_info* t = $1, *t_res = new struct type_info;
-            t_res = assignment_compatible(t, $4);
+            t_res = assignment_compatible(t, $4.ti);
             SymbolTableVariable->add_variable(*$2, t_res->type, t_res->eleType, current_scope);
             if (error_counter == 0) {
-                fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, temp_str[0], NULL).c_str());
-                temp_str.clear();
+                // fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, temp_str[0], NULL).c_str());
+                fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, $4.str, NULL).c_str());
+                // temp_str.clear();
             }
         }
 
@@ -305,11 +317,12 @@ bool_decl :
     | BOOL ID '=' expr_pred
         {
             struct type_info* t = $1, *t_res = new struct type_info;
-            t_res = assignment_compatible(t, $4);
+            t_res = assignment_compatible(t, $4.ti);
             SymbolTableVariable->add_variable(*$2, t_res->type, t_res->eleType, current_scope);
             if (error_counter == 0) {
-                fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, temp_str[0], NULL).c_str());
-                temp_str.clear();
+                // fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, temp_str[0], NULL).c_str());
+                fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, $4.str, NULL).c_str());
+                // temp_str.clear();
             }
         }
     ;
@@ -326,11 +339,12 @@ real_decl :
     | REAL ID '=' expr_pred
         {
             struct type_info* t = $1, *t_res = new struct type_info;
-            t_res = assignment_compatible(t, $4);
+            t_res = assignment_compatible(t, $4.ti);
             SymbolTableVariable->add_variable(*$2, t_res->type, t_res->eleType, current_scope);
             if (error_counter == 0) {
-                fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, temp_str[0], NULL).c_str());
-                temp_str.clear();
+                // fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, temp_str[0], NULL).c_str());
+                fprintf(foutput, "%s", codegen_decl_numeric(t, *$2, $4.str, NULL).c_str());
+                // temp_str.clear();
             }
         }
     ;
@@ -352,27 +366,25 @@ num_array_decl :
     | NUM array_element ID '=' ID 
         {
             data_record* dr = SymbolTableVariable->get_variable(*$5, current_scope);
-            if (dr != NULL) {
-                struct type_info* t1 = $1, *t_res = new struct type_info, *t2 = new struct type_info;
-                t2->type = dr->get_type();
-                t2->eleType = dr->get_ele_type();
-                std::vector<int> temp_dim_list = dr->get_dim_list();
+            struct type_info* t1 = $1, *t_res = new struct type_info, *t2 = new struct type_info;
+            t2->type = dr->get_type();
+            t2->eleType = dr->get_ele_type();
+            std::vector<int> temp_dim_list = dr->get_dim_list();
 
-                // t2->dim_list = &temp_dim_list;
-                t2->dim_list = new std::vector<int>;
-                for (int i = 0; i < temp_dim_list.size(); i++){
-                    t2->dim_list->push_back(temp_dim_list[i]);
-                }
-
-                t1->type = TYPE::ARRAY;
-                t1->dim_list = $2;
-                
-                t_res = assignment_compatible(t1, t2);
-                SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
-                if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *$5, NULL).c_str());
+            // t2->dim_list = &temp_dim_list;
+            t2->dim_list = new std::vector<int>;
+            for (int i = 0; i < temp_dim_list.size(); i++){
+                t2->dim_list->push_back(temp_dim_list[i]);
             }
+
+            t1->type = TYPE::ARRAY;
+            t1->dim_list = $2;
+            
+            t_res = assignment_compatible(t1, t2);
+            SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
+            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *$5, NULL).c_str());
         }
-    | NUM array_element ID '=' {struct type_info* t = $1; t->type = TYPE::ARRAY; fprintf(foutput, "%s = ", codegen_decl_numeric_partial(t, *$3));} brak_pred 
+    | NUM array_element ID '=' brak_pred 
         {
             struct type_info *t_res = new struct type_info;
             t_res->type = TYPE::ARRAY;
@@ -382,9 +394,11 @@ num_array_decl :
             for (int i = 0; i < temp_dim_list->size(); i++){
                 t_res->dim_list->push_back(temp_dim_list->at(i));
             }
-            array_compatibility(*(t_res->dim_list), *$6);
+            array_compatibility(*(t_res->dim_list), *($5.vector_int));
+            std::cout << lineno << std::endl;
             SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
-            // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *$5, NULL).c_str());
+            std::cout << lineno << std::endl;
+            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, $5.str, NULL).c_str());
         }
     ;
 
@@ -405,27 +419,25 @@ real_array_decl :
     | REAL array_element ID '=' ID 
         {
             data_record* dr = SymbolTableVariable->get_variable(*$5, current_scope);
-            if (dr != NULL) {
-                struct type_info* t1 = $1, *t_res = new struct type_info, *t2 = new struct type_info;
-                t2->type = dr->get_type();
-                t2->eleType = dr->get_ele_type();
-                std::vector<int> temp_dim_list = dr->get_dim_list();
-                // t2->dim_list = &temp_dim_list;
-                t2->dim_list = new std::vector<int>;
-                for (int i = 0; i < temp_dim_list.size(); i++){
-                    t2->dim_list->push_back(temp_dim_list[i]);
-                }
-
-                t1->type = TYPE::ARRAY;
-                std::vector<int> *temp_dim_list2 = $2;
-                t1->dim_list = temp_dim_list2;
-                
-                t_res = assignment_compatible(t1, t2);
-                SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
-                if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *$5, NULL).c_str());
+            struct type_info* t1 = $1, *t_res = new struct type_info, *t2 = new struct type_info;
+            t2->type = dr->get_type();
+            t2->eleType = dr->get_ele_type();
+            std::vector<int> temp_dim_list = dr->get_dim_list();
+            // t2->dim_list = &temp_dim_list;
+            t2->dim_list = new std::vector<int>;
+            for (int i = 0; i < temp_dim_list.size(); i++){
+                t2->dim_list->push_back(temp_dim_list[i]);
             }
+
+            t1->type = TYPE::ARRAY;
+            std::vector<int> *temp_dim_list2 = $2;
+            t1->dim_list = temp_dim_list2;
+            
+            t_res = assignment_compatible(t1, t2);
+            SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
+            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *$5, NULL).c_str());
         }
-    | REAL array_element ID '=' {struct type_info* t = $1; t->type = TYPE::ARRAY; fprintf(foutput, "%s = ", codegen_decl_numeric_partial(t, *$3));} brak_pred
+    | REAL array_element ID '=' brak_pred
         {
             struct type_info *t_res = new struct type_info;
             t_res->type = TYPE::ARRAY;
@@ -435,9 +447,9 @@ real_array_decl :
             for (int i = 0; i < temp_dim_list->size(); i++){
                 t_res->dim_list->push_back(temp_dim_list->at(i));
             }
-            array_compatibility(*(t_res->dim_list), *$6);
+            array_compatibility(*(t_res->dim_list), *($5.vector_int));
             SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
-            // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, *$5, NULL).c_str());
+            if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t_res, *$3, $5.str, NULL).c_str());
         }  
     ;
 
@@ -461,23 +473,41 @@ new_brak_pred -> check last n-1 dimensions, 3,2 matches!
 {2,3,2} 
 */
 
-expr_pred_list : expr_pred_list ',' expr_pred { $$ = $1 + 1; temp_str_2.push_back(temp_str[0]); temp_str.clear(); temp_str_2 = join(&temp_str_2, ",");}
-               | expr_pred { $$ = 1; temp_str_2.push_back(temp_str[0]); temp_str.clear();}
+expr_pred_list : expr_pred_list ',' expr_pred 
+                    { 
+                        $$.val = $1.val + 1; 
+                        // temp_str_2.push_back(temp_str[0]); temp_str.clear(); 
+                        // temp_str_2 = join(&temp_str_2, ",");
+                        $$.str = $1.str + ", " + $3.str;
+                    }
+               | expr_pred 
+                    { 
+                        $$.val = 1; 
+                        // temp_str_2.push_back(temp_str[0]); 
+                        // temp_str.clear();
+                        $$.str = $1.str;
+                    }
                ;
 
-brak_pred : '{' brak_pred_list '}' { $$ = $2; temp_str[0] = "{" + temp_str[0] + "}";}
+brak_pred : '{' brak_pred_list '}' 
+                { 
+                    $$.vector_int = $2.vector_int; 
+                    // temp_str[0] = "{" + temp_str[0] + "}";
+                    $$.str = "{" + $2.str + "}";
+                }
           | '{' expr_pred_list '}'      
                 {
                     std::vector<int> *p = new std::vector<int>;
-                    p->push_back($2);
-                    $$ = p;
+                    p->push_back($2.val);
+                    $$.vector_int = p;
+                    $$.str = "{" + $2.str + "}";
                 }
           ;
 
 brak_pred_list : brak_pred_list ',' brak_pred 
                 {
-                    std::vector<int> *p = $1;
-                    std::vector<int> *q = $3;
+                    std::vector<int> *p = $1.vector_int;
+                    std::vector<int> *q = $3.vector_int;
                     
                     for (int i = 1; i<p->size(); i++){
                         if (p->at(i) != q->at(i-1)){
@@ -486,16 +516,18 @@ brak_pred_list : brak_pred_list ',' brak_pred
                     }
 
                     p->at(0) += 1;
-                    $$ = p;
+                    $$.vector_int = p;
+                    $$.str = $1.str + ", " + $3.str;
                 }
                | brak_pred
                 {
                     std::vector<int> *p = new std::vector<int>;
                     p->push_back(1);
-                    for (auto i : *$1){
+                    for (auto i : *($1.vector_int)){
                         p->push_back(i);
                     }
-                    $$ = p;
+                    $$.vector_int = p;
+                    $$.str = $1.str;
                 }
                ;
 
@@ -536,52 +568,52 @@ conditional_stmt : if_block optional_new_lines else_if_block_list optional_new_l
 
 if_block : IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines if_codegen func_body 
         {
-            if (!cast_bool($4)) {
+            if (!cast_bool($4.ti)) {
                 yyerror("experssion cannot to evaluated to a boolean");
             } else {
-                fprintf(foutput, "}\n");
+                // fprintf(foutput, "}\n");
             }
         }
         ;
 
 if_codegen : /* empty */
         {
-            std::string exp = temp_str[0];
-            temp_str.clear();
-            std::string str = "if (" + exp + ") {\n)";
-            fprintf(foutput, str.c_str());
+            // std::string exp = temp_str[0];
+            // temp_str.clear();
+            // std::string str = "if (" + exp + ") {\n";
+            // fprintf(foutput, str.c_str());
         }
         ;
 
 else_if_block_list : else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines else_if_codegen func_body {fprintf(foutput, "}\n");}
         | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines else_if_codegen func_body
         {
-            if (!cast_bool($3)) {
+            if (!cast_bool($3.ti)) {
                 yyerror("experssion cannot to evaluated to a boolean");
             } else {
-                fprintf(foutput, "}\n");
+                // fprintf(foutput, "}\n");
             }
         } 
         ;
 
 else_if_codegen : /* empty */
         {
-            std::string exp = temp_str[0];
-            temp_str.clear();
-            std::string str = "else if (" + exp + ") {\n";
-            fprintf(foutput, str.c_str());
+            // std::string exp = temp_str[0];
+            // temp_str.clear();
+            // std::string str = "else if (" + exp + ") {\n";
+            // fprintf(foutput, str.c_str());
         }
         ;
         
 else : ARROW optional_new_lines else_codegen func_body
         {
-            fprintf(foutput, "}\n");
+            // fprintf(foutput, "}\n");
         }
         ;
 
 else_codegen : /* empty */
         {
-            fprintf(foutput, "else {\n");
+            // fprintf(foutput, "else {\n");
         }
         ;
 
@@ -651,19 +683,17 @@ expr_stmt :
     ID '=' expr_pred 
     {
         data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
-        if (dr != NULL){
-            struct type_info* t1 = $3, *t2 = new struct type_info;
-            t2->type = dr->get_type();
-            t2->eleType = dr->get_ele_type();
-            std::vector<int> temp_dim_list = dr->get_dim_list();
-            t2->dim_list = new std::vector<int>;
-            for (int i = 0; i < temp_dim_list.size(); i++){
-                t2->dim_list->push_back(temp_dim_list[i]);
-            }
-            struct type_info* t = assignment_compatible(t2, t1);
-            if (t == NULL) {
-                yyerror("assignment not compatible");
-            }
+        struct type_info* t1 = $3.ti, *t2 = new struct type_info;
+        t2->type = dr->get_type();
+        t2->eleType = dr->get_ele_type();
+        std::vector<int> temp_dim_list = dr->get_dim_list();
+        t2->dim_list = new std::vector<int>;
+        for (int i = 0; i < temp_dim_list.size(); i++){
+            t2->dim_list->push_back(temp_dim_list[i]);
+        }
+        struct type_info* t = assignment_compatible(t2, t1);
+        if (t == NULL) {
+            yyerror("assignment not compatible");
         }
     }
         
@@ -675,107 +705,137 @@ expr_pred :
             {
                 data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
                 struct type_info* ti = new struct type_info;
-                if (dr != NULL) {
-                    ti->type = dr->get_type(); 
-                    std::cout << "here" << std::endl;
+                ti->type = dr->get_type(); 
 
-                    ti->eleType = dr->get_ele_type(); 
-                    std::vector<int> temp_dim_list = dr->get_dim_list();
-                    // ti->dim_list = &temp_dim_list;
-                    // Copy elements of temp_dim_list to ti->dim_list
-                    ti->dim_list = new std::vector<int>;
-                    for (int i = 0; i < temp_dim_list.size(); i++){
-                        ti->dim_list->push_back(temp_dim_list[i]);
-                    }
-                    ti->name = *$1;
-                    // print size of dim_list
-                    $$ = ti;
-                    temp_str.push_back(*$1);
+                ti->eleType = dr->get_ele_type(); 
+                std::vector<int> temp_dim_list = dr->get_dim_list();
+
+                // Copy elements of temp_dim_list to ti->dim_list
+                ti->dim_list = new std::vector<int>;
+                for (int i = 0; i < temp_dim_list.size(); i++){
+                    ti->dim_list->push_back(temp_dim_list[i]);
                 }
+                ti->name = *$1;
+                // print size of dim_list
+                $$.ti = ti; 
+                $$.str = *$1;
+                // $$ = ti;
+                // temp_str.push_back(*$1);
             }
         | NUM_CONST
             {
                 struct type_info* ti = new struct type_info;
                 ti->type = TYPE::SIMPLE;
                 ti->eleType = ELETYPE::ELE_NUM;
-                $$ = ti;
-                temp_str.push_back(std::to_string($1));
+                $$.ti = ti;
+                $$.str = std::to_string($1);
+                // temp_str.push_back(std::to_string($1));
             }
         | REAL_CONST
             {
                 struct type_info* ti = new struct type_info;
                 ti->type = TYPE::SIMPLE;
                 ti->eleType = ELETYPE::ELE_REAL;
-                $$ = ti;
-                temp_str.push_back(std::to_string($1));
+                $$.ti = ti;
+                $$.str = std::to_string($1);
+                // temp_str.push_back(std::to_string($1));
             }
         | BOOL_CONST
             {
                 struct type_info* ti = new struct type_info;
                 ti->type = TYPE::SIMPLE;
                 ti->eleType = ELETYPE::ELE_BOOL;
-                $$ = ti;
+                $$.ti = ti;
+                // if ($1 == 1) 
+                //     temp_str.push_back("true");
+                // else 
+                //     temp_str.push_back("false");
                 if ($1 == 1) 
-                    temp_str.push_back("true");
+                    $$.str = "true";
                 else 
-                    temp_str.push_back("false");
-                
+                    $$.str = "false";       
             }
         | expr_pred REL_OP expr_pred  
             {
-                struct type_info *t1 = $1, *t2 = $3, *t = new struct type_info;
+                struct type_info *t1 = $1.ti, *t2 = $3.ti, *t = new struct type_info;
                 t = relational_compatible(t1, t2, $2);
-                $$ = t;
-                temp_str = codegen_operator($2, &temp_str);
+                $$.ti = t;
+                // temp_str = codegen_operator($2, &temp_str);
+                $$.str = codegen_operator($2, $1.str, $3.str);
             }      
         | expr_pred LT expr_pred
             {
-                struct type_info *t1 = $1, *t2 = $3, *t = new struct type_info;
+                struct type_info *t1 = $1.ti, *t2 = $3.ti, *t = new struct type_info;
                 t = relational_compatible(t1, t2, $2);
-                $$ = t;
-                temp_str = codegen_operator($2, &temp_str);
+                $$.ti = t;
+                // temp_str = codegen_operator($2, &temp_str);
+                $$.str = codegen_operator($2, $1.str, $3.str);
             }
         | expr_pred GT expr_pred
             {
-                struct type_info *t1 = $1, *t2 = $3, *t = new struct type_info;
+                struct type_info *t1 = $1.ti, *t2 = $3.ti, *t = new struct type_info;
                 t = relational_compatible(t1, t2, $2);
-                $$ = t;
-                temp_str = codegen_operator($2, &temp_str);
+                $$.ti = t;
+                // temp_str = codegen_operator($2, &temp_str);
+                $$.str = codegen_operator($2, $1.str, $3.str);
             }
         | expr_pred LOG_OP expr_pred
             {
                 /*TEST*/
-                struct type_info *t1 = $1, *t2 = $3, *t = new struct type_info;
+                struct type_info *t1 = $1.ti, *t2 = $3.ti, *t = new struct type_info;
                 t = relational_compatible(t1, t2, $2);
-                $$ = t;
-                temp_str = codegen_operator($2, &temp_str);
+                $$.ti = t;
+                // temp_str = codegen_operator($2, &temp_str);
+                $$.str = codegen_operator($2, $1.str, $3.str);
             }
-        | '(' expr_pred ')'                 {$$ = $2; temp_str[0] = "(" + temp_str[0] + ")";} 
-        | NEG_OP expr_pred                  {$$ = $2; temp_str = codegen_operator($1, &temp_str);} 
-        | call_stmt                         {$$ = $1;}
-        | in_built_call_stmt                {$$ = new struct type_info;} /*temp*/
-        | ID array_element                  {$$ = new struct type_info;} /*temp*/
+        | '(' expr_pred ')'                 
+            {
+                $$.ti = $2.ti; 
+                // temp_str[0] = "(" + temp_str[0] + ")";
+                $$.str = "(" + $2.str + ")";
+            } 
+        | NEG_OP expr_pred                  
+            {
+                $$.ti = $2.ti; 
+                // temp_str = codegen_operator($1, &temp_str);
+                $$.str = codegen_operator($1, $2.str, "");
+            } 
+        | call_stmt                         
+            {
+                $$.ti = $1;
+            } /*temp*/
+        | in_built_call_stmt                
+            {
+                $$.ti = new struct type_info;
+            } /*temp*/
+        | ID array_element                  
+            {
+                $$.ti = new struct type_info;
+            } /*temp*/
         | expr_pred BINARY_OP expr_pred
             {
-                struct type_info *t1 = $1, *t2 = $3, *t = new struct type_info;
+                struct type_info *t1 = $1.ti, *t2 = $3.ti, *t = new struct type_info;
                 // print address of t1's dim_list
                 t = binary_compatible(t1, t2, $2);
-                $$ = t;
-                temp_str = codegen_operator($2, &temp_str);
+                $$.ti = t;
+                // temp_str = codegen_operator($2, &temp_str);
+                $$.str = codegen_operator($2, $1.str, $3.str);
             }
         | expr_pred UNARY_OP 
             {
-                struct type_info *t1 = $1, *t = new struct type_info;
+                struct type_info *t1 = $1.ti, *t = new struct type_info;
                 t = unary_compatible(t1, $2);
-                $$ = t;
-                temp_str = codegen_operator($2, &temp_str);
+                $$.ti = t;
+                // temp_str = codegen_operator($2, &temp_str);
+                $$.str = codegen_operator($2, $1.str, "");
             }           
         | INV_OP expr_pred
             {
-                struct type_info *t1 = $2, *t = new struct type_info;
+                struct type_info *t1 = $2.ti, *t = new struct type_info;
                 t = unary_compatible(t1, $1);
-                $$ = t;
-                temp_str = codegen_operator($1, &temp_str);
+                $$.ti = t;
+                // temp_str = codegen_operator($1, &temp_str);
+                $$.str = codegen_operator($1, $2.str, "");
             }
         ;
 
@@ -814,34 +874,30 @@ in_built_call_stmt :
         {
             data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
             struct type_info* t1 = new struct type_info;
-            if (dr != NULL) {
-                t1->type = dr->get_type();
-                t1->eleType = dr->get_ele_type();
-                std::vector<int> temp_dim_list = dr->get_dim_list();
-                t1->dim_list = new std::vector<int>;    
-                for (int i = 0; i < temp_dim_list.size(); i++){
-                    t1->dim_list->push_back(temp_dim_list[i]);
-                }
-                // t1->dim_list = &temp_dim_list;
-                $$ = check_inbuilt_func_call(t1, *$3, $5);
+            t1->type = dr->get_type();
+            t1->eleType = dr->get_ele_type();
+            std::vector<int> temp_dim_list = dr->get_dim_list();
+            t1->dim_list = new std::vector<int>;    
+            for (int i = 0; i < temp_dim_list.size(); i++){
+                t1->dim_list->push_back(temp_dim_list[i]);
             }
+            // t1->dim_list = &temp_dim_list;
+            $$ = check_inbuilt_func_call(t1, *$3, $5);
         }
     | ID DOT_OP ID '(' ')'
         {
             data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
-            if (dr != NULL) {
-                struct type_info* t1 = new struct type_info;
-                t1->type = dr->get_type();
-                t1->eleType = dr->get_ele_type();
-                std::vector<int> temp_dim_list = dr->get_dim_list();
-                // t1->dim_list = &temp_dim_list;
-                t1->dim_list = new std::vector<int>;
-                for (int i = 0; i < temp_dim_list.size(); i++){
-                    t1->dim_list->push_back(temp_dim_list[i]);
-                }
-                std::vector<struct type_info*> *temp  = new std::vector<struct type_info*>;
-                $$ = check_inbuilt_func_call(t1,*$3, temp);
+            struct type_info* t1 = new struct type_info;
+            t1->type = dr->get_type();
+            t1->eleType = dr->get_ele_type();
+            std::vector<int> temp_dim_list = dr->get_dim_list();
+            // t1->dim_list = &temp_dim_list;
+            t1->dim_list = new std::vector<int>;
+            for (int i = 0; i < temp_dim_list.size(); i++){
+                t1->dim_list->push_back(temp_dim_list[i]);
             }
+            std::vector<struct type_info*> *temp  = new std::vector<struct type_info*>;
+            $$ = check_inbuilt_func_call(t1,*$3, temp);
         }
     | in_built_call_stmt DOT_OP ID '(' arg_list ')'     
         { 
@@ -868,7 +924,7 @@ arg_list : arg_list ',' arg {
 // Archit  
 arg : expr_pred  
         { 
-            std::vector<struct type_info*> *p = new std::vector<struct type_info*>(1, $1); 
+            std::vector<struct type_info*> *p = new std::vector<struct type_info*>(1, $1.ti); 
             $$ = p;
         }
     | PATH 
@@ -888,19 +944,17 @@ arg : expr_pred
 unary_stmt : ID UNARY_OP new_lines
     {
         data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
-        if (dr != NULL) {
-            struct type_info* t1 = new struct type_info;
-            t1->type = dr->get_type();
-            t1->eleType = dr->get_ele_type();
-            std::vector<int> temp_dim_list = dr->get_dim_list();
-            t1->dim_list = new std::vector<int>;
-            for (int i = 0; i < temp_dim_list.size(); i++){
-                t1->dim_list->push_back(temp_dim_list[i]);
-            }
-            struct type_info* t = unary_compatible(t1, $2, flag_type::stmt);
-            if (t == NULL) {
-                yyerror("unary operation not compatible");
-            }
+        struct type_info* t1 = new struct type_info;
+        t1->type = dr->get_type();
+        t1->eleType = dr->get_ele_type();
+        std::vector<int> temp_dim_list = dr->get_dim_list();
+        t1->dim_list = new std::vector<int>;
+        for (int i = 0; i < temp_dim_list.size(); i++){
+            t1->dim_list->push_back(temp_dim_list[i]);
+        }
+        struct type_info* t = unary_compatible(t1, $2, flag_type::stmt);
+        if (t == NULL) {
+            yyerror("unary operation not compatible");
         }
     }
     ;
@@ -909,7 +963,7 @@ return_stmt : RETURN expr_pred new_lines
         {   
             return_flag = true;
             ELETYPE last_ret_type = SymbolTableFunction->get_current_return_type();
-            struct type_info* t = $2;
+            struct type_info* t = $2.ti;
             if (last_ret_type != t->eleType) {
                 yyerror("return type must be same as function definition");
             }
@@ -944,6 +998,7 @@ int yywrap(){
     return 1;
 }
 void yyerror(const char* s){ 
+    /* printf("\033[1;31mError at line %d:\033[0m %s\n", yylineno, s); */
     printf("\033[1;31mError at line %d:\033[0m %s\n", lineno, s);
     error_counter++;
     if (error_counter > 10){

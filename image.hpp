@@ -216,7 +216,7 @@ class video {
         int h;
         int w;
         int fps;
-        std::vector<image> *frames_vec;
+        std::vector<image> frames_vec;
     
     public:
         // Constructors
@@ -228,12 +228,12 @@ class video {
         // Operators
         image operator[](int i) const; // For access
         image &operator[](int i); // For assignment
-        video operator+(video const& vid); // Concatenation
+        video operator+(video const vid); // Concatenation
         video& operator=(video const& val);
         video& operator=(gray_video const& val);
-        video operator+(gray_video const& vid); // Concatenation
-        video operator+(image const& img); // Concatenation
-        video operator+(gray_image& img); // Concatenation
+        video operator+(gray_video const vid); // Concatenation
+        video operator+(image const img); // Concatenation
+        video operator+(gray_image img); // Concatenation
 
         // Getters and Setters
         int get_height() const;
@@ -241,13 +241,11 @@ class video {
         int get_fps() const;
         int get_num_frames() const;
         image get_frame(int i) const;
-        std::vector<image>* get_frames() const;
+        std::vector<image> get_frames() const;
 
         void set_fps(int fps);
         void set_frame(int i, image const& frame);
-
-        // Destructor
-        ~video();
+        void concat_frame(image const& frame);
 
 };
 
@@ -256,7 +254,7 @@ class gray_video {
         int h;
         int w;
         int fps;
-        std::vector<gray_image> *frames_vec;
+        std::vector<gray_image> frames_vec;
     
     public:
         // Constructors
@@ -268,12 +266,12 @@ class gray_video {
         // Operators
         gray_image operator[](int i) const; // For access
         gray_image &operator[](int i); // For assignment
-        gray_video operator+(gray_video const& vid); // Concatenation
+        gray_video operator+(gray_video const vid); // Concatenation
         gray_video& operator=(video const& val);
         gray_video& operator=(gray_video const& val);
-        gray_video operator+(gray_image const& img); // Concatenation
-        video operator+(image const& img); // Concatenation
-        video operator+(video const& vid); // Concatenation
+        gray_video operator+(gray_image const img); // Concatenation
+        video operator+(image const img); // Concatenation
+        video operator+(video const vid); // Concatenation
 
         // Getters and Setters
         int get_height() const;
@@ -281,13 +279,10 @@ class gray_video {
         int get_fps() const;
         int get_num_frames() const;
         gray_image get_frame(int i) const;
-        std::vector<gray_image>* get_frames() const;
+        std::vector<gray_image> get_frames() const;
 
         void set_fps(int fps);
         void set_frame(int i, gray_image const& frame);
-
-        // Destructor
-        ~gray_video();
 
 };
 
