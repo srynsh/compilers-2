@@ -1828,137 +1828,90 @@ void gray_image::load(std::string filename, bool init) {
 }
 
 /*------------------------------------------------------------------------
-
-
-
  * Image display functions
  *------------------------------------------------------------------------*/
 
-struct BMPHeader {
-    uint16_t signature;     // "BM" (0x4D42)
-    uint32_t fileSize;      // Size of the file in bytes
-    uint16_t reserved1;     // Reserved, set to 0
-    uint16_t reserved2;     // Reserved, set to 0
-    uint32_t dataOffset;    // Offset to the start of image data
-    uint32_t headerSize;    // Size of this header in bytes
-    int32_t  width;         // Image width in pixels
-    int32_t  height;        // Image height in pixels
-    uint16_t planes;        // Number of color planes, must be 1
-    uint16_t bitsPerPixel;  // Number of bits per pixel (1, 4, 8, 16, 24, or 32)
-    uint32_t compression;   // Compression type (0 for no compression)
-    uint32_t imageSize;     // Size of image data in bytes (including padding)
-    int32_t  xPixelsPerMeter;  // Horizontal pixels per meter
-    int32_t  yPixelsPerMeter;  // Vertical pixels per meter
-    uint32_t colorsUsed;    // Number of colors in the color palette, or 0 to default to 2^n
-    uint32_t colorsImportant; // Number of important colors, or 0 when every color is important
-};
-
-
 /// @brief Convert the image to a .bmp file, and save it
 void gray_image::frame(std::string filename) {
-    // if (!made) { 
-    //     flip();
-    //     uint8_t** gray_temp = new uint8_t*[w];
-
-    //     #pragma omp parallel for
-    //     for (int i=0; i<w; i++) {
-    //         gray_temp[i] = new uint8_t[h];
-    //     }
-
-    //     #pragma omp parallel for collapse(2)
-    //     for(int i=0; i<w; i++) {
-    //         for(int j=0; j<h; j++) {
-    //             gray_temp[i][j] = ::clip(gray[i][j]);
-    //         }
-    //     }
-        
-    //     WriteOutBmp8(FileBuffer, filename.c_str(), buffer_size, this->h, this->w, gray_temp);
-    //     for (int i=0; i<w; i++) {
-    //         delete [] gray_temp[i];
-    //     }
-
-    //     delete [] gray_temp;
-    //     flip();
-    //     return;
-    // }
     flip();
-    std::ofstream file(filename.c_str(), std::ios::binary);
-    BMPHeader header;
-    header.signature = 0x4D42; // "BM"
-    header.fileSize = sizeof(BMPHeader) + w * h;
-    header.reserved1 = 0;
-    header.reserved2 = 0;
-    header.dataOffset = sizeof(BMPHeader);
-    header.headerSize = sizeof(BMPHeader) - 14; // The size of this header minus the size of the common header (14 bytes)
-    header.width = w;
-    header.height = h;
-    header.planes = 1;
-    header.bitsPerPixel = 8; // 8 bits per pixel for grayscale
-    header.compression = 0; // No compression
-    header.imageSize = w * h;
-    header.xPixelsPerMeter = 0;
-    header.yPixelsPerMeter = 0;
-    header.colorsUsed = 0;
-    header.colorsImportant = 0;
+    ofstream write(filename.c_str());
+    int BufferSize = 54 + w * h; //w is your image width, h is image height, both int
 
-    file.write(reinterpret_cast<char*>(&header), sizeof(BMPHeader));
+    cout << "BufferSize: " << BufferSize << endl;
 
-    for (int y = h - 1; y >= 0; --y) {
-        file.write(reinterpret_cast<const char*>(gray[y]), w);
+    unsigned char bmpfileheader[14] = {66, 77, 54, 4, 4, 0, 0, 0, 0, 0, 54, 4, 0, 0};
+    unsigned char bmpinfoheader[40] = {40, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 1, 0, 8, 0/*, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0*/};
+    bmpfileheader[ 2] = (unsigned char)(BufferSize    );
+    bmpfileheader[ 3] = (unsigned char)(BufferSize>> 8);
+    bmpfileheader[ 4] = (unsigned char)(BufferSize>>16);
+    bmpfileheader[ 5] = (unsigned char)(BufferSize>>24);
+
+    bmpinfoheader[ 4] = (unsigned char)(       w    );
+    bmpinfoheader[ 5] = (unsigned char)(       w>> 8);
+    bmpinfoheader[ 6] = (unsigned char)(       w>>16);
+    bmpinfoheader[ 7] = (unsigned char)(       w>>24);
+    bmpinfoheader[ 8] = (unsigned char)(       h    );
+    bmpinfoheader[ 9] = (unsigned char)(       h>> 8);
+    bmpinfoheader[10] = (unsigned char)(       h>>16);
+    bmpinfoheader[11] = (unsigned char)(       h>>24);
+    
+    
+    
+    char* FileBuffer = new char[BufferSize];
+    // set bmp file header
+    for (int i = 0; i < 14; i++) {
+        FileBuffer[i] = bmpfileheader[i];
     }
 
+    // set bmp info header
+    for (int i = 0; i < 40; i++) {
+        FileBuffer[14 + i] = bmpinfoheader[i];
+    }
+
+
+    int count = 1;
+    int extra = w % 4; // The nubmer of bytes in a row (cols) will be a multiple of 4.
+
+    for (int i = 0; i < h; i++) {
+        count += extra;
+        for (int j = w - 1; j >= 0; j--) {
+            FileBuffer[BufferSize - count] = ::clip(gray[j][i]);
+            count++;
+        }
+    }
+
+    write.write(FileBuffer, BufferSize);
+    flip();
     // FILE *f;
     // int filesize = 54 + w*h;  //w is your image width, h is image height, both int
     // unsigned char *canvas = NULL;
     // canvas = (unsigned char *)malloc(w*h);
     // memset(canvas,0,w*h);
 
-    // // Clip all values to 0-255
-    // #pragma omp parallel for collapse(2)
-    // for(int i=0; i<w; i++) {
-    //     for(int j=0; j<h; j++) {
-    //         gray[i][j] = ::clip(gray[i][j]);
-    //     }
-    // }
-
     // #pragma omp parallel for collapse(2)
     // for(int i=0; i<w; i++) {
     //     for(int j=0; j<h; j++) {
     //         int x=i; int y=(h-1)-j;
-    //         canvas[(x+y*w)] = (unsigned char)(gray[i][j]);
+    //         canvas[(x+y*w)] = (unsigned char)(::clip(gray[i][j]));
     //     }
     // }
 
-    // unsigned char bmpfileheader[14] = {66, 77, 54, 4, 4, 0, 0, 0, 0, 0, 54, 4, 0, 0};
-    // unsigned char bmpinfoheader[40] = {40, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 1, 0, 8, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0};
     // unsigned char bmppad[1] = {0};
 
-    // bmpfileheader[ 2] = (unsigned char)(filesize    );
-    // bmpfileheader[ 3] = (unsigned char)(filesize>> 8);
-    // bmpfileheader[ 4] = (unsigned char)(filesize>>16);
-    // bmpfileheader[ 5] = (unsigned char)(filesize>>24);
-
-    // bmpinfoheader[ 4] = (unsigned char)(       w    );
-    // bmpinfoheader[ 5] = (unsigned char)(       w>> 8);
-    // bmpinfoheader[ 6] = (unsigned char)(       w>>16);
-    // bmpinfoheader[ 7] = (unsigned char)(       w>>24);
-    // bmpinfoheader[ 8] = (unsigned char)(       h    );
-    // bmpinfoheader[ 9] = (unsigned char)(       h>> 8);
-    // bmpinfoheader[10] = (unsigned char)(       h>>16);
-    // bmpinfoheader[11] = (unsigned char)(       h>>24);
+    
 
     // f = fopen(filename.c_str(), "wb");
     // fwrite(bmpfileheader, 1, 14, f);
     // fwrite(bmpinfoheader, 1, 40, f);
 
     // for(int i=0; i<h; i++) {
-    //     fwrite(canvas+(w*(h-i-1)),1,w,f);
-    //     fwrite(bmppad,1,(1-(w%1))%1,f);
+    //     fwrite(canvas+(w*(h-i-1)), 1, w, f);
+    //     fwrite(bmppad, 1, (4-(w%4))%4, f);
     // }
 
     // free(canvas);
     // fclose(f);
-    flip();
+    // flip();
 }
 
 /// @brief prints the image to the terminal

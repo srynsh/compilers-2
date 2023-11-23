@@ -63,6 +63,17 @@ bool FillAndAllocate(char*& buffer, const char* Picture, int& rows, int& cols, i
         rows = info_header->biHeight;
         cols = info_header->biWidth;
         BufferSize = file_header->bfSize;
+        
+        cout << "rows: " << rows << endl;
+        cout << "cols: " << cols << endl;
+        cout << "BufferSize: " << BufferSize << endl;
+        // print the header
+        for (int i = 0; i < 54; i++) {
+            cout << (int)buffer[i];
+        }
+
+        cout << endl;
+
         return 1;
     } else {
         cout << "File" << Picture << " don't Exist!" << endl;
@@ -133,6 +144,12 @@ void WriteOutBmp24(char* FileBuffer, const char* NameOfFileToCreate, int BufferS
 void GetPixlesFromBMP8(unsigned char** gray, int end, int rows, int cols, char* FileReadBuffer) { // end is BufferSize (total size of file)
     int count = 1;
     int extra = cols % 4; // The nubmer of bytes in a row (cols) will be a multiple of 4.
+
+    // print the header
+    for (int i = 0; i < 54; i++) {
+        cout << (int)FileReadBuffer[i];
+    }
+    cout << endl;
     
     for (int i = 0; i < rows; i++){
         count += extra;
