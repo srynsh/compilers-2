@@ -107,7 +107,7 @@ using namespace std;
 int main(){
     gray_image img("./images/inputs/lena.bmp");
     gray_image new_img = img.blur(50);
-    // gray_image new_img2 = img.sharpen(20);
+    // gray_image new_img2 = img.sharpen(2);
     // gray_image new_img3 = img.sobel();
     // gray_image new_img4 = img.hflip();
     // gray_image new_img5 = img.vflip();
@@ -115,10 +115,10 @@ int main(){
     // gray_image new_img7 = img.pixelate(5);
     // gray_image new_img8 = img.invert();
     // gray_image new_img9 = img.noise(15);
-    // gray_image new_img10 = img.bnw();
+    // gray_image new_img10 = img.bnw(200);
 
-    // img.frame("./images/outputs/output_orig.bmp");
-    std::cout << "here next" << endl;
+    img.frame("./images/outputs/output_orig.bmp");
+  
     new_img.frame("./images/outputs/output_blur.bmp");
     // new_img2.frame("./images/outputs/output_sharpen.bmp");
     // new_img3.frame("./images/outputs/output_sobel.bmp");

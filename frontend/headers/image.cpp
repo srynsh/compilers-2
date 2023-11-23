@@ -24,9 +24,9 @@ uint8_t clip(int n) {
         return 0;
     } else if (n > 255) {
         return 255;
-    } else {
-        return (uint8_t)n;
     }
+    
+    return (uint8_t)n;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -141,7 +141,7 @@ void image::load(std::string filename, bool init) {
         delete [] this->blue; 
 
         if (!this->made) {
-            delete this->FileBuffer;
+            // delete this->FileBuffer;
         }
     }    
 
@@ -200,15 +200,15 @@ void image::load(std::string filename, bool init) {
 
 void image::frame(std::string filename) {
     
-    if (made) {
+    // if (made) {
         flip();
         frame_self(filename);
         flip();
-    } else {
-        flip();
-        frame_pre(filename);
-        flip();
-    }
+    // } else {
+    //     flip();
+    //     frame_pre(filename);
+    //     flip();
+    // }
     // flip();
 }
 
@@ -488,6 +488,7 @@ gray_image image::grayscale() {
     std::vector<vector<vector <float> > > vec = {{{0.299, 0.587, 0.114}}};
 
     gray_image new_img = conv(*this, vec, 1, 0);
+    // new_img.made = 1;
     return new_img;
 }
 
@@ -495,6 +496,7 @@ image image::blur(int k) {
     std::vector<std::vector<float>> kernel(k, std::vector<float>(k, 1.0/(k*k))); // (kxk)
 
     image new_img = conv(*this, kernel, kernel, kernel, 1, (k-1)/2.0); // same padding => (k-1)/2
+
     return new_img;
 }
 
@@ -519,6 +521,7 @@ image image::clip() {
 image image::sharpen(int k) {
 
     image blurred = blur(k);
+
     image new_img = (*this - blurred) + *this;
 
     return new_img;
@@ -593,6 +596,7 @@ image image::pixelate(int k) {
             }
         }
     }
+
     return new_img;
 }
 
@@ -663,6 +667,13 @@ image image::hflip() {
             new_img.set_pixel(i, j, 1, green[w-i-1][j]);
             new_img.set_pixel(i, j, 2, blue[w-i-1][j]);
         }
+    }
+
+    if (!made) {
+        new_img.made = 0;
+        new_img.FileBuffer = new char[buffer_size];
+        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+        new_img.buffer_size = buffer_size;
     }
 
     return new_img;
@@ -816,7 +827,7 @@ image& image::operator=(image const img) {
     delete [] blue;
 
     if (!made) {
-        delete FileBuffer;
+        // // delete FileBuffer;
     }
 
     h = img.get_height();
@@ -868,7 +879,7 @@ image& image::operator=(gray_image const img) {
         delete [] this->blue;
     
         if (!made) {
-            delete FileBuffer;
+            // // delete FileBuffer;
         }
     
         h = img.get_height();
@@ -902,22 +913,26 @@ image image::operator-(image const img) {
 
     assert(w == img.get_width());
     assert(h == img.get_height());
+    // std::cout << "heloo\n";
 
     image new_img(h, w, 0);
+    std::cout << std::endl << std::endl;
+
 
     #pragma omp parallel for collapse(2)
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
-            int val = red[i][j] - val; 
+            int val = red[i][j] - img.get_pixel(i, j, 0); 
             new_img.set_pixel(i, j, 0, val);
 
-            val = green[i][j] - val; 
+            val = green[i][j] - img.get_pixel(i, j, 1); 
             new_img.set_pixel(i, j, 1, val);
 
-            val = blue[i][j] - val; 
+            val = blue[i][j] - img.get_pixel(i, j, 2); 
             new_img.set_pixel(i, j, 2, val);
         }
     }
+
 
     return new_img;
 }
@@ -932,13 +947,13 @@ image image::operator+(image const img) {
     #pragma omp parallel for collapse(2)
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
-            int val = red[i][j] + val; 
+            int val = red[i][j] + img.get_pixel(i, j, 0); 
             new_img.set_pixel(i, j, 0, val);
 
-            val = green[i][j] + val; 
+            val = green[i][j] + img.get_pixel(i, j, 1); 
             new_img.set_pixel(i, j, 1, val);
 
-            val = blue[i][j] + val; 
+            val = blue[i][j] + img.get_pixel(i, j, 2);
             new_img.set_pixel(i, j, 2, val);
         }
     }
@@ -956,33 +971,33 @@ image image::operator*(image const img){
     #pragma omp parallel for collapse(2)
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
-            int val = red[i][j] * val; 
+            int val = red[i][j] * img.get_pixel(i, j, 0);
             new_img.set_pixel(i, j, 0, val);
 
-            val = green[i][j] * val; 
+            val = green[i][j] * img.get_pixel(i, j, 1);
             new_img.set_pixel(i, j, 1, val);
 
-            val = blue[i][j] * val; 
+            val = blue[i][j] * img.get_pixel(i, j, 2);
             new_img.set_pixel(i, j, 2, val);
         }
     }
     return new_img;
 }
 
-image image::operator/(float const val){
+image image::operator/(float const value){
     
     image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
-            int val = red[i][j] / val; 
+            int val = red[i][j] / value; 
             new_img.set_pixel(i, j, 0, val);
 
-            val = green[i][j] / val; 
+            val = green[i][j] / value; 
             new_img.set_pixel(i, j, 1, val);
 
-            val = blue[i][j] / val; 
+            val = blue[i][j] / value; 
             new_img.set_pixel(i, j, 2, val);
         }
     }
@@ -1003,27 +1018,27 @@ image& image::operator=(int const val){
     return *this;
 }
 
-image image::operator+(int const val){
+image image::operator+(int const value){
     
     image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
-            int val = red[i][j] + val; 
+            int val = red[i][j] + value; 
             new_img.set_pixel(i, j, 0, val);
 
-            val = green[i][j] + val; 
+            val = green[i][j] + value; 
             new_img.set_pixel(i, j, 1, val);
 
-            val = blue[i][j] + val; 
+            val = blue[i][j] + value; 
             new_img.set_pixel(i, j, 2, val);
         }
     }
     return new_img;
 }
 
-image operator+(int const val, image const img){
+image operator+(int const value, image const img){
         
     image new_img(img.get_height(), img.get_width(), 0);
 
@@ -1031,7 +1046,7 @@ image operator+(int const val, image const img){
     for(int i=0; i<img.get_width(); i++) {
         for(int j=0; j<img.get_height(); j++) {
             for (int k=0; k<3; k++) {
-                int val = img.get_pixel(i, j, k) + val; 
+                int val = img.get_pixel(i, j, k) + value; 
                 new_img.set_pixel(i, j, k, val);
             }
         }
@@ -1039,7 +1054,7 @@ image operator+(int const val, image const img){
     return new_img;
 }
 
-image operator-(int const val, image const img){
+image operator-(int const value, image const img){
         
     image new_img(img.get_height(), img.get_width(), 0);
 
@@ -1047,7 +1062,7 @@ image operator-(int const val, image const img){
     for(int i=0; i<img.get_width(); i++) {
         for(int j=0; j<img.get_height(); j++) {
             for (int k=0; k<3; k++) {
-                int val = img.get_pixel(i, j, k) - val; 
+                int val = img.get_pixel(i, j, k) - value; 
                 new_img.set_pixel(i, j, k, val);
             }
         }
@@ -1055,7 +1070,7 @@ image operator-(int const val, image const img){
     return new_img;
 }
 
-image operator*(int const val, image const img){
+image operator*(int const value, image const img){
         
     image new_img(img.get_height(), img.get_width(), 0);
 
@@ -1063,7 +1078,7 @@ image operator*(int const val, image const img){
     for(int i=0; i<img.get_width(); i++) {
         for(int j=0; j<img.get_height(); j++) {
             for (int k=0; k<3; k++) {
-                int val = img.get_pixel(i, j, k) * val; 
+                int val = img.get_pixel(i, j, k) * value; 
                 new_img.set_pixel(i, j, k, val);
             }
         }
@@ -1071,60 +1086,60 @@ image operator*(int const val, image const img){
     return new_img;
 }
 
-image image::operator-(int const val){
+image image::operator-(int const value){
     
     image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
-            int val = red[i][j] - val; 
+            int val = red[i][j] - value; 
             new_img.set_pixel(i, j, 0, val);
 
-            val = green[i][j] - val; 
+            val = green[i][j] - value; 
             new_img.set_pixel(i, j, 1, val);
 
-            val = blue[i][j] - val; 
+            val = blue[i][j] - value; 
             new_img.set_pixel(i, j, 2, val);
         }
     }
     return new_img;
 }
 
-image image::operator*(int const val){
+image image::operator*(int const value){
     
     image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
-            int val = red[i][j] * val; 
+            int val = red[i][j] * value; 
             new_img.set_pixel(i, j, 0, val);
 
-            val = green[i][j] * val; 
+            val = green[i][j] * value; 
             new_img.set_pixel(i, j, 1, val);
 
-            val = blue[i][j] * val; 
+            val = blue[i][j] * value; 
             new_img.set_pixel(i, j, 2, val);
         }
     }
     return new_img;
 }
 
-image image::operator/(int const val){
+image image::operator/(int const value){
     
     image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
-            int val = red[i][j] / val; 
+            int val = red[i][j] / value; 
             new_img.set_pixel(i, j, 0, val);
 
-            val = green[i][j] / val; 
+            val = green[i][j] / value; 
             new_img.set_pixel(i, j, 1, val);
 
-            val = blue[i][j] / val; 
+            val = blue[i][j] / value; 
             new_img.set_pixel(i, j, 2, val);
         }
     }
@@ -1143,27 +1158,27 @@ void image::operator=(float const val){
     }
 }
 
-image image::operator+(float const val){
+image image::operator+(float const value){
         
     image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
-            int val = red[i][j] - val; 
+            int val = red[i][j] + value; 
             new_img.set_pixel(i, j, 0, val);
 
-            val = green[i][j] - val; 
+            val = green[i][j] + value; 
             new_img.set_pixel(i, j, 1, val);
 
-            val = blue[i][j] - val; 
+            val = blue[i][j] + value; 
             new_img.set_pixel(i, j, 2, val);
         }
     }
     return new_img;
 }
 
-image operator+(float const val, image const img){
+image operator+(float const value, image const img){
             
     image new_img(img.get_height(), img.get_width(), 0);
 
@@ -1171,7 +1186,7 @@ image operator+(float const val, image const img){
     for(int i=0; i<img.get_width(); i++) {
         for(int j=0; j<img.get_height(); j++) {
             for (int k=0; k<3; k++) {
-                int val = img.get_pixel(i, j, k) + val; 
+                int val = img.get_pixel(i, j, k) + value; 
                 new_img.set_pixel(i, j, k, val);
             }
         }
@@ -1179,7 +1194,7 @@ image operator+(float const val, image const img){
     return new_img;
 }
 
-image operator-(float const val, image const img){
+image operator-(float const value, image const img){
             
     image new_img(img.get_height(), img.get_width(), 0);
 
@@ -1187,7 +1202,7 @@ image operator-(float const val, image const img){
     for(int i=0; i<img.get_width(); i++) {
         for(int j=0; j<img.get_height(); j++) {
             for (int k=0; k<3; k++) {
-                int val = img.get_pixel(i, j, k) - val; 
+                int val = img.get_pixel(i, j, k) - value; 
                 new_img.set_pixel(i, j, k, val);
             }
         }
@@ -1195,7 +1210,7 @@ image operator-(float const val, image const img){
     return new_img;
 }
 
-image operator*(float const val, image const img){
+image operator*(float const value, image const img){
             
     image new_img(img.get_height(), img.get_width(), 0);
 
@@ -1203,7 +1218,7 @@ image operator*(float const val, image const img){
     for(int i=0; i<img.get_width(); i++) {
         for(int j=0; j<img.get_height(); j++) {
             for (int k=0; k<3; k++) {
-                int val = img.get_pixel(i, j, k) * val; 
+                int val = img.get_pixel(i, j, k) * value; 
                 new_img.set_pixel(i, j, k, val);
             }
         }
@@ -1211,40 +1226,40 @@ image operator*(float const val, image const img){
     return new_img;
 }
 
-image image::operator-(float const val){
+image image::operator-(float const value){
         
     image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
-            int val = red[i][j] - val; 
+            int val = red[i][j] - value; 
             new_img.set_pixel(i, j, 0, val);
 
-            val = green[i][j] - val; 
+            val = green[i][j] - value; 
             new_img.set_pixel(i, j, 1, val);
 
-            val = blue[i][j] - val; 
+            val = blue[i][j] - value; 
             new_img.set_pixel(i, j, 2, val);
         }
     }
     return new_img;
 }
 
-image image::operator*(float const val){
+image image::operator*(float const value){
         
     image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
-            int val = red[i][j] * val; 
+            int val = red[i][j] * value; 
             new_img.set_pixel(i, j, 0, val);
 
-            val = green[i][j] * val;
+            val = green[i][j] * value;
             new_img.set_pixel(i, j, 1, val);
 
-            val = blue[i][j] * val;
+            val = blue[i][j] * value;
             new_img.set_pixel(i, j, 2, val);
         }
     }
@@ -1262,7 +1277,7 @@ void image::operator=(bool const val){
     }
 }
 
-image image::operator+(bool const val){
+image image::operator+(bool const value){
             
     image new_img(h, w, 0);
 
@@ -1270,20 +1285,20 @@ image image::operator+(bool const val){
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
             
-            int val = red[i][j] + val; 
+            int val = red[i][j] + value; 
             new_img.set_pixel(i, j, 0, val);
 
-            val = green[i][j] + val;
+            val = green[i][j] + value;
             new_img.set_pixel(i, j, 1, val);
             
-            val = blue[i][j] + val;
+            val = blue[i][j] + value;
             new_img.set_pixel(i, j, 2, val);
         }
     }
     return new_img;
 }
 
-image operator+(bool const val, image const img){
+image operator+(bool const value, image const img){
                     
     image new_img(img.get_height(), img.get_width(), 0);
 
@@ -1291,7 +1306,7 @@ image operator+(bool const val, image const img){
     for(int i=0; i<img.get_width(); i++) {
         for(int j=0; j<img.get_height(); j++) {
             for (int k=0; k<3; k++) {
-                int val = img.get_pixel(i, j, k) + val; 
+                int val = img.get_pixel(i, j, k) + value; 
                 new_img.set_pixel(i, j, k, val);
             }
         }
@@ -1299,7 +1314,7 @@ image operator+(bool const val, image const img){
     return new_img;
 }
 
-image operator-(bool const val, image const img){
+image operator-(bool const value, image const img){
                     
     image new_img(img.get_height(), img.get_width(), 0);
 
@@ -1307,7 +1322,7 @@ image operator-(bool const val, image const img){
     for(int i=0; i<img.get_width(); i++) {
         for(int j=0; j<img.get_height(); j++) {
             for (int k=0; k<3; k++) {
-                int val = img.get_pixel(i, j, k) - val; 
+                int val = img.get_pixel(i, j, k) - value; 
                 new_img.set_pixel(i, j, k, val);
             }
         }
@@ -1315,7 +1330,7 @@ image operator-(bool const val, image const img){
     return new_img;
 }
 
-image operator*(bool const val, image const img){
+image operator*(bool const value, image const img){
                     
     image new_img(img.get_height(), img.get_width(), 0);
 
@@ -1323,7 +1338,7 @@ image operator*(bool const val, image const img){
     for(int i=0; i<img.get_width(); i++) {
         for(int j=0; j<img.get_height(); j++) {
             for (int k=0; k<3; k++) {
-                int val = img.get_pixel(i, j, k) * val; 
+                int val = img.get_pixel(i, j, k) * value; 
                 new_img.set_pixel(i, j, k, val);
             }
         }
@@ -1331,60 +1346,60 @@ image operator*(bool const val, image const img){
     return new_img;
 }
 
-image image::operator-(bool const val){
+image image::operator-(bool const value){
             
     image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
-            int val = red[i][j] - val; 
+            int val = red[i][j] - value; 
             new_img.set_pixel(i, j, 0, val);
 
-            val = green[i][j] - val;
+            val = green[i][j] - value;
             new_img.set_pixel(i, j, 1, val);
 
-            val = blue[i][j] - val;
+            val = blue[i][j] - value;
             new_img.set_pixel(i, j, 2, val);
         }
     }
     return new_img;
 }
 
-image image::operator*(bool const val){
+image image::operator*(bool const value){
             
     image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
-            int val = red[i][j] * val; 
+            int val = red[i][j] * value; 
             new_img.set_pixel(i, j, 0, val);
 
-            val = green[i][j] * val;
+            val = green[i][j] * value;
             new_img.set_pixel(i, j, 1, val);
 
-            val = blue[i][j] * val;
+            val = blue[i][j] * value;
             new_img.set_pixel(i, j, 2, val);
         }
     }
     return new_img;
 }
 
-image image::operator/(bool const val){
+image image::operator/(bool const value){
             
     image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
-            int val = red[i][j] / val; 
+            int val = red[i][j] / value; 
             new_img.set_pixel(i, j, 0, val);
 
-            val = green[i][j] / val;
+            val = green[i][j] / value;
             new_img.set_pixel(i, j, 1, val);
 
-            val = blue[i][j] / val;
+            val = blue[i][j] / value;
             new_img.set_pixel(i, j, 2, val);
         }
     }
@@ -1607,9 +1622,9 @@ image::~image() {
     delete [] this->green;
     delete [] this->blue;
 
-    if (!made) {
-        delete FileBuffer;
-    }
+    // if (!made) {
+    //     // // delete FileBuffer;
+    // }
 }
 
 void image::flip() {
@@ -1648,11 +1663,11 @@ gray_image::gray_image(int h, int w, int color) {
     this->w = w;
     this->h = h;
 
-    gray = (int **)malloc(w * sizeof(int *));
+    gray = new int*[w];
 
     #pragma omp parallel for
     for (int i=0; i<w; i++) {
-        gray[i] = (int *)malloc(h * sizeof(int));
+        gray[i] = new int[h];
     }
 
     #pragma omp parallel for collapse(2)
@@ -1775,12 +1790,11 @@ void gray_image::load(std::string filename, bool init) {
         }
         delete [] gray;
         if (!made) {
-            delete FileBuffer;
+            // // delete FileBuffer;
         }
     }
 
     FillAndAllocate(FileBuffer, "./images/inputs/lena.bmp", this->h, this->w, this->buffer_size);
-    std::cout << "here: " << buffer_size << endl;
     uint8_t** gray_temp;
     RGB_Allocate(gray_temp, this->h, this->w);
     GetPixlesFromBMP8(gray_temp, buffer_size, this->h, this->w, FileBuffer);
@@ -1803,96 +1817,147 @@ void gray_image::load(std::string filename, bool init) {
 
     made=0;
     this->flip();
+
+    FILE* ftest = fopen("./res.txt", "w");
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+            fprintf(ftest, "%3d ", gray[i][j]);
+        }
+        fprintf(ftest, "\n");
+    }
 }
 
 /*------------------------------------------------------------------------
+
+
+
  * Image display functions
  *------------------------------------------------------------------------*/
 
+struct BMPHeader {
+    uint16_t signature;     // "BM" (0x4D42)
+    uint32_t fileSize;      // Size of the file in bytes
+    uint16_t reserved1;     // Reserved, set to 0
+    uint16_t reserved2;     // Reserved, set to 0
+    uint32_t dataOffset;    // Offset to the start of image data
+    uint32_t headerSize;    // Size of this header in bytes
+    int32_t  width;         // Image width in pixels
+    int32_t  height;        // Image height in pixels
+    uint16_t planes;        // Number of color planes, must be 1
+    uint16_t bitsPerPixel;  // Number of bits per pixel (1, 4, 8, 16, 24, or 32)
+    uint32_t compression;   // Compression type (0 for no compression)
+    uint32_t imageSize;     // Size of image data in bytes (including padding)
+    int32_t  xPixelsPerMeter;  // Horizontal pixels per meter
+    int32_t  yPixelsPerMeter;  // Vertical pixels per meter
+    uint32_t colorsUsed;    // Number of colors in the color palette, or 0 to default to 2^n
+    uint32_t colorsImportant; // Number of important colors, or 0 when every color is important
+};
+
+
 /// @brief Convert the image to a .bmp file, and save it
 void gray_image::frame(std::string filename) {
-    if (!made) {
-        std::cout << "here1\n"; 
-        flip();
-        uint8_t** gray_temp = new uint8_t*[w];
+    // if (!made) { 
+    //     flip();
+    //     uint8_t** gray_temp = new uint8_t*[w];
 
-        #pragma omp parallel for
-        for (int i=0; i<w; i++) {
-            gray_temp[i] = new uint8_t[h];
-        }
+    //     #pragma omp parallel for
+    //     for (int i=0; i<w; i++) {
+    //         gray_temp[i] = new uint8_t[h];
+    //     }
 
-        #pragma omp parallel for collapse(2)
-        for(int i=0; i<w; i++) {
-            for(int j=0; j<h; j++) {
-                gray_temp[i][j] = ::clip(gray[i][j]);
-            }
-        }
+    //     #pragma omp parallel for collapse(2)
+    //     for(int i=0; i<w; i++) {
+    //         for(int j=0; j<h; j++) {
+    //             gray_temp[i][j] = ::clip(gray[i][j]);
+    //         }
+    //     }
         
-        WriteOutBmp8(FileBuffer, filename.c_str(), buffer_size, this->h, this->w, gray_temp);
-        std::cout << buffer_size << endl;
-        std::cout << "here2\n";
-        for (int i=0; i<w; i++) {
-            delete [] gray_temp[i];
-        }
+    //     WriteOutBmp8(FileBuffer, filename.c_str(), buffer_size, this->h, this->w, gray_temp);
+    //     for (int i=0; i<w; i++) {
+    //         delete [] gray_temp[i];
+    //     }
 
-        delete [] gray_temp;
-        flip();
-        return;
-    }
+    //     delete [] gray_temp;
+    //     flip();
+    //     return;
+    // }
     flip();
-    FILE *f;
-    int filesize = 54 + w*h;  //w is your image width, h is image height, both int
-    unsigned char *canvas = NULL;
-    canvas = (unsigned char *)malloc(w*h);
-    memset(canvas,0,w*h);
+    std::ofstream file(filename.c_str(), std::ios::binary);
+    BMPHeader header;
+    header.signature = 0x4D42; // "BM"
+    header.fileSize = sizeof(BMPHeader) + w * h;
+    header.reserved1 = 0;
+    header.reserved2 = 0;
+    header.dataOffset = sizeof(BMPHeader);
+    header.headerSize = sizeof(BMPHeader) - 14; // The size of this header minus the size of the common header (14 bytes)
+    header.width = w;
+    header.height = h;
+    header.planes = 1;
+    header.bitsPerPixel = 8; // 8 bits per pixel for grayscale
+    header.compression = 0; // No compression
+    header.imageSize = w * h;
+    header.xPixelsPerMeter = 0;
+    header.yPixelsPerMeter = 0;
+    header.colorsUsed = 0;
+    header.colorsImportant = 0;
 
-    // Clip all values to 0-255
-    #pragma omp parallel for collapse(2)
-    for(int i=0; i<w; i++) {
-        for(int j=0; j<h; j++) {
-            gray[i][j] = ::clip(gray[i][j]);
-        }
+    file.write(reinterpret_cast<char*>(&header), sizeof(BMPHeader));
+
+    for (int y = h - 1; y >= 0; --y) {
+        file.write(reinterpret_cast<const char*>(gray[y]), w);
     }
 
-    #pragma omp parallel for collapse(2)
-    for(int i=0; i<w; i++) {
-        for(int j=0; j<h; j++) {
-            int x=i; int y=(h-1)-j;
-            canvas[(x+y*w)] = (unsigned char)(gray[i][j]);
-            // canvas[(x+y*w)*3+1] = (unsigned char)(gray[i][j]);
-            // canvas[(x+y*w)*3+0] = (unsigned char)(gray[i][j]);
-        }
-    }
+    // FILE *f;
+    // int filesize = 54 + w*h;  //w is your image width, h is image height, both int
+    // unsigned char *canvas = NULL;
+    // canvas = (unsigned char *)malloc(w*h);
+    // memset(canvas,0,w*h);
 
-    unsigned char bmpfileheader[14] = {66, 77, 54, 4, 4, 0, 0, 0, 0, 0, 54, 4, 0, 0};
-    unsigned char bmpinfoheader[40] = {40, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 1, 0, 8, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0};
-    unsigned char bmppad[3] = {0,0,0};
+    // // Clip all values to 0-255
+    // #pragma omp parallel for collapse(2)
+    // for(int i=0; i<w; i++) {
+    //     for(int j=0; j<h; j++) {
+    //         gray[i][j] = ::clip(gray[i][j]);
+    //     }
+    // }
 
-    bmpfileheader[ 2] = (unsigned char)(filesize    );
-    bmpfileheader[ 3] = (unsigned char)(filesize>> 8);
-    bmpfileheader[ 4] = (unsigned char)(filesize>>16);
-    bmpfileheader[ 5] = (unsigned char)(filesize>>24);
+    // #pragma omp parallel for collapse(2)
+    // for(int i=0; i<w; i++) {
+    //     for(int j=0; j<h; j++) {
+    //         int x=i; int y=(h-1)-j;
+    //         canvas[(x+y*w)] = (unsigned char)(gray[i][j]);
+    //     }
+    // }
 
-    bmpinfoheader[ 4] = (unsigned char)(       w    );
-    bmpinfoheader[ 5] = (unsigned char)(       w>> 8);
-    bmpinfoheader[ 6] = (unsigned char)(       w>>16);
-    bmpinfoheader[ 7] = (unsigned char)(       w>>24);
-    bmpinfoheader[ 8] = (unsigned char)(       h    );
-    bmpinfoheader[ 9] = (unsigned char)(       h>> 8);
-    bmpinfoheader[10] = (unsigned char)(       h>>16);
-    bmpinfoheader[11] = (unsigned char)(       h>>24);
+    // unsigned char bmpfileheader[14] = {66, 77, 54, 4, 4, 0, 0, 0, 0, 0, 54, 4, 0, 0};
+    // unsigned char bmpinfoheader[40] = {40, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 1, 0, 8, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0};
+    // unsigned char bmppad[1] = {0};
 
-    f = fopen(filename.c_str(), "wb");
-    fwrite(bmpfileheader, 1, 14, f);
-    fwrite(bmpinfoheader, 1, 40, f);
+    // bmpfileheader[ 2] = (unsigned char)(filesize    );
+    // bmpfileheader[ 3] = (unsigned char)(filesize>> 8);
+    // bmpfileheader[ 4] = (unsigned char)(filesize>>16);
+    // bmpfileheader[ 5] = (unsigned char)(filesize>>24);
 
-    for(int i=0; i<h; i++) {
-        fwrite(canvas+(w*(h-i-1)),1,w,f);
-        fwrite(bmppad,1,(4-(w*3)%4)%4,f);
-    }
+    // bmpinfoheader[ 4] = (unsigned char)(       w    );
+    // bmpinfoheader[ 5] = (unsigned char)(       w>> 8);
+    // bmpinfoheader[ 6] = (unsigned char)(       w>>16);
+    // bmpinfoheader[ 7] = (unsigned char)(       w>>24);
+    // bmpinfoheader[ 8] = (unsigned char)(       h    );
+    // bmpinfoheader[ 9] = (unsigned char)(       h>> 8);
+    // bmpinfoheader[10] = (unsigned char)(       h>>16);
+    // bmpinfoheader[11] = (unsigned char)(       h>>24);
 
-    free(canvas);
-    fclose(f);
+    // f = fopen(filename.c_str(), "wb");
+    // fwrite(bmpfileheader, 1, 14, f);
+    // fwrite(bmpinfoheader, 1, 40, f);
+
+    // for(int i=0; i<h; i++) {
+    //     fwrite(canvas+(w*(h-i-1)),1,w,f);
+    //     fwrite(bmppad,1,(1-(w%1))%1,f);
+    // }
+
+    // free(canvas);
+    // fclose(f);
     flip();
 }
 
@@ -1944,16 +2009,16 @@ gray_image gray_image::operator+(gray_image const img) {
     return new_img;
 }
 
-gray_image gray_image::operator/(float const val) {
+gray_image gray_image::operator/(float const value) {
 
-    assert(val > 0);
+    assert(value > 0);
 
     gray_image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
-            int val = (int)gray[i][j]/val; 
+            int val = (int)gray[i][j]/value; 
             new_img.set_pixel(i, j, val);
         }
     }
@@ -1973,7 +2038,7 @@ gray_image& gray_image::operator=(gray_image const img) {
 
     
     if (!made) {
-        delete FileBuffer;
+        // // delete FileBuffer;
     }
 
     this->made = img.get_made();
@@ -2065,98 +2130,98 @@ void gray_image::operator=(int const val){
     }
 }
 
-gray_image gray_image::operator+(int const val){
+gray_image gray_image::operator+(int const value){
                 
     gray_image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++){
-            int val = gray[i][j] + val; 
+            int val = gray[i][j] + value; 
             new_img.set_pixel(i, j, val);
         }
     }
     return new_img;
 }
 
-gray_image operator+(int const val, gray_image const img)
+gray_image operator+(int const value, gray_image const img)
 {
     gray_image new_img(img.get_height(), img.get_width(), 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<img.get_width(); i++) {
         for(int j=0; j<img.get_height(); j++) {
-            int val = img.get_pixel(i, j) + val; 
+            int val = img.get_pixel(i, j) + value; 
             new_img.set_pixel(i, j, val);
         }
     }
     return new_img;
 }
 
-gray_image operator-(int const val, gray_image const img)
+gray_image operator-(int const value, gray_image const img)
 {
     gray_image new_img(img.get_height(), img.get_width(), 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<img.get_width(); i++) {
         for(int j=0; j<img.get_height(); j++) {
-            int val = img.get_pixel(i, j) - val; 
+            int val = img.get_pixel(i, j) - value; 
             new_img.set_pixel(i, j, val);
         }
     }
     return new_img;
 }
 
-gray_image operator*(int const val, gray_image const img)
+gray_image operator*(int const value, gray_image const img)
 {
     gray_image new_img(img.get_height(), img.get_width(), 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<img.get_width(); i++) {
         for(int j=0; j<img.get_height(); j++) {
-            int val = img.get_pixel(i, j) * val; 
+            int val = img.get_pixel(i, j) * value; 
             new_img.set_pixel(i, j, val);
         }
     }
     return new_img;
 }
 
-gray_image gray_image::operator-(int const val){
+gray_image gray_image::operator-(int const value){
                 
     gray_image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++){
-            int val = gray[i][j] - val; 
+            int val = gray[i][j] - value; 
             new_img.set_pixel(i, j, val);
         }
     }
     return new_img;
 }
 
-gray_image gray_image::operator*(int const val){
+gray_image gray_image::operator*(int const value){
                 
     gray_image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++){
-            int val = gray[i][j] * val; 
+            int val = gray[i][j] * value; 
             new_img.set_pixel(i, j, val);
         }
     }
     return new_img;
 }
 
-gray_image gray_image::operator/(int const val){
+gray_image gray_image::operator/(int const value){
                 
     gray_image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++){
-            int val = gray[i][j] / val; 
+            int val = gray[i][j] / value; 
             new_img.set_pixel(i, j, val);
         }
     }
@@ -2172,83 +2237,83 @@ void gray_image::operator=(float const val){
     }
 }
 
-gray_image gray_image::operator+(float const val){
+gray_image gray_image::operator+(float const value){
                     
     gray_image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++){
         for(int j=0; j<h; j++){
-            int val = gray[i][j] + val; 
+            int val = gray[i][j] + value; 
             new_img.set_pixel(i, j, val);
         }
     }
     return new_img;
 }
 
-gray_image operator+(float const val, gray_image const img) {
+gray_image operator+(float const value, gray_image const img) {
     gray_image new_img(img.get_height(), img.get_width(), 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<img.get_width(); i++) {
         for(int j=0; j<img.get_height(); j++) {
-            int val = img.get_pixel(i, j) + val; 
+            int val = img.get_pixel(i, j) + value; 
             new_img.set_pixel(i, j, val);
         }
     }
     return new_img;
 }
 
-gray_image operator-(float const val, gray_image const img)
+gray_image operator-(float const value, gray_image const img)
 {
     gray_image new_img(img.get_height(), img.get_width(), 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<img.get_width(); i++) {
         for(int j=0; j<img.get_height(); j++) {
-            int val = img.get_pixel(i, j) - val; 
+            int val = img.get_pixel(i, j) - value; 
             new_img.set_pixel(i, j, val);
         }
     }
     return new_img;
 }
 
-gray_image operator*(float const val, gray_image const img)
+gray_image operator*(float const value, gray_image const img)
 {
     gray_image new_img(img.get_height(), img.get_width(), 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<img.get_width(); i++) {
         for(int j=0; j<img.get_height(); j++) {
-            int val = img.get_pixel(i, j) * val; 
+            int val = img.get_pixel(i, j) * value; 
             new_img.set_pixel(i, j, val);
         }
     }
     return new_img;
 }
 
-gray_image gray_image::operator-(float const val){
+gray_image gray_image::operator-(float const value){
                     
     gray_image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++){
         for(int j=0; j<h; j++){
-            int val = gray[i][j] - val; 
+            int val = gray[i][j] - value; 
             new_img.set_pixel(i, j, val);
         }
     }
     return new_img;
 }
 
-gray_image gray_image::operator*(float const val){
+gray_image gray_image::operator*(float const value){
                     
     gray_image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++){
         for(int j=0; j<h; j++){
-            int val = gray[i][j] * val; 
+            int val = gray[i][j] * value; 
             new_img.set_pixel(i, j, val);
         }
     }
@@ -2264,98 +2329,98 @@ void gray_image::operator=(bool const val){
     }
 }
 
-gray_image gray_image::operator+(bool const val){
+gray_image gray_image::operator+(bool const value){
                             
     gray_image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++){
         for(int j=0; j<h; j++){
-            int val = gray[i][j] + val; 
+            int val = gray[i][j] + value; 
             new_img.set_pixel(i, j, val);
         }
     }
     return new_img;
 }
 
-gray_image operator+(bool const val, gray_image const img)
+gray_image operator+(bool const value, gray_image const img)
 {
     gray_image new_img(img.get_height(), img.get_width(), 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<img.get_width(); i++) {
         for(int j=0; j<img.get_height(); j++) {
-            int val = img.get_pixel(i, j) + val; 
+            int val = img.get_pixel(i, j) + value; 
             new_img.set_pixel(i, j, val);
         }
     }
     return new_img;
 }
 
-gray_image operator-(bool const val, gray_image const img)
+gray_image operator-(bool const value, gray_image const img)
 {
     gray_image new_img(img.get_height(), img.get_width(), 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<img.get_width(); i++) {
         for(int j=0; j<img.get_height(); j++) {
-            int val = img.get_pixel(i, j) - val; 
+            int val = img.get_pixel(i, j) - value; 
             new_img.set_pixel(i, j, val);
         }
     }
     return new_img;
 }
 
-gray_image operator*(bool const val, gray_image const img)
+gray_image operator*(bool const value, gray_image const img)
 {
     gray_image new_img(img.get_height(), img.get_width(), 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<img.get_width(); i++) {
         for(int j=0; j<img.get_height(); j++) {
-            int val = img.get_pixel(i, j) * val; 
+            int val = img.get_pixel(i, j) * value; 
             new_img.set_pixel(i, j, val);
         }
     }
     return new_img;
 }
 
-gray_image gray_image::operator-(bool const val){
+gray_image gray_image::operator-(bool const value){
                             
     gray_image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++){
         for(int j=0; j<h; j++){
-            int val = gray[i][j] - val; 
+            int val = gray[i][j] - value; 
             new_img.set_pixel(i, j, val);
         }
     }
     return new_img;
 }
 
-gray_image gray_image::operator*(bool const val){
+gray_image gray_image::operator*(bool const value){
                             
     gray_image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++){
         for(int j=0; j<h; j++){
-            int val = gray[i][j] * val; 
+            int val = gray[i][j] * value; 
             new_img.set_pixel(i, j, val);
         }
     }
     return new_img;
 }
 
-gray_image gray_image::operator/(bool const val){
+gray_image gray_image::operator/(bool const value){
                             
     gray_image new_img(h, w, 0);
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++){
         for(int j=0; j<h; j++){
-            int val = gray[i][j] / val; 
+            int val = gray[i][j] / value; 
             new_img.set_pixel(i, j, val);
         }
     }
@@ -2437,8 +2502,6 @@ gray_image gray_image::blur(int k) {
             kernel[i][j] = 1.0/(k*k); // Set all values to 1/(k*k) to get average on convolving
         }
     }
-    std::cout<<"here"<<std::endl;
-    std::cout << 2441 << " " << buffer_size << endl;
     gray_image new_img = conv(*this, kernel, 1, (k-1)/2.0); // same padding => (k-1)/2
     if (!made) {
         new_img.made = 0;
@@ -2446,8 +2509,6 @@ gray_image gray_image::blur(int k) {
         memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
         new_img.buffer_size = buffer_size;
     }
-    std::cout << 2442 << " " << new_img.get_buffer_size() << endl;
-    std::cout << "here" << std::endl;
     return new_img;
 }
 
@@ -2463,6 +2524,13 @@ gray_image gray_image::sharpen(int k) {
     gray_image blurred = blur(k);
 
     gray_image new_img = *this - blurred + *this;
+
+    if (!made) {
+        new_img.made = 0;
+        new_img.FileBuffer = new char[buffer_size];
+        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+        new_img.buffer_size = buffer_size;
+    }
 
     return new_img;
 }
@@ -2491,6 +2559,13 @@ gray_image gray_image::sobel() {
     gray_image new_img = new_img_x + new_img_y;
     // vec_x = new_img_x.to_vector(); vec_y = new_img_y.to_vector();
     // gray_image new_img = to_gray_image(vec_sqrt(vec_x*vec_x + vec_y*vec_y)); 
+
+    if (!made) {
+        new_img.made = 0;
+        new_img.FileBuffer = new char[buffer_size];
+        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+        new_img.buffer_size = buffer_size;
+    }
 
     return new_img;
 }
@@ -2539,12 +2614,26 @@ gray_image gray_image::pixelate(int k) {
         }
     }
 
+    if (!made) {
+        new_img.made = 0;
+        new_img.FileBuffer = new char[buffer_size];
+        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+        new_img.buffer_size = buffer_size;
+    }
+
     return new_img;
 }
 
 /// @brief Invert the colors of the image
 gray_image gray_image::invert() {
     gray_image new_img(h, w, 255);
+
+    if (!made) {
+        new_img.made = 0;
+        new_img.FileBuffer = new char[buffer_size];
+        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+        new_img.buffer_size = buffer_size;
+    }
 
     return new_img - *this;
 }
@@ -2571,6 +2660,13 @@ gray_image gray_image::noise(float var) {
         }
     }
 
+    if (!made) {
+        new_img.made = 0;
+        new_img.FileBuffer = new char[buffer_size];
+        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+        new_img.buffer_size = buffer_size;
+    }
+
     return new_img;
 }
 
@@ -2593,6 +2689,14 @@ gray_image gray_image::bnw(int thr) {
             }
         }
     }
+
+    if (!made) {
+        new_img.made = 0;
+        new_img.FileBuffer = new char[buffer_size];
+        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+        new_img.buffer_size = buffer_size;
+    }
+
     return new_img;
 }
 
@@ -2605,6 +2709,13 @@ gray_image gray_image::hflip() {
         for (int j=0; j<h; j++) {
             new_img.set_pixel(i, j, gray[w-i-1][j]);
         }
+    }
+
+    if (!made) {
+        new_img.made = 0;
+        new_img.FileBuffer = new char[buffer_size];
+        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+        new_img.buffer_size = buffer_size;
     }
 
     return new_img;
@@ -2621,6 +2732,13 @@ gray_image gray_image::vflip() {
         }
     }
 
+    if (!made) {
+        new_img.made = 0;
+        new_img.FileBuffer = new char[buffer_size];
+        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+        new_img.buffer_size = buffer_size;
+    }
+
     return new_img;
 }
 
@@ -2635,6 +2753,8 @@ gray_image gray_image::T() {
         }
     }
 
+    new_img.made = 1;
+
     return new_img;
 }
 
@@ -2643,39 +2763,46 @@ gray_image gray_image::T() {
 /// @return 
 gray_image gray_image::crystallize(int k) {
     
-        assert(k > 0);
-    
-        int points[k][2];
-    
-        // Randomly generate k points
-        for (int i=0; i<k; i++) {
-            points[i][0] = rand() % w;
-            points[i][1] = rand() % h;
-        }
-    
-        gray_image new_img(h, w, 0);
-    
-        #pragma omp parallel for
-        for (int i=0; i<w; i++) {
-            for (int j=0; j<h; j++) {
-    
-                int min_dist = INT_MAX;
-                int min_point = 0;
-    
-                // Find the closest point
-                for (int m=0; m<k; m++) {
-                    int dist = (i - points[m][0])*(i - points[m][0]) + (j - points[m][1])*(j - points[m][1]);
-                    if (dist < min_dist) {
-                        min_dist = dist;
-                        min_point = m;
-                    }
+    assert(k > 0);
+
+    int points[k][2];
+
+    // Randomly generate k points
+    for (int i=0; i<k; i++) {
+        points[i][0] = rand() % w;
+        points[i][1] = rand() % h;
+    }
+
+    gray_image new_img(h, w, 0);
+
+    #pragma omp parallel for
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+
+            int min_dist = INT_MAX;
+            int min_point = 0;
+
+            // Find the closest point
+            for (int m=0; m<k; m++) {
+                int dist = (i - points[m][0])*(i - points[m][0]) + (j - points[m][1])*(j - points[m][1]);
+                if (dist < min_dist) {
+                    min_dist = dist;
+                    min_point = m;
                 }
-    
-                new_img.set_pixel(i, j, gray[points[min_point][0]][points[min_point][1]]);
             }
+
+            new_img.set_pixel(i, j, gray[points[min_point][0]][points[min_point][1]]);
         }
-    
-        return new_img;
+    }
+
+    if (!made) {
+    new_img.made = 0;
+    new_img.FileBuffer = new char[buffer_size];
+    memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+    new_img.buffer_size = buffer_size;
+    }
+
+    return new_img;
 }
 
 /// @brief converts gray_image to image (3 channels) 
@@ -2691,6 +2818,8 @@ image gray_image::to_image() {
             new_img.set_pixel(i, j, 2, gray[i][j]);
         }
     }
+
+    new_img.made = 1;
 
     return new_img;
 }
@@ -2708,9 +2837,9 @@ gray_image::~gray_image() {
 
     delete [] gray;
 
-    if (!made) {
-        delete FileBuffer;
-    }
+    // if (!made) {
+    //     // // delete FileBuffer;
+    // }
 }
 
 
@@ -2747,11 +2876,14 @@ void video::play() {
         }
         for (int j=0; j<n; j++) {
             system("clear");
-            // printf( "\033[2J");
             std::string s = "tiv -w 1000 -h 1000 temp" + std::to_string(j) + ".bmp";
             system(s.c_str());
             usleep(100000/fps);
         }
+    }
+    for (int i=0; i<n; i++) {
+        std::string s = "rm temp" + std::to_string(i) + ".bmp";
+        system(s.c_str());
     }
 }
 
@@ -2933,7 +3065,24 @@ gray_video::gray_video(int h, int w, int fps) {
 
 /// @brief Plays the video on the terminal
 void gray_video::play() {
-    /* For KG */
+    int n = 8;
+    int divisions = this->get_num_frames()/n;
+    for(int i=0; i<divisions; i++) {
+        #pragma omp parallel for num_threads(n)
+        for(int j=0; j<n; j++) {
+            frames_vec[i*n + j].frame("temp" + std::to_string(j) + ".bmp");
+        }
+        for (int j=0; j<n; j++) {
+            system("clear");
+            std::string s = "tiv -w 1000 -h 1000 temp" + std::to_string(j) + ".bmp";
+            system(s.c_str());
+            usleep(100000/fps);
+        }
+    }
+    for (int i=0; i<n; i++) {
+        std::string s = "rm temp" + std::to_string(i) + ".bmp";
+        system(s.c_str());
+    }
 }
 
 /*------------------------------------------------------------------------

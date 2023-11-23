@@ -1,5 +1,3 @@
-loop semantic checks: (DONE)
-brak_pred: (DONE)
 add turtle
 
 codegen
@@ -57,11 +55,6 @@ flags to ensure nothing goes wrong after continuing on yyerror
 
 crop operator
 
-//
-Left operator shit (class lhs != class rhs) (DONE)
-everything in the todo comment in image.cpp (DONE)
-lot of stuff in kernel.cpp (multidimensional arrays)      
-
 // Later
 splicing
 
@@ -85,5 +78,3 @@ sketch ID (parlist) {
     spool(decl|expr_pred|i+5){
     }
 }
-
-(img << sketch) -> returns an image

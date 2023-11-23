@@ -2,7 +2,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <unistd.h>
-#include "image.hpp"
+#include "./frontend/headers/image.hpp"
 
 
 using namespace std;

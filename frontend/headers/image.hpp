@@ -46,15 +46,15 @@ class image {
         int **red;
         int **green;
         int **blue;
-        int buffer_size;
-        char* FileBuffer;
-        bool made;
 
         // Private display functions
         void frame_self(std::string filename);
         void frame_pre(std::string filename);
 
     public:
+        int buffer_size;
+        char* FileBuffer;
+        bool made;
         // Constructors
         image(int h, int w, int color);
         image(std::string filename);
