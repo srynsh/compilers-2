@@ -145,6 +145,7 @@ class sketch_record {
     public:
         sketch_record(){}
         sketch_record(std::string name);
+        sketch_record(std::string name, std::vector<std::pair<std::string, data_record*> > *parameter_list);
 
         std::string get_name();
         data_record* get_parameter(std::string name);
@@ -172,5 +173,6 @@ class symbol_table_sketch {
         ~symbol_table_sketch();
 };
 
+bool compare_par_list_arg_list(std::vector<struct sketch_record*> sketch_list, std::vector<struct type_info*> &arg_list);
 
 #endif // SYM_TAB_HPP

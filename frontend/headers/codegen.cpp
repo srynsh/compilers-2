@@ -15,6 +15,7 @@ std::string codegen_headers() {
     code += "#include \"./frontend/headers/load_bmp.hpp\"\n";
     code += '\n';
     code += "using namespace std;\n\n";
+    code += "turtle _t_global;\n\n";
 
     return code;
 }
@@ -190,6 +191,27 @@ std::string codegen_function_definition(
     // Remove the last comma and space if parameters are present
         code.pop_back(); 
         code.pop_back();
+    }
+
+    code += ")";
+
+    return code;
+}
+
+/// @brief Generate the code in C++ for the sketch definition
+std::string codegen_sketch_definition(
+    std::string name, 
+    std::vector<std::pair<std::string, struct type_info*>> *par_vec
+) {
+    std::string code = "";
+    code += std::string("image") + " " + name + "(";
+
+    if (par_vec != NULL) {
+        code += " image i, ";
+    for (auto par : *par_vec) {
+        code += type_to_string(par.second) + " " + par.first + ", ";
+    }
+    code += "turtle t";
     }
 
     code += ")";

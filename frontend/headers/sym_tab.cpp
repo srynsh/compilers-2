@@ -493,3 +493,24 @@ symbol_table_sketch::~symbol_table_sketch() {
         delete i;
     }
 }
+
+bool compare_par_list_arg_list(std::vector<struct sketch_record*> sketch_list, std::vector<struct type_info*> &arg_list) {
+    for (auto i : sketch_list)
+    {
+        std::vector<std::pair<std::string, struct data_record*>> par_list = i->get_parameter_list();
+        if (par_list.size() == arg_list.size()) {
+            int j;
+            for (j = 0; j < par_list.size(); j++) {
+                if ((par_list[j].second->get_ele_type() != arg_list[j]->eleType) || (par_list[j].second->get_type() != arg_list[j]->type)) {
+                    struct type_info* t = new struct type_info;
+                    t->type = par_list[j].second->get_type();
+                    t->eleType = par_list[j].second->get_ele_type();
+                    sketch_compatible(t, arg_list[j], flag_type::call_stmt);
+                }
+            }
+            if (j == par_list.size())
+                return true;
+        }
+    }
+    return false;
+}

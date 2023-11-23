@@ -13,6 +13,7 @@
     
     symbol_table_function* SymbolTableFunction = new symbol_table_function();
     symbol_table_variable* SymbolTableVariable = new symbol_table_variable();
+    symbol_table_sketch* SymbolTableSketch = new symbol_table_sketch();
     int current_scope = 0, error_counter = 0;
     bool return_flag = false;
     // std::vector<std::string> temp_str = std::vector<std::string>();
@@ -50,17 +51,20 @@
     OPERATOR opval;
 }
 
-%type <lang_element> brak_pred brak_pred_list expr_pred_list expr_pred call_stmt arg arg_list in_built_call_stmt sketch_expr_pred
-%type <sval> func_body loop_body real_array_decl num_array_decl real_decl num_decl bool_decl gray_vid_decl vid_decl gray_img_decl img_decl loop_stmt loop_stmt_list sketch_loop_body sketch_loop_stmt
-%type <sval> return_stmt unary_stmt stmt stmt_list expr_stmt decl_stmt loop_block sketch_loop_stmt_list 
-%type <sval> function_definition function sketch
+%type <lang_element> brak_pred brak_pred_list expr_pred_list expr_pred call_stmt arg arg_list in_built_call_stmt 
+%type <sval> func_body loop_body real_array_decl num_array_decl real_decl num_decl bool_decl gray_vid_decl vid_decl gray_img_decl img_decl loop_stmt loop_stmt_list  
+%type <sval> return_stmt unary_stmt stmt stmt_list expr_stmt decl_stmt loop_block  
+%type <sval> function_definition function 
 %type <sval> program
 %type <sval> if_block else_if_block_list else conditional_stmt
-%type <sval> optional_loop_expr expr_or_decl_stmt optional_loop_decl sketch_optional_loop_expr
+%type <sval> optional_loop_expr expr_or_decl_stmt optional_loop_decl 
 %type <sval> loop_else loop_conditional_stmt loop_if_block loop_else_if_block_list loop_expr_stmt
 
+%type <lang_element> sketch_expr_pred sketch_inbuilt_call_stmt 
+%type <sval> sketch sketch_definition sketch_body sketch_stmt_list sketch_stmt sketch_loop sketch_optional_loop_expr sketch_loop_stmt_list  sketch_loop_stmt sketch_loop_body sketch_optional_loop_decl sketch_expr_or_decl_stmt
+
 %type <dim_list> array_element brak
-%type <tval> datatype RET_TYPE 
+%type <tval> datatype RET_TYPE sketch_datatype 
 %type <par_vec> par_list par sketch_par_list sketch_par
 /* %type <arg_vec> arg_list arg */
 %type <id_vec> id_list
@@ -282,11 +286,7 @@ stmt : decl_stmt /* new_lines is included in decl_stmt */ { $$ = new std::string
         | '{' increment_scope new_lines '}' decrement_scope new_lines { $$ = new std::string("{\n}\n");}
         | '{' '}' new_lines { $$ = new std::string("{}\n");}
         | unary_stmt  /* new_lines is included in expr_stmt */ { $$ = new std::string(*($1));}
-        | sketch_init_stmt 
         ; 
-
-sketch_init_stmt : SKETCH ID SKETCH_OP ID new_lines
-    ;
 
 /*------------------------------------------------------------------------*
  * Declaration Statements                                                 *
@@ -800,8 +800,8 @@ loop_conditional_stmt : loop_if_block optional_new_lines loop_else_if_block_list
                 }
                 ;
 
-loop_expr_stmt : ID '=' expr_pred 
-        | ID array_element '=' expr_pred 
+loop_expr_stmt : ID '=' expr_pred  { $$ = new std::string(*$1 + " = " + *($3.str));}
+        | ID array_element '=' expr_pred  
         ;
 
 /*------------------------------------------------------------------------
@@ -977,6 +977,21 @@ expr_pred :
                 // temp_str = codegen_operator($1, &temp_str);
                 $$.str = new std::string(codegen_operator($1, *($2.str), ""));
                 // *($$.str) = codegen_operator($1, *($2.str), "");
+            }
+        | expr_pred SKETCH_OP ID '(' arg_list ')' 
+            {
+                // Semantic checks:
+                // Match arg_list with sketch par_list (DONE)
+                // Check if ID is a sketch (DONE)
+                // Check if expr_pred is an image (DONE)
+                if ($1.ti->type != TYPE::SIMPLE || $1.ti->eleType != ELETYPE::ELE_IMG) {
+                    yyerror("sketch operator can only be applied to images");
+                }
+                struct type_info* t = new struct type_info;
+                t = check_sketch_call(SymbolTableSketch, *$3, $5.arg_vec);
+                $$.ti = t;
+                // Codegen:
+                $$.str = new std::string(*$3 + "(" + *($1.str) + std::string(", ") + std::string(*($5.str)) +  std::string(", _t_global") + ")");
             }
         ;
 
@@ -1173,25 +1188,25 @@ sketch_definition
     : SKETCH ID '(' increment_scope sketch_par_list ')' 
         {
             std::string sketch_name = *$2;
-            SymbolTableSketch->add_sketch(sketch_name, *$5);
+            SymbolTableSketch->add_sketch_record(sketch_name, $5);
             assert(current_scope == 1);
             SymbolTableVariable->add_variable(*($5), current_scope);
-            // Codegen
+            $$ = new std::string(codegen_sketch_definition(*$2, $5));
         }
     | SKETCH ID '(' increment_scope')' 
         {
             std::string sketch_name = *$2;
-            SymbolTableSketch->add_sketch(sketch_name);
+            SymbolTableSketch->add_sketch_record(sketch_name);
             assert(current_scope == 1);
-            // Codegen
+            $$ = new std::string(codegen_sketch_definition(*$2, NULL));
         }
     ;
 
 sketch_par_list 
     : sketch_par_list ',' sketch_par 
         {
-            std::vector<std::string> *p = $1;
-            std::string *q = $3;
+            std::vector<std::pair<std::string, type_info*>> *p = $1;
+            std::vector<std::pair<std::string, type_info*>> *q = $3;
             p->insert(p->end(), q->begin(), q->end());
             $$ = p;
         }
@@ -1218,52 +1233,62 @@ sketch_datatype : NUM
 sketch_body
     : '{' increment_scope new_lines sketch_stmt_list '}' decrement_scope  
         {
-            // Codegen
+            $$ = new std::string("{\n" "t.set_image(&i);\n" + *($4) + "return t.get_image();\n" + "}\n");
         }
     ;
 
 sketch_stmt_list
     : sketch_stmt
         {
-            // Codegen
+            $$ = new std::string(*($1));
         }
     | sketch_stmt_list sketch_stmt
         {
-            // Codegen
+            $$ = new std::string(*($1) + *($2));
         }
 
 sketch_stmt
     : sketch_loop new_lines 
         { 
-            // Codegen 
+            $$ = new std::string(*($1) + "\n");
         }
     | sketch_inbuilt_call_stmt new_lines
         { 
-            // Codegen 
+            $$ = new std::string(*($1.str) + ";\n");
         }
 
 sketch_inbuilt_call_stmt
-    : ID '(' arg_list ')' new_lines
-    | ID '(' ')' new_lines
+    : ID '(' arg_list ')' 
+        {
+
+            check_inbuilt_sketch_call(*$1, $3.arg_vec);
+            $$.str = new std::string("t." + *$1 + "(" + *($3.str) + ")");
+        }
+    | ID '(' ')' 
+        {
+
+            check_inbuilt_sketch_call(*$1, NULL);
+            $$.str = new std::string("t." + *$1 + "()");
+        }
 
 // Similar to for loop
 sketch_loop
     : LOOP optional_new_lines '(' increment_scope sketch_optional_loop_decl  ';' sketch_optional_loop_expr ';' sketch_optional_loop_expr ')' optional_new_lines sketch_loop_body decrement_scope
         {
-            // Codegen
+            $$ = new std::string("for (" + *($5) + "; " + *($7) + "; " + *($9) + ") {\n" + *($12) + "}\n");
         }
     ;
 
 sketch_optional_loop_decl 
-    : sketch_expr_or_decl_stmt {/* Codegen */ }
-    | /* empty */ {/* Codegen */ }
+    : sketch_expr_or_decl_stmt { $$ = new std::string(*($1)); }
+    | /* empty */ { $$ = new std::string("");}
     ;
 
 sketch_expr_or_decl_stmt 
-    : num_decl { /* Codegen */}
-    | real_decl { /* Codegen */}
-    | bool_decl { /* Codegen */}
-    | ID '=' sketch_expr_pred
+    : num_decl  { $$ = new std::string(*($1));}
+    | real_decl { $$ = new std::string(*($1));}
+    | bool_decl { $$ = new std::string(*($1));}
+    | ID '=' sketch_expr_pred { $$ = new std::string(*($1) + " = " + *($3.str));}
     ;
 
 sketch_optional_loop_expr : sketch_expr_pred
@@ -1280,7 +1305,7 @@ sketch_optional_loop_expr : sketch_expr_pred
 sketch_loop_body : 
     '{' new_lines sketch_loop_stmt_list '}'  
         {
-            // $$ = new std::string("{\n" + *($3) + "}\n");
+            $$ = new std::string("{\n" + *($3) + "}\n");
         }   
     ;
 
@@ -1291,11 +1316,11 @@ sketch_loop_stmt_list : sketch_loop_stmt { $$ = new std::string(*($1));}
 sketch_loop_stmt
     : sketch_loop new_lines 
         { 
-            // Codegen 
+            $$ = new std::string(*($1) + "\n");
         }
     | sketch_inbuilt_call_stmt new_lines
         { 
-            // Codegen 
+            $$ = new std::string(*($1.str) + ";\n");
         }
     | BREAK new_lines { $$ = new std::string("break;\n");}
     | CONTINUE new_lines { $$ = new std::string("continue;\n");}

@@ -61,10 +61,14 @@ struct type_info* unary_compatible(struct type_info* t1, OPERATOR op, flag_type 
 struct type_info* relational_compatible(struct type_info* t1, struct type_info* t2, OPERATOR op);
 struct type_info* dim_list_compatible(struct type_info* t1, struct type_info* t2);
 struct type_info* assignment_compatible(struct type_info* t1, struct type_info* t2, flag_type flag=assignment);
+struct type_info* sketch_compatible(struct type_info* t1, struct type_info* t2, flag_type flag=assignment);
 
 struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, std::string func_name, std::vector<struct type_info*> *arg_vec);
 struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, std::string func_name);
+struct type_info* check_sketch_call(symbol_table_sketch* SymbolTableSketch, std::string func_name, std::vector<struct type_info*> *arg_vec);
+struct type_info* check_sketch_call(symbol_table_sketch* SymbolTableSketch, std::string func_name);
 
 struct type_info* check_inbuilt_func_call(struct type_info* ti, std::string func_name, std::vector<struct type_info*> *arg_list);
+struct type_info* check_inbuilt_sketch_call(std::string func_name, std::vector<struct type_info*> *arg_list);
 
 #endif // SEMANTIC_HPP

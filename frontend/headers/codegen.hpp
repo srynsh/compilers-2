@@ -22,6 +22,12 @@ std::string codegen_function_definition(
     std::string name, 
     std::vector<std::pair<std::string, struct type_info*>> *par_vec
 );
+
+std::string codegen_sketch_definition(
+    std::string name, 
+    std::vector<std::pair<std::string, struct type_info*>> *par_vec
+);
+
 std::string codegen_decl_numeric(
     struct type_info* t,
     std::string name, 

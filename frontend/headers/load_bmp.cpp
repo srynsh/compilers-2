@@ -154,6 +154,8 @@ void WriteOutBmp8(char* FileBuffer, const char* NameOfFileToCreate, int BufferSi
     int count = 1;
     int extra = cols % 4; // The nubmer of bytes in a row (cols) will be a multiple of 4.
 
+
+    std::cout << "hhhhhhhhh\n";
     for (int i = 0; i < rows; i++) {
         count += extra;
         for (int j = cols - 1; j >= 0; j--) {
@@ -161,6 +163,8 @@ void WriteOutBmp8(char* FileBuffer, const char* NameOfFileToCreate, int BufferSi
             count++;
         }
     }
+
+    std::cout << "ololo\n";
 
     write.write(FileBuffer, BufferSize);
 }

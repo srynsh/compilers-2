@@ -5,6 +5,8 @@
 #include "utils.hpp"
 
 
+#define THRESHOLD 7
+
 extern void yyerror(const char *s);
 extern int lineno;
 
@@ -14,6 +16,9 @@ std::vector<std::string> inbuilt_functions = {"blur", "sharpen", "sobel", "T", "
                                 "hflip", "pixelate", "invert", "noise", "bnw",
                                 "get", "set", "convolve", "paint", "frame",
                                 "play", "len", "append", "height", "width", "draw"};
+
+std::vector<std::string> inbuilt_sketches = {"penup", "pendown", "set_pen_color", "circle", "arc", "rotate",
+                                        "forward"};
 
 /* ---------------------------------------------------------- 
  * Helper functions
@@ -559,6 +564,28 @@ struct type_info* assignment_compatible(struct type_info* t1, struct type_info* 
     
     return t_return;
 }
+// only num real bool allowed in array
+struct type_info* sketch_compatible(struct type_info* t1, struct type_info* t2, flag_type flag){
+    struct type_info* t_return = new struct type_info;
+    if (t1->type == t2->type && t1->type == TYPE::SIMPLE) {
+        if (is_primitive(t1->eleType)) {
+            if (is_img(t2->eleType) || is_vid(t2->eleType)) {
+                if (flag == flag_type::assignment)
+                    yyerror("Cannot assign img/video to primitive");
+                else if (flag == flag_type::call_stmt)
+                    yyerror("Cannot pass img/video to primitive");
+            }
+            t_return->type = TYPE::SIMPLE;
+            t_return->eleType = t1->eleType;
+            return t_return;
+        }
+    }
+    yyerror("Cannot pass incompatible types, only primitive types allowed");
+    exit(1);
+    return t_return;
+}
+
+
 
 /* ---------------------------------------------------------*
  * Dimension List Compatibility                      *
@@ -587,7 +614,7 @@ struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, st
     {
         std::string err = "Function doesn't match any declaration";
         yyerror(err.c_str());
-        
+        exit(1);
     }
     
     if (!compare_par_list_arg_list(func_list, *arg_vec))
@@ -625,7 +652,7 @@ struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, st
     {
         std::string err = "Function doesn't match any declaration";
         yyerror(err.c_str());
-        
+        exit(1);
     }
 
     struct type_info* t_return = new struct type_info;
@@ -650,6 +677,49 @@ struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, st
     return t_return;
 }
 
+struct type_info* check_sketch_call(symbol_table_sketch* SymbolTableSketch, std::string func_name, std::vector<struct type_info*> *arg_vec){
+    std::vector<sketch_record*> sketch_list = SymbolTableSketch->get_sketch(func_name);
+    if (sketch_list.empty())
+    {
+        std::string err = "Sketch doesn't match any declaration";
+        yyerror(err.c_str());
+        exit(1);
+    }
+    
+    if (!compare_par_list_arg_list(sketch_list, *arg_vec))
+    {
+        
+        std::string err = "Sketch Call Arguments doesn't match any sketch declaration";
+        yyerror(err.c_str());
+        
+    }
+    struct type_info* t_return = new struct type_info;
+    t_return->type = TYPE::SIMPLE;
+    t_return->eleType = ELETYPE::ELE_IMG;
+    t_return->dim_list = new std::vector<int>(3);
+    t_return->dim_list->at(0) = -1; 
+    t_return->dim_list->at(1) = -1;
+    t_return->dim_list->at(2) = 3;
+    return t_return;
+}
+
+struct type_info* check_sketch_call(symbol_table_sketch* SymbolTableSketch, std::string func_name) { 
+    if ((SymbolTableSketch->get_sketch(func_name)).empty())
+    {
+        std::string err = "Sketch doesn't match any declaration";
+        yyerror(err.c_str());
+        exit(1);
+    }
+
+    struct type_info* t_return = new struct type_info;
+    t_return->type = TYPE::SIMPLE;
+    t_return->eleType = ELETYPE::ELE_IMG;
+    t_return->dim_list = new std::vector<int>(3);
+    t_return->dim_list->at(0) = -1;
+    t_return->dim_list->at(1) = -1;
+    t_return->dim_list->at(2) = 3;
+    return t_return;
+}
 /* ---------------------------------------------------------- 
  * In-built function call
 ------------------------------------------------------------ */
@@ -659,7 +729,7 @@ struct type_info* check_inbuilt_func_call(struct type_info* ti, std::string func
     if (inbuilt_functions[idx] != func_name) {
         // arbitrary threshold of 7
         std::string err;
-        if (dist < 7) {
+        if (dist < THRESHOLD) {
             err = func_name + " is not an inbuilt function; Did you mean " + inbuilt_functions[idx] + "?";
         } else {
             err = func_name + " is not an inbuilt function";
@@ -752,4 +822,45 @@ struct type_info* check_inbuilt_func_call(struct type_info* ti, std::string func
         return t_return;
     }
     return nullptr; //temp
+}
+
+
+void check_inbuilt_sketch_call(std::string func_name, std::vector<struct type_info*> *arg_list) {
+    auto const [idx, dist] = FindClosest(inbuilt_sketches, func_name);
+    if (inbuilt_sketches[idx] != func_name) {
+        // arbitrary threshold of 7
+        std::string err;
+        if (dist < THRESHOLD) {
+            err = func_name + " is not an inbuilt sketch; Did you mean " + inbuilt_sketches[idx] + "?";
+        } else {
+            err = func_name + " is not an inbuilt sketch";
+        }
+        yyerror(err.c_str());
+    }
+
+    // Takes 1 argument
+    if (func_name == "forward" || func_name == "rotate" || func_name == "set_pen_color" || func_name == "circle" ){
+        if (arg_list == NULL || arg_list->size() != 1) {
+            std::string err = "in-built sketch function " + func_name + "takes exactly 1 argument";
+            yyerror(err.c_str());
+            exit(1);
+        }
+        if (arg_list->at(0)->type != TYPE::SIMPLE || !is_primitive(arg_list->at(0)->eleType)) {
+            std::string err = "in-built sketch function " + func_name + "takes only primitive arguments (type will be casted to num)";
+            yyerror(err.c_str());
+            exit(1); 
+        }
+    }
+    else if (func_name == "arc"){
+        if (arg_list == NULL || arg_list->size() != 2) {
+            std::string err = "in-built sketch function " + func_name + "takes exactly 2 arguments";
+            yyerror(err.c_str());
+            exit(1);
+        }
+        if (arg_list->at(0)->type != TYPE::SIMPLE || !is_primitive(arg_list->at(0)->eleType)) {
+            std::string err = "in-built sketch function " + func_name + "takes only primitive arguments (type will be casted to num)";
+            yyerror(err.c_str());
+            exit(1);
+        }
+    }
 }

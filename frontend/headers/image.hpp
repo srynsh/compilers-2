@@ -153,8 +153,12 @@ class gray_image {
         int w;
 
         int **gray;
+        void flip();
     
     public:
+        int buffer_size;
+        char* FileBuffer;
+        bool made;
         // Constructors
         gray_image(int h, int w, int color);
         gray_image(std::string filename);
@@ -211,6 +215,9 @@ class gray_image {
         int get_height() const;
         int get_width() const;
         int get_pixel(int i, int j) const;
+        bool get_made() const;
+        int get_buffer_size() const;
+        char* get_buffer() const;
 
         void set_pixel(int i, int j, int color);
 

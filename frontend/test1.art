@@ -2,10 +2,15 @@ ink blur(img i) -> img {
     return i.blur(10)
 }
 
+sketch dabadoo (num h, num w, real a) {
+    penup()
+    forward(w/2)
+    rotate(90)
+    forward(a/2)
+}
+
 ink main()->void {
     img a<'./images/inputs/blackbuck.bmp'>
-    a = blur(a)
-    a.paint()
-    a.frame('./lesgooooo.bmp')
+    a = blur(a) << dabadoo(100, 100, 100.0)
     return void
 }

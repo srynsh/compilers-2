@@ -1,4 +1,6 @@
 #include <bits/stdc++.h>
+#include <cstdint>
+#include <iostream>
 #include <sys/types.h>
 #include "image.hpp"
 #include "./kernel.hpp"
@@ -827,6 +829,7 @@ image& image::operator=(image const img) {
     if (!img.get_made()) {
         this->FileBuffer = new char[img.get_buffer_size()];
         memcpy(this->FileBuffer, img.get_buffer(), img.get_buffer_size());
+        this->buffer_size = img.get_buffer_size();
     }
 
     this->made = img.get_made();
@@ -1669,28 +1672,41 @@ gray_image::gray_image(std::string filename) {
 /// @brief Copy constructor
 /// @param img 
 gray_image::gray_image(const gray_image &img) {
-    /*
-        params:
-            img: image to be copied
-    */
+    this->h = img.get_height();
+    this->w = img.get_width();
 
-    h = img.get_height();
-    w = img.get_width();
-
-
-    gray = (int **)malloc(w * sizeof(int *));
+    gray = new int*[w];
 
     #pragma omp parallel for
     for (int i=0; i<w; i++) {
-        gray[i] = (int *)malloc(h * sizeof(int));
+        gray[i] = new int[h];
     }
 
-    #pragma omp parallel for
+    #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++) {
         for(int j=0; j<h; j++) {
             gray[i][j] = ::clip(img.get_pixel(i, j));
         }
     }
+
+    this->made = img.get_made();
+
+    if (!img.get_made()) {
+        this->FileBuffer = new char[img.get_buffer_size()];
+        memcpy(this->FileBuffer, img.get_buffer(), img.get_buffer_size());
+        this->buffer_size = img.get_buffer_size();
+    }
+}
+
+void gray_image::flip() {
+    
+        #pragma omp parallel for collapse(2)
+        for (int i=0; i<this->w; i++) {
+            for (int j=0; j<this->h/2; j++) {
+                swap(this->gray[i][j], this->gray[i][h-1-j]);
+            }
+        }
+    
 }
 
 /*------------------------------------------------------------------------
@@ -1703,6 +1719,18 @@ int gray_image::get_height() const {
 
 int gray_image::get_width() const {
     return w;
+}
+
+int gray_image::get_buffer_size() const {
+    return buffer_size;
+}
+
+char* gray_image::get_buffer() const {
+    return FileBuffer;
+}
+
+bool gray_image::get_made() const {
+    return made;
 }
 
 /// @brief Returns the color of the pixel at (x, y)
@@ -1741,79 +1769,40 @@ void gray_image::set_pixel(int x, int y, int color) {
 /// @brief Loads a .bmp in RGB format and converts it to gray scale
 void gray_image::load(std::string filename, bool init) {
 
-    FILE *f;
-    unsigned char info[54];
-    f = fopen(filename.c_str(), "rb");
-    fread(info, sizeof(unsigned char), 54, f); // read the 54-byte header
-
-    for (int i = 0; i<54; i++) {
-        cout << i << ": " << (int)info[i] << " ";
-    }
-
-    cout << endl;
-
-    cout << (int)info[18] << " " << (int)info[22] << endl;
-
-    for (int i = 0; i<14; i++) {
-        cout << (int)info[i] << ", ";
-    }
-
-    cout << endl;
-
-    for (int i = 14; i<54; i++) {
-        cout << (int)info[i] << ", ";
-    }
-
-    cout << endl;
-
-    // If init is false, deallocate memory
-    if (!init) {    
+    if (!init) {
         for (int i=0; i<w; i++) {
-            free(gray[i]);
+            delete [] gray[i];
         }
-
-        free(gray);
-    }    
-
-    w = *(int*)&info[18];
-    h = *(int*)&info[22];
-
-    try {
-        assert(w > 0 && h > 0);
-    } catch (const std::exception& e) {
-        cout << "Error: Incorrect file format or corrupted file" << e.what() << endl;
-        return;
+        delete [] gray;
+        if (!made) {
+            delete FileBuffer;
+        }
     }
 
-    try {
-        assert(w < MAX_SIZE && h < MAX_SIZE);
-    } catch (const std::exception& e) {
-        cout << "Error: Image size too large" << e.what() << endl;
-        return;
-    }
+    FillAndAllocate(FileBuffer, "./images/inputs/lena.bmp", this->h, this->w, this->buffer_size);
+    std::cout << "here: " << buffer_size << endl;
+    uint8_t** gray_temp;
+    RGB_Allocate(gray_temp, this->h, this->w);
+    GetPixlesFromBMP8(gray_temp, buffer_size, this->h, this->w, FileBuffer);
 
-    int size = w * h;
-    unsigned char* data = new unsigned char[size]; // allocate 3 bytes per pixel
-    fread(data, sizeof(unsigned char), size, f); // read the rest of the data at once
-    fclose(f);
-
-    gray = (int **)malloc(w * sizeof(int *));
+    gray = new int*[w];
 
     #pragma omp parallel for
     for (int i=0; i<w; i++) {
-        gray[i] = (int *)malloc(h * sizeof(int));
+        gray[i] = new int[h];
     }
 
     #pragma omp parallel for collapse(2)
     for(int i=0; i<w; i++) {
-        for(int j=0; j<h; j++){
-            // Uses the NTSC formula to convert RGB to gray
-            // See https://support.ptc.com/help/mathcad/r9.0/en/index.html#page/PTC_Mathcad_Help/example_grayscale_and_color_in_images.html
-            gray[i][j] = /*0.299**/data[(i+j*w)/**3+2*/]; // + 0.587*data[(i+j*w)*3+1] + 0.114*data[(i+j*w)*3+0];
+        for(int j=0; j<h; j++) {
+            gray[i][j] = gray_temp[i][j];
         }
     }
 
-    delete[] data;
+    delete [] gray_temp;
+
+    made=0;
+    this->flip();
 }
 
 /*------------------------------------------------------------------------
@@ -1822,11 +1811,35 @@ void gray_image::load(std::string filename, bool init) {
 
 /// @brief Convert the image to a .bmp file, and save it
 void gray_image::frame(std::string filename) {
-    /*
-        params:
-            filename: path to the .bmp file
-    */
+    if (!made) {
+        std::cout << "here1\n"; 
+        flip();
+        uint8_t** gray_temp = new uint8_t*[w];
 
+        #pragma omp parallel for
+        for (int i=0; i<w; i++) {
+            gray_temp[i] = new uint8_t[h];
+        }
+
+        #pragma omp parallel for collapse(2)
+        for(int i=0; i<w; i++) {
+            for(int j=0; j<h; j++) {
+                gray_temp[i][j] = ::clip(gray[i][j]);
+            }
+        }
+        
+        WriteOutBmp8(FileBuffer, filename.c_str(), buffer_size, this->h, this->w, gray_temp);
+        std::cout << buffer_size << endl;
+        std::cout << "here2\n";
+        for (int i=0; i<w; i++) {
+            delete [] gray_temp[i];
+        }
+
+        delete [] gray_temp;
+        flip();
+        return;
+    }
+    flip();
     FILE *f;
     int filesize = 54 + w*h;  //w is your image width, h is image height, both int
     unsigned char *canvas = NULL;
@@ -1880,6 +1893,7 @@ void gray_image::frame(std::string filename) {
 
     free(canvas);
     fclose(f);
+    flip();
 }
 
 /// @brief prints the image to the terminal
@@ -1957,20 +1971,34 @@ gray_image& gray_image::operator=(gray_image const img) {
         return *this; // handle self assignment
     }
 
-    for (int i=0; i<w; i++) {
-        free(gray[i]);
+    
+    if (!made) {
+        delete FileBuffer;
     }
 
-    free(gray);
+    this->made = img.get_made();
 
-    h = img.get_height();
-    w = img.get_width();
+    if (!img.get_made()) {
+        this->FileBuffer = new char[img.get_buffer_size()];
+        memcpy(this->FileBuffer, img.get_buffer(), img.get_buffer_size());
+        this->buffer_size = img.get_buffer_size();
+    }
 
-    gray = (int **)malloc(w * sizeof(int *));
+    for (int i=0; i<w; i++) {
+        delete [] gray[i];
+    }
+
+    delete [] gray;
+    
+
+    this->h = img.get_height();
+    this->w = img.get_width();
+
+    gray = new int*[w];
 
     #pragma omp parallel for
     for (int i=0; i<w; i++) {
-        gray[i] = (int *)malloc(h * sizeof(int));
+        gray[i] = new int[h];
     }
 
     #pragma omp parallel for collapse(2)
@@ -2158,8 +2186,7 @@ gray_image gray_image::operator+(float const val){
     return new_img;
 }
 
-gray_image operator+(float const val, gray_image const img)
-{
+gray_image operator+(float const val, gray_image const img) {
     gray_image new_img(img.get_height(), img.get_width(), 0);
 
     #pragma omp parallel for collapse(2)
@@ -2336,9 +2363,6 @@ gray_image gray_image::operator/(bool const val){
 }
 
 
-
-
-
 gray_image& gray_image::operator=(image val){
     gray_image new_img = val.grayscale();
     *this = new_img;
@@ -2413,9 +2437,17 @@ gray_image gray_image::blur(int k) {
             kernel[i][j] = 1.0/(k*k); // Set all values to 1/(k*k) to get average on convolving
         }
     }
-
+    std::cout<<"here"<<std::endl;
+    std::cout << 2441 << " " << buffer_size << endl;
     gray_image new_img = conv(*this, kernel, 1, (k-1)/2.0); // same padding => (k-1)/2
-
+    if (!made) {
+        new_img.made = 0;
+        new_img.FileBuffer = new char[buffer_size];
+        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+        new_img.buffer_size = buffer_size;
+    }
+    std::cout << 2442 << " " << new_img.get_buffer_size() << endl;
+    std::cout << "here" << std::endl;
     return new_img;
 }
 
@@ -2671,10 +2703,14 @@ gray_image::~gray_image() {
 
     #pragma omp parallel for
     for (int i=0; i<w; i++) {
-        free(gray[i]);
+        delete [] gray[i];
     }
 
-    free(gray);
+    delete [] gray;
+
+    if (!made) {
+        delete FileBuffer;
+    }
 }
 
 

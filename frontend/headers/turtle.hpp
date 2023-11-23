@@ -44,6 +44,8 @@ public:
 
     void arc(int radius, float angle);
 
+    image get_image();
+
 };
 
 #endif
