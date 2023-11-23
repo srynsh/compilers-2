@@ -45,6 +45,7 @@ enum class OPERATOR {
     GREATER,
     LESSER,
     EQUAL,
+    LSHIFT,
 };
 
 ELETYPE get_type(ELETYPE t1, ELETYPE t2);

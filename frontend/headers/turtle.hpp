@@ -22,11 +22,11 @@ private:
     int width;
     image* img;
 
-    POSITION pen_position;
+    POSITION pen_state;
 public:
     turtle();
 
-    turtle(int x, int y, float angle, int pen_color, POSITION pen_position);
+    turtle(int x, int y, float angle, int pen_color, POSITION pen_state);
 
     void set_image(image* img);
 

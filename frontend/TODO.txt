@@ -10,6 +10,7 @@ codegen
     conditional stmt (DONE)
     loop_conditional stmt (DONE)
     images
+    loop_expr_stmt
     
 add convolution operator
 operator overloading (for images, gray images and multi-dimensional arrays)
@@ -62,3 +63,26 @@ lot of stuff in kernel.cpp (multidimensional arrays)
 
 // Later
 splicing
+
+
+Turtle:
+
+parlist -> num/real/bool
+decl -> num/real/bool
+
+sketch_body -> statements, spool 
+
+sketch ID (parlist) {
+    goto(x, y)
+    forward()
+    penup()
+    pendown()
+    pencolor()
+    circle()
+    arc()
+    rotate()
+    spool(decl|expr_pred|i+5){
+    }
+}
+
+(img << sketch) -> returns an image

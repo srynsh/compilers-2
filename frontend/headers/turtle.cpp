@@ -18,15 +18,15 @@ turtle::turtle() {
     this->y = 0;
     this->angle = 0; // In radians
     this->pen_color = 0; // default color is black
-    this->pen_position = UP;
+    this->pen_state = UP;
 }
 
-turtle::turtle(int x, int y, float angle, int pen_color, POSITION pen_position) {
+turtle::turtle(int x, int y, float angle, int pen_color, POSITION pen_state) {
     this->x = x;
     this->y = y;
     this->angle = angle * M_PI / 180;
     this->pen_color = pen_color;
-    this->pen_position = pen_position;
+    this->pen_state = pen_state;
 }
 
 void turtle::set_image(image* img) {
@@ -38,7 +38,7 @@ void turtle::set_image(image* img) {
 void turtle::forward(int distance) {
     int new_x = this->x + distance * cos(this->angle);
     int new_y = this->y + distance * sin(this->angle);
-    if (this->pen_position == DOWN) {
+    if (this->pen_state == DOWN) {
         vector<float> line = {this->x, this->y, new_x, new_y, this->pen_color};
         this->img->draw("line", line);
     }
@@ -51,11 +51,11 @@ void turtle::rotate(float angle) {
 }
 
 void turtle::penup() {
-    this->pen_position = UP;
+    this->pen_state = UP;
 }
 
 void turtle::pendown() {
-    this->pen_position = DOWN;
+    this->pen_state = DOWN;
 }
 
 void turtle::set_pen_color(int color) {
@@ -63,14 +63,14 @@ void turtle::set_pen_color(int color) {
 }
 
 void turtle::circle(int radius) {
-    if (this->pen_position == DOWN) {
+    if (this->pen_state == DOWN) {
         vector<float> circle = {this->x - radius * sin(this->angle), this->y + radius * cos(this->angle), radius, this->pen_color};
         this->img->draw("circle", circle);
     }
 }
 
 void turtle::arc(int radius, float angle) { // input is in degrees
-    if (this->pen_position == DOWN) {
+    if (this->pen_state == DOWN) {
         vector<float> arc = {this->x - radius * sin(this->angle), this->y + radius * cos(this->angle), radius, this->angle * 180 / M_PI + 270, angle + 270 + this->angle * 180 / M_PI, this->pen_color};
         this->img->draw("arc", arc);
     }

@@ -2702,7 +2702,7 @@ video::video(int h, int w, int fps) {
 
 /// @brief Plays the video on the terminal
 void video::play() {
-    int n = 4;
+    int n = 8;
     int divisions = this->get_num_frames()/n;
     for(int i=0; i<divisions; i++) {
         #pragma omp parallel for num_threads(n)
@@ -2711,9 +2711,10 @@ void video::play() {
         }
         for (int j=0; j<n; j++) {
             system("clear");
+            // printf( "\033[2J");
             std::string s = "tiv -w 1000 -h 1000 temp" + std::to_string(j) + ".bmp";
             system(s.c_str());
-            usleep(50000/fps);
+            usleep(100000/fps);
         }
     }
 }

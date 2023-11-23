@@ -27,7 +27,7 @@ blanks [ \t]+
 if "$"|"$$"
 comments "#"|"#*"|"*#"
 punctuators [\{\}\[\]\(\)';,]
-operators "="|"+"|"-"|"*"|"/"|"^"|"~"|"++"|"--"
+operators "="|"+"|"-"|"*"|"/"|"^"|"~"|"++"|"--"|"<<"
 path \'([^'\\])*\'
 
 
@@ -81,6 +81,10 @@ path \'([^'\\])*\'
             OPERATOR op_temp = OPERATOR::POST_DECR;
             yylval.opval = op_temp;
             return UNARY_OP;
+        } else if(strcmp(yytext,"<<")==0) {
+            OPERATOR op_temp = OPERATOR::LSHIFT;
+            yylval.opval = op_temp;
+            return SKETCH_OP;
         }
     }
 }
@@ -250,6 +254,7 @@ path \'([^'\\])*\'
         else if (strcmp(yytext,"break")==0) return BREAK;
         else if (strcmp(yytext,"continue")==0) return CONTINUE;
         else if (strcmp(yytext,"return")==0) return RETURN;
+        else if (strcmp(yytext,"sketch")==0) return SKETCH;
     }
 }
 

@@ -127,8 +127,50 @@ class symbol_table_function {
         ~symbol_table_function();
 };
 
-bool compare_parameter_list(std::vector<std::pair<std::string, data_record*> > &parameter_list_1, std::vector<std::pair<std::string, struct type_info*> > &parameter_list_2);
+bool compare_parameter_list(std::vector<std::pair<std::string, data_record*> > &parameter_list_1, std::vector<std::pair<std::string, struct type_info*> > *parameter_list_2);
 // Archit
 bool compare_par_list_arg_list(std::vector<struct function_record*> func_list, std::vector<struct type_info*> &arg_list);
+
+/*------------------------------------------------------------------------*
+ * Symbol Table for Sketches                                              *
+ *------------------------------------------------------------------------*/
+
+/// @brief Entry in the symbol table for sketch
+class sketch_record {
+
+    private:
+        std::string name; // sketch name
+        std::vector<std::pair<std::string, data_record*> > parameter_list;
+
+    public:
+        sketch_record(){}
+        sketch_record(std::string name);
+
+        std::string get_name();
+        data_record* get_parameter(std::string name);
+        std::vector<std::pair<std::string, data_record*> > get_parameter_list();
+ 
+        void add_parameter(std::string* name, TYPE type, ELETYPE ele_type);
+        
+        void print();
+};
+
+class symbol_table_sketch {
+
+    private:
+        std::vector<sketch_record*> sketch_list; // map from name to sketch_record
+
+    public:
+        symbol_table_sketch(){}
+
+        void add_sketch_record(std::string name); 
+        void add_sketch_record(std::string name, std::vector<std::pair<std::string, struct type_info*> > *par_vec);
+        std::vector<sketch_record*> get_sketch(std::string name);
+
+        void print();
+
+        ~symbol_table_sketch();
+};
+
 
 #endif // SYM_TAB_HPP

@@ -50,18 +50,18 @@
     OPERATOR opval;
 }
 
-%type <lang_element> brak_pred brak_pred_list expr_pred_list expr_pred call_stmt arg arg_list in_built_call_stmt
-%type <sval> func_body loop_body real_array_decl num_array_decl real_decl num_decl bool_decl gray_vid_decl vid_decl gray_img_decl img_decl loop_stmt loop_stmt_list
-%type <sval> return_stmt unary_stmt stmt stmt_list expr_stmt decl_stmt loop_block
-%type <sval> function_definition function 
+%type <lang_element> brak_pred brak_pred_list expr_pred_list expr_pred call_stmt arg arg_list in_built_call_stmt sketch_expr_pred
+%type <sval> func_body loop_body real_array_decl num_array_decl real_decl num_decl bool_decl gray_vid_decl vid_decl gray_img_decl img_decl loop_stmt loop_stmt_list sketch_loop_body sketch_loop_stmt
+%type <sval> return_stmt unary_stmt stmt stmt_list expr_stmt decl_stmt loop_block sketch_loop_stmt_list 
+%type <sval> function_definition function sketch
 %type <sval> program
 %type <sval> if_block else_if_block_list else conditional_stmt
-%type <sval> optional_loop_expr expr_or_decl_stmt optional_loop_decl
+%type <sval> optional_loop_expr expr_or_decl_stmt optional_loop_decl sketch_optional_loop_expr
 %type <sval> loop_else loop_conditional_stmt loop_if_block loop_else_if_block_list loop_expr_stmt
 
 %type <dim_list> array_element brak
 %type <tval> datatype RET_TYPE 
-%type <par_vec> par_list par 
+%type <par_vec> par_list par sketch_par_list sketch_par
 /* %type <arg_vec> arg_list arg */
 %type <id_vec> id_list
 %type <ival> array_ele
@@ -82,8 +82,9 @@
 %token <opval> LOG_OP
 %token <opval> REL_OP
 %token <opval> NEG_OP
+%token <opval> SKETCH_OP
 
-%token <tval> IMG GRAY_IMG VID GRAY_VID NUM REAL VOID BOOL PATH /* Datatypes */
+%token <tval> IMG GRAY_IMG VID GRAY_VID NUM REAL VOID BOOL PATH SKETCH/* Datatypes */
 %token IF ELSE_IF RETURN CONTINUE BREAK LOOP INK /* Control flow keywords */
 %token ARROW DOT_OP /* Operators */
 %token NEWLINE
@@ -93,6 +94,7 @@
 %left DOT_OP
 %left UNARY_OP
 %right INV_OP NEG_OP
+%left SKETCH_OP
 %left BINARY_OP
 %left LOG_OP 
 %left REL_OP GT LT
@@ -126,6 +128,10 @@ program :
     | function optional_new_lines
         {
             $$ = new std::string(*($1));
+        }
+    | sketch new_lines program
+        {
+            $$ = new std::string(*($1) + "\n\n" + *($3));
         }
     ;
 
@@ -276,7 +282,11 @@ stmt : decl_stmt /* new_lines is included in decl_stmt */ { $$ = new std::string
         | '{' increment_scope new_lines '}' decrement_scope new_lines { $$ = new std::string("{\n}\n");}
         | '{' '}' new_lines { $$ = new std::string("{}\n");}
         | unary_stmt  /* new_lines is included in expr_stmt */ { $$ = new std::string(*($1));}
+        | sketch_init_stmt 
         ; 
+
+sketch_init_stmt : SKETCH ID SKETCH_OP ID new_lines
+    ;
 
 /*------------------------------------------------------------------------*
  * Declaration Statements                                                 *
@@ -1145,6 +1155,250 @@ return_stmt : RETURN expr_pred new_lines
             }
             // if (error_counter == 0) fprintf(foutput, "return;\n");
             $$ = new std::string("");
+        }
+    ;
+
+/*-----------------------------------------------------------------------*
+* Sketch                                                                 *
+*------------------------------------------------------------------------*/
+
+sketch 
+    : sketch_definition optional_new_lines sketch_body decrement_scope 
+        {
+            $$ = new std::string(*($1) + *($3));
+        }
+    ;
+
+sketch_definition
+    : SKETCH ID '(' increment_scope sketch_par_list ')' 
+        {
+            std::string sketch_name = *$2;
+            SymbolTableSketch->add_sketch(sketch_name, *$5);
+            assert(current_scope == 1);
+            SymbolTableVariable->add_variable(*($5), current_scope);
+            // Codegen
+        }
+    | SKETCH ID '(' increment_scope')' 
+        {
+            std::string sketch_name = *$2;
+            SymbolTableSketch->add_sketch(sketch_name);
+            assert(current_scope == 1);
+            // Codegen
+        }
+    ;
+
+sketch_par_list 
+    : sketch_par_list ',' sketch_par 
+        {
+            std::vector<std::string> *p = $1;
+            std::string *q = $3;
+            p->insert(p->end(), q->begin(), q->end());
+            $$ = p;
+        }
+    | sketch_par 
+    ;
+
+sketch_par : sketch_datatype ID
+    {
+        struct type_info* t = new struct type_info;
+        t->type = TYPE::SIMPLE;
+        t->eleType = $1->eleType;
+
+        std::pair<std::string, struct type_info*> *p = new std::pair<std::string, struct type_info*>(*$2, t);
+        $$ = new std::vector<std::pair<std::string, type_info*>>(1, *p);
+    }
+    ;
+
+sketch_datatype : NUM
+    | REAL
+    | BOOL
+    ;
+    
+    
+sketch_body
+    : '{' increment_scope new_lines sketch_stmt_list '}' decrement_scope  
+        {
+            // Codegen
+        }
+    ;
+
+sketch_stmt_list
+    : sketch_stmt
+        {
+            // Codegen
+        }
+    | sketch_stmt_list sketch_stmt
+        {
+            // Codegen
+        }
+
+sketch_stmt
+    : sketch_loop new_lines 
+        { 
+            // Codegen 
+        }
+    | sketch_inbuilt_call_stmt new_lines
+        { 
+            // Codegen 
+        }
+
+sketch_inbuilt_call_stmt
+    : ID '(' arg_list ')' new_lines
+    | ID '(' ')' new_lines
+
+// Similar to for loop
+sketch_loop
+    : LOOP optional_new_lines '(' increment_scope sketch_optional_loop_decl  ';' sketch_optional_loop_expr ';' sketch_optional_loop_expr ')' optional_new_lines sketch_loop_body decrement_scope
+        {
+            // Codegen
+        }
+    ;
+
+sketch_optional_loop_decl 
+    : sketch_expr_or_decl_stmt {/* Codegen */ }
+    | /* empty */ {/* Codegen */ }
+    ;
+
+sketch_expr_or_decl_stmt 
+    : num_decl { /* Codegen */}
+    | real_decl { /* Codegen */}
+    | bool_decl { /* Codegen */}
+    | ID '=' sketch_expr_pred
+    ;
+
+sketch_optional_loop_expr : sketch_expr_pred
+    {
+        if (!cast_bool($1.ti)) {
+            yyerror("experssion cannot to evaluated to a boolean");
+        } else {
+            $$ = new std::string(*($1.str));
+        }
+    }
+    | { $$ = new std::string("");}
+    ;
+
+sketch_loop_body : 
+    '{' new_lines sketch_loop_stmt_list '}'  
+        {
+            // $$ = new std::string("{\n" + *($3) + "}\n");
+        }   
+    ;
+
+sketch_loop_stmt_list : sketch_loop_stmt { $$ = new std::string(*($1));}
+    | sketch_loop_stmt_list sketch_loop_stmt { $$ = new std::string(*($1) + *($2));}
+    ;
+
+sketch_loop_stmt
+    : sketch_loop new_lines 
+        { 
+            // Codegen 
+        }
+    | sketch_inbuilt_call_stmt new_lines
+        { 
+            // Codegen 
+        }
+    | BREAK new_lines { $$ = new std::string("break;\n");}
+    | CONTINUE new_lines { $$ = new std::string("continue;\n");}
+
+
+sketch_expr_pred
+    : ID 
+        {
+            data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
+            struct type_info* ti = new struct type_info;
+            ti->type = dr->get_type(); 
+
+            ti->eleType = dr->get_ele_type(); 
+            std::vector<int> temp_dim_list = dr->get_dim_list();
+
+            // Copy elements of temp_dim_list to ti->dim_list
+            ti->dim_list = new std::vector<int>;
+            for (int i = 0; i < temp_dim_list.size(); i++){
+                ti->dim_list->push_back(temp_dim_list[i]);
+            }
+            ti->name = *$1;
+            // print size of dim_list
+            $$.ti = ti; 
+            $$.str = new std::string(*$1);
+        }
+    | NUM_CONST
+        {
+            struct type_info* ti = new struct type_info;
+            ti->type = TYPE::SIMPLE;
+            ti->eleType = ELETYPE::ELE_NUM;
+            $$.ti = ti;
+            $$.str = new std::string(std::to_string($1));
+        }
+    | REAL_CONST
+        {
+            struct type_info* ti = new struct type_info;
+            ti->type = TYPE::SIMPLE;
+            ti->eleType = ELETYPE::ELE_REAL;
+            $$.ti = ti;
+            $$.str = new std::string(std::to_string($1));
+        }
+    | BOOL_CONST
+        {
+            struct type_info* ti = new struct type_info;
+            ti->type = TYPE::SIMPLE;
+            ti->eleType = ELETYPE::ELE_BOOL;
+            $$.ti = ti;       
+            if ($1 == 1) 
+                $$.str = new std::string("true");
+            else 
+                $$.str = new std::string("false");
+        }
+    | sketch_expr_pred REL_OP sketch_expr_pred 
+        {
+            struct type_info *t1 = $1.ti, *t2 = $3.ti, *t = new struct type_info;
+            t = relational_compatible(t1, t2, $2);
+            $$.ti = t;
+            $$.str = new std::string(codegen_operator($2, *($1.str), *($3.str)));
+        }
+    | sketch_expr_pred LT sketch_expr_pred
+        {
+            struct type_info *t1 = $1.ti, *t2 = $3.ti, *t = new struct type_info;
+            t = relational_compatible(t1, t2, $2);
+            $$.ti = t;
+            $$.str = new std::string(codegen_operator($2, *($1.str), *($3.str)));
+        }
+    | sketch_expr_pred GT sketch_expr_pred
+        {
+            struct type_info *t1 = $1.ti, *t2 = $3.ti, *t = new struct type_info;
+            t = relational_compatible(t1, t2, $2);
+            $$.ti = t;
+            $$.str = new std::string(codegen_operator($2, *($1.str), *($3.str)));
+        }
+    | sketch_expr_pred LOG_OP sketch_expr_pred
+        {
+            struct type_info *t1 = $1.ti, *t2 = $3.ti, *t = new struct type_info;
+            t = relational_compatible(t1, t2, $2);
+            $$.ti = t;
+            $$.str = new std::string(codegen_operator($2, *($1.str), *($3.str)));
+        }
+    | '(' sketch_expr_pred ')'
+        {
+            $$.ti = $2.ti; 
+            $$.str = new std::string("(" + *($2.str) + ")");
+        }
+    | NEG_OP sketch_expr_pred
+        {
+            $$.ti = $2.ti; 
+            $$.str = new std::string(codegen_operator($1, *($2.str), ""));
+        }
+    | sketch_expr_pred BINARY_OP sketch_expr_pred
+        {
+            struct type_info *t1 = $1.ti, *t2 = $3.ti, *t = new struct type_info;
+            t = binary_compatible(t1, t2, $2);
+            $$.ti = t;
+            $$.str = new std::string(codegen_operator($2, *($1.str), *($3.str)));
+        }
+    | sketch_expr_pred UNARY_OP
+        {
+            struct type_info *t1 = $1.ti, *t = new struct type_info;
+            t = unary_compatible(t1, $2);
+            $$.ti = t;
+            $$.str = new std::string(codegen_operator($2, *($1.str), ""));
         }
     ;
 

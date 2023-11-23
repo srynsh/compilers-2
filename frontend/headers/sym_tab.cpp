@@ -390,3 +390,106 @@ symbol_table_function::~symbol_table_function() {
         delete i;
     }
 }
+
+
+/* ---------------------------------------------------------* 
+ * Symbol Table Entry for sketches                          *
+ *----------------------------------------------------------*/
+
+sketch_record::sketch_record(std::string name)
+    : name(name)
+{}
+
+std::string sketch_record::get_name() {
+    return this->name;
+}
+
+data_record* sketch_record::get_parameter(std::string name) {
+    for (auto i : this->parameter_list) {
+        if (i.first == name) {
+            return i.second;
+        }
+    }
+    return nullptr;
+}
+
+std::vector<std::pair<std::string, data_record*>> sketch_record::get_parameter_list() {
+    return this->parameter_list;
+}
+
+void sketch_record::add_parameter(std::string* name, TYPE type, ELETYPE ele_type) {
+    data_record* new_record = new data_record(*(name), type, ele_type, 1);
+    this->parameter_list.push_back(std::make_pair(*(name), new_record));
+}
+
+void sketch_record::print() {
+    std::cout << "Name: " << this->name << std::endl;
+    std::cout << "Parameters: " << std::endl;
+
+    for (auto i : this->parameter_list) {
+        i.second->print();
+    }
+
+    std::cout << std::endl << std::endl;
+}
+
+/* ---------------------------------------------------------* 
+ * Symbol Table for sketches                                *
+ *----------------------------------------------------------*/
+
+
+// no parameters record
+void symbol_table_sketch::add_sketch_record(std::string name) {
+    for (auto i : this->sketch_list) {
+        if (i->get_name() == name && i->get_parameter_list().size() == 0) {
+            std::string err = "Sketch " + name + " already declared";
+            yyerror(err.c_str());
+            exit(1);
+        }
+    }
+
+    sketch_record* new_record = new sketch_record(name);
+    this->sketch_list.push_back(new_record);
+}
+
+// with parameters record
+void symbol_table_sketch::add_sketch_record(std::string name, std::vector<std::pair<std::string, type_info*> > *par_vec) {
+    for (auto i : this->sketch_list) {
+        std::vector<std::pair<std::string, data_record*> > temp = i->get_parameter_list();
+        if (i->get_name() == name && compare_parameter_list(temp, par_vec)) {
+            std::string err = "Sketch " + name + " already declared";
+            yyerror(err.c_str());
+            exit(1);
+        }
+    }
+
+    sketch_record* new_record = new sketch_record(name);
+    this->sketch_list.push_back(new_record);
+    for (auto i : *(par_vec)) {
+        new_record->add_parameter(&(i.first), i.second->type, i.second->eleType);
+    }
+}
+
+std::vector<sketch_record*> symbol_table_sketch::get_sketch(std::string name) {
+    std::vector<sketch_record*> res;
+    for (auto i : this->sketch_list) {
+        if (i->get_name() == name) {
+            res.push_back(i);
+        }
+    }
+
+    return res;
+}
+
+void symbol_table_sketch::print() {
+    std::cout << "Sketches: " << std::endl;
+    for (auto i : this->sketch_list) {
+        i->print();
+    }
+}
+
+symbol_table_sketch::~symbol_table_sketch() {
+    for (auto i : this->sketch_list) {
+        delete i;
+    }
+}
