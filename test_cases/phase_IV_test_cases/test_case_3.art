@@ -1,0 +1,49 @@
+# This program doesn't have any errors
+# This program tests various features for videos
+
+ink operations(vid v1, gray_vid v2, img i1, gray_img i2)->void {
+    vid v3 <100, 100, 60>
+    gray_vid v4 <100, 100, 60>
+
+    v3 = v1 + v3
+    v3 = v1 + v2
+    v3 = v1 + i1
+    v3 = v1 + i2
+
+    v3 = v2 + v1
+    v3 = i1 + v1
+    v3 = i2 + v1
+
+    v4 = v2 + v4
+    v4 = v2 + i1
+    v4 = v2 + i2
+
+    v4 = i1 + v2
+    v4 = i2 + v2
+
+    v1.append(i1)
+    v2.append(i2)
+    v1.append(i1)
+    v2.append(i2)
+    v2.append(i2)
+    v2.append(i2)
+
+    i1 = v1[1]
+    i2 = v2[1]
+
+    v1[0] = v2[0] - 23
+
+    return void
+}
+
+ink main()->void {
+    vid v1 <100, 100, 60>
+    gray_vid v2 <100, 100, 60>
+
+    img i1 <100, 100>
+    gray_img i2 <100, 100>
+
+    operations(v1, v2, i1, i2)
+
+    return void
+}

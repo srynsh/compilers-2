@@ -14,9 +14,10 @@ ink draw_concentric_circle(img i)->img {
 ink magic(img i1, img i2, img i3, img i4)->img {
     gray_img i <25, 25>
 
-    i = i2.convolve(i3) * i1 ^ 14
+    i = i2.blur() * i1 ^ 14
     i.blur()
-    i.noise()
+    real r
+    i.noise(r)
     i.vflip()
     img ret_i = ~i
 
@@ -32,7 +33,7 @@ ink main()->void {
     i1.draw('line', 0, 0, 5, 5)
     i1.draw('triangle', 2, 2, 4, 3, 0, 6, 0xff9600)
 
-    draw_concentric_circles(i2)
+    draw_concentric_circle(i2)
 
     img ret_i = magic(i1, i2, i3, i4)
 

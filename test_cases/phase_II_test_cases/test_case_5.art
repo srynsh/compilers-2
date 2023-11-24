@@ -1,0 +1,24 @@
+# This program has a lexical error
+
+ink temp()->void {
+    real _a
+
+    $ (2 == 3 * (2.5 - 2)) -> {
+        _a = 0.88
+    }
+    -> {
+        _a = 0.99
+    }
+
+    return void
+}
+
+ink main()->void {
+    num 1i  # lexical error here
+
+    spool (num i = 0; i < 10; i++) {
+        1i = 5 * i + 4
+    }
+
+    return void
+}

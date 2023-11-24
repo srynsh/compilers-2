@@ -1,0 +1,43 @@
+# This program has no errors
+# It is a simple program that has a few functions
+
+ink foo(img i1, gray_img i2) -> img {
+    i1.blur(3)
+    i2 = i1.sharpen(2)
+
+    return i1
+}
+
+ink bar(gray_img i1) -> img {
+    i1.vflip()
+    i2.hflip()
+
+    i2 = i1.noise(10)
+
+    return i2
+}
+
+ink func(img i1, gray_img i2) -> num {
+    i1 = i2 + i1 + 5
+
+    num b
+
+    b = ((9 * 8) - 32.44) / 2
+
+    return b
+}
+
+ink main()->void {
+    img i1 <30, 30, 0x005566>
+    gray_img i2 <30, 30, 180>
+
+    num a
+
+    foo(i1, i2)
+
+    i1 = bar(i2)
+
+    a = func(i1, i2)
+
+    return void
+}
