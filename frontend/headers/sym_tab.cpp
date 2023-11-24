@@ -265,15 +265,17 @@ bool compare_par_list_arg_list(std::vector<struct function_record*> func_list, s
             int j;
             for (j = 0; j < par_list.size(); j++) {
                 if ((par_list[j].second->get_ele_type() != arg_list[j]->eleType) || (par_list[j].second->get_type() != arg_list[j]->type)) {
-                    struct type_info* t = new struct type_info;
-                    t->type = par_list[j].second->get_type();
-                    t->eleType = par_list[j].second->get_ele_type();
-                    std::vector <int> temp_dim_list = par_list[j].second->get_dim_list();
-                    t->dim_list = new std::vector<int>(temp_dim_list.size());
-                    for (int k = 0; k < temp_dim_list.size(); k++) {
-                        t->dim_list->at(k) = temp_dim_list[k];
-                    }
-                    assignment_compatible(t, arg_list[j], flag_type::call_stmt);
+                    // struct type_info* t = new struct type_info;
+                    // t->type = par_list[j].second->get_type();
+                    // t->eleType = par_list[j].second->get_ele_type();
+                    // std::vector <int> temp_dim_list = par_list[j].second->get_dim_list();
+                    // t->dim_list = new std::vector<int>(temp_dim_list.size());
+                    // for (int k = 0; k < temp_dim_list.size(); k++) {
+                    //     t->dim_list->at(k) = temp_dim_list[k];
+                    // }
+                    // assignment_compatible(t, arg_list[j], flag_type::call_stmt);
+                    yyerror("Function call argument type mismatch");
+                    return false;
                 }
             }
             if (j == par_list.size())

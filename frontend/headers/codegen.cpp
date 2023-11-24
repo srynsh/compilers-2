@@ -15,7 +15,7 @@ std::string codegen_headers() {
     code += "#include \"./frontend/headers/load_bmp.hpp\"\n";
     code += '\n';
     code += "using namespace std;\n\n";
-    code += "turtle _t_global;\n\n";
+    code += "turtle __tglobal__;\n\n";
 
     return code;
 }
@@ -207,11 +207,11 @@ std::string codegen_sketch_definition(
     code += std::string("image") + " " + name + "(";
 
     if (par_vec != NULL) {
-        code += " image i, ";
+        code += " image __i__, ";
     for (auto par : *par_vec) {
         code += type_to_string(par.second) + " " + par.first + ", ";
     }
-    code += "turtle t";
+    code += "turtle __t__";
     }
 
     code += ")";
@@ -224,7 +224,8 @@ std::string codegen_decl_numeric(
     struct type_info* t,
     std::string name, 
     std::string expr,
-    std::vector<std::string> * id_list
+    std::vector<std::string> * id_list,
+    int mode
 ) {
     std::string code = "";
     

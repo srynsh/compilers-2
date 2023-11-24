@@ -51,7 +51,7 @@
     OPERATOR opval;
 }
 
-%type <lang_element> brak_pred brak_pred_list expr_pred_list expr_pred call_stmt arg arg_list in_built_call_stmt 
+%type <lang_element> brak_pred brak_pred_list expr_pred_list expr_pred call_stmt arg arg_list in_built_call_stmt array_ele array_element
 %type <sval> func_body loop_body real_array_decl num_array_decl real_decl num_decl bool_decl gray_vid_decl vid_decl gray_img_decl img_decl loop_stmt loop_stmt_list  
 %type <sval> return_stmt unary_stmt stmt stmt_list expr_stmt decl_stmt loop_block  
 %type <sval> function_definition function 
@@ -63,12 +63,11 @@
 %type <lang_element> sketch_expr_pred sketch_inbuilt_call_stmt 
 %type <sval> sketch sketch_definition sketch_body sketch_stmt_list sketch_stmt sketch_loop sketch_optional_loop_expr sketch_loop_stmt_list  sketch_loop_stmt sketch_loop_body sketch_optional_loop_decl sketch_expr_or_decl_stmt
 
-%type <dim_list> array_element brak
+%type <dim_list>  brak
 %type <tval> datatype RET_TYPE sketch_datatype 
 %type <par_vec> par_list par sketch_par_list sketch_par
 /* %type <arg_vec> arg_list arg */
 %type <id_vec> id_list
-%type <ival> array_ele
 
 %token <sval> ID /* Identifiers */
 
@@ -293,9 +292,9 @@ stmt : decl_stmt /* new_lines is included in decl_stmt */ { $$ = new std::string
  *------------------------------------------------------------------------*/
 
 decl_stmt : img_decl  new_lines { $$ = new std::string(*($1) + ";\n");}
-        | gray_img_decl new_lines
-        | vid_decl new_lines
-        | gray_vid_decl  new_lines
+        | gray_img_decl new_lines { $$ = new std::string(*($1) + ";\n");}
+        | vid_decl new_lines { $$ = new std::string(*($1) + ";\n");}
+        | gray_vid_decl new_lines { $$ = new std::string(*($1) + ";\n");}
         | num_decl new_lines { $$ = new std::string(*($1) + ";\n");}
         | bool_decl new_lines { $$ = new std::string(*($1) + ";\n");}
         | real_decl new_lines { $$ = new std::string(*($1) + ";\n");}
@@ -344,9 +343,10 @@ gray_img_decl : GRAY_IMG ID LT NUM_CONST ',' NUM_CONST GT
         | GRAY_IMG ID '=' expr_pred                                 
         { 
             struct type_info* t = assignment_compatible($1, $4.ti); declare_gray_img(SymbolTableVariable, t, *$2, current_scope);
-            $$ = new std::string("image " + *$2 + " = " + *($4.str));
+            $$ = new std::string("gray_image " + *$2 + " = " + *($4.str));
         }
         ;
+        
 
 vid_decl : VID ID LT NUM_CONST ',' NUM_CONST GT                     
         { 
@@ -435,12 +435,12 @@ num_array_decl :
             struct type_info* t = $1;
             t->type = TYPE::ARRAY;
             t->dim_list = new std::vector<int>;
-            std::vector<int> temp_dim_list = *$2;
+            std::vector<int> temp_dim_list = *($2.vector_int);
             for (int i = 0; i < temp_dim_list.size(); i++) {
                 t->dim_list->push_back(temp_dim_list[i]);
             }
 
-            SymbolTableVariable->add_variable(*$3, t->type, t->eleType, *$2, current_scope);
+            SymbolTableVariable->add_variable(*$3, t->type, t->eleType, *($2.vector_int), current_scope);
             // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $3).c_str());
             $$ = new std::string(codegen_decl_numeric(t, "", "", $3));
         }
@@ -459,7 +459,7 @@ num_array_decl :
             }
 
             t1->type = TYPE::ARRAY;
-            t1->dim_list = $2;
+            t1->dim_list = $2.vector_int;
             
             t_res = assignment_compatible(t1, t2);
             SymbolTableVariable->add_variable(*$3, t_res->type, t_res->eleType, *(t_res->dim_list), current_scope);
@@ -471,7 +471,7 @@ num_array_decl :
             struct type_info *t_res = new struct type_info;
             t_res->type = TYPE::ARRAY;
             t_res->eleType = ELETYPE::ELE_NUM;
-            std::vector<int> *temp_dim_list = $2;
+            std::vector<int> *temp_dim_list = $2.vector_int;
             t_res->dim_list = new std::vector<int>;
             for (int i = 0; i < temp_dim_list->size(); i++){
                 t_res->dim_list->push_back(temp_dim_list->at(i));
@@ -489,12 +489,12 @@ real_array_decl :
             struct type_info* t = $1;
             t->type = TYPE::ARRAY;
             t->dim_list = new std::vector<int>;
-            std::vector<int> temp_dim_list = *$2;
+            std::vector<int> temp_dim_list = *($2.vector_int);
             for (int i = 0; i < temp_dim_list.size(); i++) {
                 t->dim_list->push_back(temp_dim_list[i]);
             }
 
-            SymbolTableVariable->add_variable(*$3, t->type, t->eleType, *$2, current_scope);  
+            SymbolTableVariable->add_variable(*$3, t->type, t->eleType, *($2.vector_int), current_scope);  
             // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $3).c_str());  
             $$ = new std::string(codegen_decl_numeric(t, "", "", $3));
         }
@@ -512,7 +512,7 @@ real_array_decl :
             }
 
             t1->type = TYPE::ARRAY;
-            std::vector<int> *temp_dim_list2 = $2;
+            std::vector<int> *temp_dim_list2 = $2.vector_int;
             t1->dim_list = temp_dim_list2;
             
             t_res = assignment_compatible(t1, t2);
@@ -525,7 +525,7 @@ real_array_decl :
             struct type_info *t_res = new struct type_info;
             t_res->type = TYPE::ARRAY;
             t_res->eleType = ELETYPE::ELE_REAL;
-            std::vector<int> *temp_dim_list = $2;
+            std::vector<int> *temp_dim_list = $2.vector_int;
             t_res->dim_list = new std::vector<int>;
             for (int i = 0; i < temp_dim_list->size(); i++){
                 t_res->dim_list->push_back(temp_dim_list->at(i));
@@ -537,13 +537,28 @@ real_array_decl :
         }  
     ;
 
-array_element : '[' array_ele ']' { $$ = new std::vector<int>(1); $$->at(0) = $2;}
-        |  '[' array_ele ',' array_ele ']' { $$ = new std::vector<int>(2); $$->at(0) = $2; $$->at(1) = $4;}
-        |  '[' array_ele ',' array_ele ',' array_ele ']' { $$ = new std::vector<int>(3); $$->at(0) = $2; $$->at(1) = $4; $$->at(2) = $6;}
+array_element : '[' array_ele ']' 
+        { 
+            $$.str = new std::string("[" + *($2.str) + "]");
+            $$.vector_int = new std::vector<int>(1);
+            $$.vector_int->at(0) = $2.val;
+        }
+        |  '[' array_ele ',' array_ele ']' 
+            { 
+                $$.vector_int = new std::vector<int>(2); 
+                $$.vector_int->at(0) = $2.val; 
+                $$.vector_int->at(1) = $4.val;
+                $$.str = new std::string("[" + *($2.str) + "][" + *($4.str) + "]");
+            }
+        |  '[' array_ele ',' array_ele ',' array_ele ']' 
+            {
+                $$.vector_int = new std::vector<int>(3); $$.vector_int->at(0) = $2.val; $$.vector_int->at(1) = $4.val; $$.vector_int->at(2) = $6.val;
+                $$.str = new std::string("[" + *($2.str) + "][" + *($4.str) + "][" + *($6.str) + "]");
+            }
         ;
 
-array_ele : ID  {$$ = -1;}
-        | NUM_CONST {$$ = $1;}
+array_ele : ID  {$$.val = -1; $$.str = new std::string(*$1);}
+        | NUM_CONST {$$.val = $1; $$.str = new std::string(std::to_string($1));}
 
  /* 
 {{{1, 1}, {1, 1}, {1, 1}}, {{1, 1}, {1, 1}, {1, 1}}}
@@ -711,11 +726,11 @@ loop_block : LOOP optional_new_lines '(' increment_scope optional_loop_expr ')' 
             {
                 if (*$5 == "") 
                     *$5 = "true";
-                $$ = new std::string("while (" + *($5) + ") {\n" + *($8) + "}\n");
+                $$ = new std::string("while (" + *($5) + ") \n" + *($8) + "\n");
             }
         | LOOP optional_new_lines '(' increment_scope optional_loop_decl ';' optional_loop_expr ';' optional_loop_expr ')' optional_new_lines loop_body decrement_scope 
             {
-                $$ = new std::string("for (" + *($5) + "; " + *($7) + "; " + *($9) + ") {\n" + *($12) + "}\n");
+                $$ = new std::string("for (" + *($5) + "; " + *($7) + "; " + *($9) + ") \n" + *($12) + "\n");
             }
         ;
 
@@ -800,8 +815,47 @@ loop_conditional_stmt : loop_if_block optional_new_lines loop_else_if_block_list
                 }
                 ;
 
-loop_expr_stmt : ID '=' expr_pred  { $$ = new std::string(*$1 + " = " + *($3.str));}
-        | ID array_element '=' expr_pred  
+loop_expr_stmt : ID '=' expr_pred  
+        { 
+            data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
+            struct type_info* t1 = $3.ti, *t2 = new struct type_info;
+
+            t2->type = dr->get_type();
+            t2->eleType = dr->get_ele_type();
+            
+            std::vector<int> temp_dim_list = dr->get_dim_list();
+            t2->dim_list = new std::vector<int>;
+
+            for (int i = 0; i < temp_dim_list.size(); i++){
+                t2->dim_list->push_back(temp_dim_list[i]);
+            }
+
+            struct type_info* t = assignment_compatible(t2, t1);
+
+            if (t == NULL) {
+                yyerror("assignment not compatible");
+            }
+
+            $$ = new std::string(*$1 + " = " + *($3.str));
+        }
+        | ID array_element '=' expr_pred 
+        { 
+            data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
+            struct type_info* t1 = $4.ti, *t2 = new struct type_info;
+
+            t2->type = dr->get_type();
+            t2->eleType = dr->get_ele_type();
+
+            if (t2->type != TYPE::ARRAY) {
+                yyerror("cannot index a non-array variable");
+            } else if (dr->get_dim_list().size() != $2.vector_int->size()) {
+                yyerror("incorrect number of dimensions");
+            } else if (!is_primitive(t1->eleType)) {
+                yyerror("cannot assign a non-primitive type to an array");
+            }
+
+            $$ = new std::string(*$1 + *($2.str) + " = " + *($4.str));
+        }
         ;
 
 /*------------------------------------------------------------------------
@@ -828,6 +882,23 @@ expr_stmt :
     }
         
     | ID array_element '=' expr_pred 
+    { 
+        data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
+        struct type_info* t1 = $4.ti, *t2 = new struct type_info;
+
+        t2->type = dr->get_type();
+        t2->eleType = dr->get_ele_type();
+
+        if (t2->type != TYPE::ARRAY) {
+            yyerror("cannot index a non-array variable");
+        } else if (dr->get_dim_list().size() != $2.vector_int->size()) {
+            yyerror("incorrect number of dimensions");
+        } else if (!is_primitive(t1->eleType)) {
+            yyerror("cannot assign a non-primitive type to an array");
+        }
+
+        $$ = new std::string(*$1 + *($2.str) + " = " + *($4.str));
+    }
     ;     
 
 expr_pred : 
@@ -948,8 +1019,20 @@ expr_pred :
             } /*temp*/
         | ID array_element                  
             {
-                $$.ti = new struct type_info;
-            } /*temp*/
+                data_record* dr = SymbolTableVariable->get_variable(*$1, current_scope);
+                if (dr->get_type() != TYPE::ARRAY) {
+                    yyerror("cannot index a non-array variable");
+                } else if (dr->get_dim_list().size() != $2.vector_int->size()) {
+                    yyerror("incorrect number of dimensions");
+                }
+
+                struct type_info* ti = new struct type_info;
+                ti->type = TYPE::SIMPLE;
+                ti->eleType = dr->get_ele_type();
+                $$.ti = ti;
+
+                $$.str = new std::string(*$1 + *($2.str));
+            }
         | expr_pred BINARY_OP expr_pred
             {
                 struct type_info *t1 = $1.ti, *t2 = $3.ti, *t = new struct type_info;
@@ -991,7 +1074,7 @@ expr_pred :
                 t = check_sketch_call(SymbolTableSketch, *$3, $5.arg_vec);
                 $$.ti = t;
                 // Codegen:
-                $$.str = new std::string(*$3 + "(" + *($1.str) + std::string(", ") + std::string(*($5.str)) +  std::string(", _t_global") + ")");
+                $$.str = new std::string(*$3 + "(" + *($1.str) + std::string(", ") + std::string(*($5.str)) +  std::string(", __tglobal__") + ")");
             }
         ;
 
@@ -1042,7 +1125,14 @@ in_built_call_stmt :
             }
             // t1->dim_list = &temp_dim_list;
             $$.ti = check_inbuilt_func_call(t1, *$3, $5.arg_vec);
-            $$.str = new std::string(*$1 + "." + *$3 + "(" + *($5.str) + ")");
+            if (*$3 == "draw"){
+                std::string temp = *($5.str);
+                std::string temp2 = temp.substr(0, temp.find(","));
+                temp = temp.substr(temp.find(",")+1);
+                temp = "{" + temp + "}";
+                $$.str = new std::string(*$1 + "." + *$3 + "(" + temp2 + ", " + temp + ")");
+            }
+            else $$.str = new std::string(*$1 + "." + *$3 + "(" + *($5.str) + ")");
         }
     | ID DOT_OP ID '(' ')'
         {
@@ -1116,10 +1206,13 @@ arg : expr_pred
             struct type_info* t = new struct type_info;
             t->type = TYPE::SIMPLE;
             t->eleType = ELETYPE::ELE_STR;
-            std::vector<struct type_info*> *p = new std::vector<struct type_info*>(1, t); 
-            $$.arg_vec = p;
             // Change first and last character of string to "
             $1->name[0] = '"'; $1->name[($1->name.length()-1)] = '"';
+            t->name = $1->name;
+
+            std::vector<struct type_info*> *p = new std::vector<struct type_info*>(1, t); 
+            $$.arg_vec = p;
+            
             $$.str = new std::string($1->name);
         }
     ;
@@ -1233,7 +1326,7 @@ sketch_datatype : NUM
 sketch_body
     : '{' increment_scope new_lines sketch_stmt_list '}' decrement_scope  
         {
-            $$ = new std::string("{\n" "t.set_image(&i);\n" + *($4) + "return t.get_image();\n" + "}\n");
+            $$ = new std::string("{\n" "__t__.set_image(&__i__);\n" + *($4) + "return __t__.get_image();\n" + "}\n");
         }
     ;
 
@@ -1262,20 +1355,20 @@ sketch_inbuilt_call_stmt
         {
 
             check_inbuilt_sketch_call(*$1, $3.arg_vec);
-            $$.str = new std::string("t." + *$1 + "(" + *($3.str) + ")");
+            $$.str = new std::string("__t__." + *$1 + "(" + *($3.str) + ")");
         }
     | ID '(' ')' 
         {
 
             check_inbuilt_sketch_call(*$1, NULL);
-            $$.str = new std::string("t." + *$1 + "()");
+            $$.str = new std::string("__t__." + *$1 + "()");
         }
 
 // Similar to for loop
 sketch_loop
     : LOOP optional_new_lines '(' increment_scope sketch_optional_loop_decl  ';' sketch_optional_loop_expr ';' sketch_optional_loop_expr ')' optional_new_lines sketch_loop_body decrement_scope
         {
-            $$ = new std::string("for (" + *($5) + "; " + *($7) + "; " + *($9) + ") {\n" + *($12) + "}\n");
+            $$ = new std::string("for (" + *($5) + "; " + *($7) + "; " + *($9) + ") \n" + *($12) + "\n");
         }
     ;
 
@@ -1447,8 +1540,7 @@ int yywrap(){
     return 1;
 }
 void yyerror(const char* s){ 
-    /* printf("\033[1;31mError at line %d:\033[0m %s\n", yylineno, s); */
-    printf("\033[1;31mError at line %d:\033[0m %s\n", lineno, s);
+    printf("\033[1;31mError near line %d:\033[0m %s\n", lineno, s);
     error_counter++;
     if (error_counter > 10){
         printf("\033[1;31mToo many errors. Exiting.\033[0m\n");

@@ -69,6 +69,6 @@ struct type_info* check_sketch_call(symbol_table_sketch* SymbolTableSketch, std:
 struct type_info* check_sketch_call(symbol_table_sketch* SymbolTableSketch, std::string func_name);
 
 struct type_info* check_inbuilt_func_call(struct type_info* ti, std::string func_name, std::vector<struct type_info*> *arg_list);
-struct type_info* check_inbuilt_sketch_call(std::string func_name, std::vector<struct type_info*> *arg_list);
+void check_inbuilt_sketch_call(std::string func_name, std::vector<struct type_info*> *arg_list);
 
 #endif // SEMANTIC_HPP

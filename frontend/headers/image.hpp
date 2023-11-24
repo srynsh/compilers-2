@@ -65,9 +65,10 @@ class image {
         // Display functions
         void frame(std::string filename);
         void paint();
+        void color_pixel(int x, int y, int color);
 
         // Image manipulation functions
-        void draw(std::string shape, std::vector<float> params);
+        image draw(std::string shape, std::vector<float> params);
         gray_image grayscale();
         image blur(int k=2);
         image clip();
@@ -133,6 +134,16 @@ class image {
         friend image operator*(gray_image const img1, image const img2);
         image operator/(gray_image const img);
         friend image operator/(gray_image const img1, image const img2);
+
+        image operator^(int const value);
+        image operator^(float const value);
+        image operator^(bool const value);
+        friend image operator^(int const value, image const img);
+        friend image operator^(float const value, image const img);
+        friend image operator^(bool const value, image const img);
+
+
+        friend image operator ~(image const img);
 
         video operator+(video const vid);
         video operator+(gray_video const vid);
@@ -207,6 +218,15 @@ class gray_image {
 
         gray_image& operator=(image val); 
 
+        gray_image operator^(int const value);
+        gray_image operator^(float const value);
+        gray_image operator^(bool const value);
+        friend gray_image operator^(int const value, gray_image const img);
+        friend gray_image operator^(float const value, gray_image const img);
+        friend gray_image operator^(bool const value, gray_image const img);
+
+        friend gray_image operator ~(gray_image const img);
+
         video operator+(video const vid); 
         gray_video operator+(gray_video const vid);
 
@@ -222,6 +242,7 @@ class gray_image {
         void set_pixel(int i, int j, int color);
 
         // Image manipulation functions
+        gray_image draw(std::string shape, std::vector<float> params);
         std::vector<std::vector<float>> to_vector();
         gray_image blur(int k=2);
         gray_image sharpen(int k=1);
@@ -276,6 +297,8 @@ class video {
         void set_frame(int i, image const& frame);
         void concat_frame(image const& frame);
 
+        friend video operator~(video const vid);
+
 };
 
 class gray_video {
@@ -312,7 +335,9 @@ class gray_video {
 
         void set_fps(int fps);
         void set_frame(int i, gray_image const& frame);
+        void concat_frame(gray_image const& frame);
 
+        friend gray_video operator~(gray_video const vid);
 };
 
 #endif

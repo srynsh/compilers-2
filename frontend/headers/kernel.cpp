@@ -199,7 +199,7 @@ vector<float> operator+(vector<float> const& vec1, vector<float> const& vec2) {
 
     vector<float> new_vec(w);
 
-    #pragma omp parallel for collapse(1)
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         new_vec [i] = vec1[i] + vec2[i];
     }
@@ -222,7 +222,7 @@ vector<float> operator-(vector<float> const& vec1, vector<float> const& vec2) {
 
     vector<float> new_vec(w);
 
-    #pragma omp parallel for collapse(1)
+    #pragma omp parallel for
     for (int i=0; i<w; i++) {
         new_vec [i] = vec1[i] - vec2[i];
     }
@@ -245,7 +245,7 @@ vector<float> operator*(vector<float> const& vec1, vector<float> const& vec2) {
 
     vector<float> new_vec(w);
 
-    #pragma omp parallel for collapse(1)
+    #pragma omp parallel for 
     for (int i=0; i<w; i++) {
         new_vec [i] = vec1[i] * vec2[i];
     }
@@ -268,7 +268,7 @@ vector<float> operator/(vector<float> const& vec1, vector<float> const& vec2) {
 
     vector<float> new_vec(w);
 
-    #pragma omp parallel for collapse(1)
+    #pragma omp parallel for 
     for (int i=0; i<w; i++) {
         new_vec [i] = vec1[i] / vec2[i];
     }
@@ -287,7 +287,7 @@ vector<float> vec_sqrt(vector<float> const& vec) {
 
     vector<float> new_vec(w);
 
-    #pragma omp parallel for collapse(1)
+    #pragma omp parallel for 
     for (int i=0; i<w; i++) {
         new_vec [i] = std::sqrt(vec[i]);
     }
@@ -458,7 +458,7 @@ vector<float>& vectors::operator=(vector<float> const& vec)
         return this->vec1; // handle self assignment
     }
 
-    #pragma omp parallel for collapse(1)
+    #pragma omp parallel for 
     for (int i=0; i<vec.size(); i++) {
         this->vec1[i] = vec[i];
     }

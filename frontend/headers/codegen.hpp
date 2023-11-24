@@ -32,7 +32,8 @@ std::string codegen_decl_numeric(
     struct type_info* t,
     std::string name, 
     std::string expr,
-    std::vector<std::string> * id_list
+    std::vector<std::string> * id_list,
+    int mode=0
 );
 std::string codegen_decl_numeric_partial(struct type_info* t, std::string name);
 

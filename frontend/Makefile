@@ -1,14 +1,12 @@
 ##@ Frontend
 
 C_COMPILER = g++
-# C_FLAGS = -Wall -Wextra -Werror -std=c++17 -g
 C_FLAGS = -g -std=c++17
 
 YACC = bison
 YACC_FLAGS = -vd
 
 LEX = flex
-LEX_FLAGS = 
 
 TEST = test1.art
 
@@ -69,5 +67,5 @@ lex.yy.c: lex.l ## Generate lex.yy.c
 
 .PHONY: clean
 clean: ## Clean the output files
-	-rm output yacc.tab.h yacc.tab.c lex.yy.c yacc.output parsed.txt token.txt || true
+	-rm output yacc.tab.h yacc.tab.c lex.yy.c yacc.output parsed.txt token.txt $(BINARY_PATH)/*.o $(EXECUTABLE) || true
 	

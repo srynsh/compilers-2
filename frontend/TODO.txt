@@ -1,5 +1,7 @@
 add turtle
 
+
+
 codegen
     call stmt (DONE)
     return stmt (DONE)
@@ -7,53 +9,54 @@ codegen
     array_element stuff (NOT DONE) 
     conditional stmt (DONE)
     loop_conditional stmt (DONE)
-    images
-    loop_expr_stmt
-    
-add convolution operator
-operator overloading (for images, gray images and multi-dimensional arrays)
-in-built call statement
-    frame
-    paint (DONE)
-    draw
-    grayscale
-    blur (DONE)
-    clip
-    sharpen (DONE)
-    sobel (DONE)
-    pixelate (DONE)
-    invert (DONE)
-    noise (DONE)
-    bnw (DONE)
-    hflip (DONE)
-    vflip (DONE)
-    T (DONE)
-    crystallize (DONE)
-    get_height
-    get_width
-    get_pixel
-    set_pixel
-    sqrt
-    to_image
+    images (DONE)
+    loop_expr_stmt 
 
-    play (DONE)
-    get_fps
-    get_num_frames
-    get_frame
-    get_frames
-    set_fps
-    set_frame
-    set_num_frames
-    concat_frame
+    
+add convolution operator (LITE)
+operator overloading (for images, gray images and multi-dimensional arrays) (DONE)
+in-built call statement
+    -frame (DONE)
+    -paint (DONE)
+    -draw (DONE)
+    -grayscale (DONE)
+    -blur (DONE)
+    -clip (DONE)
+    -sharpen (DONE)
+    -sobel (DONE)
+    -pixelate (DONE)
+    -invert (DONE)
+    -noise (DONE)
+    -bnw (DONE)
+    -hflip (DONE)
+    -vflip (DONE)
+    -T (DONE)
+    -crystallize (DONE)
+    -get_height (DONE)
+    -get_width (DONE)
+    -get_pixel (DONE)
+    -set_pixel (DONE)
+    -to_image (DONE)
+    -convolve
+
+    -play (DONE)
+    -get_fps (DONE)
+    -get_num_frames (DONE)
+    -get_frame (DONE)
+    -set_fps (DONE)
+    -set_frame (DONE)
+    -concat_frame (DONE)
+    
 Also cast shit to int
 
-ID array_element in expr_pred
+ID array_element in expr_pred (DONE)
 
 where do we stop at yyerror, and where do we not?
 check semantic line 390
 flags to ensure nothing goes wrong after continuing on yyerror
 
 crop operator
+
 
 // Later
 splicing
@@ -78,3 +81,5 @@ sketch ID (parlist) {
     spool(decl|expr_pred|i+5){
     }
 }
+
+check constant++

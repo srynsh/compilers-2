@@ -338,7 +338,61 @@ bool in_range(float s_an, float e_an, int x, int y) {
     }
 }
 
-void image::draw(std::string shape, std::vector<float> params) {
+void image::color_pixel(int x, int y, int color) {
+    red[x][y] = (color >> 16) & 0xFF;
+    green[x][y] = (color >> 8) & 0xFF;
+    blue[x][y] = color & 0xFF;
+
+    if (x + 1 < w) {
+        red[x+1][y] = (color >> 16) & 0xFF;
+        green[x+1][y] = (color >> 8) & 0xFF;
+        blue[x+1][y] = color & 0xFF;
+    }
+
+    if (x - 1 >= 0) {
+        red[x-1][y] = (color >> 16) & 0xFF;
+        green[x-1][y] = (color >> 8) & 0xFF;
+        blue[x-1][y] = color & 0xFF;
+    }
+
+    if (y + 1 < h) {
+        red[x][y+1] = (color >> 16) & 0xFF;
+        green[x][y+1] = (color >> 8) & 0xFF;
+        blue[x][y+1] = color & 0xFF;
+    }
+
+    if (y - 1 >= 0) {
+        red[x][y-1] = (color >> 16) & 0xFF;
+        green[x][y-1] = (color >> 8) & 0xFF;
+        blue[x][y-1] = color & 0xFF;
+    }
+
+    if (x + 1 < w && y + 1 < h) {
+        red[x+1][y+1] = (color >> 16) & 0xFF;
+        green[x+1][y+1] = (color >> 8) & 0xFF;
+        blue[x+1][y+1] = color & 0xFF;
+    }
+
+    if (x - 1 >= 0 && y + 1 < h) {
+        red[x-1][y+1] = (color >> 16) & 0xFF;
+        green[x-1][y+1] = (color >> 8) & 0xFF;
+        blue[x-1][y+1] = color & 0xFF;
+    }
+
+    if (x + 1 < w && y - 1 >= 0) {
+        red[x+1][y-1] = (color >> 16) & 0xFF;
+        green[x+1][y-1] = (color >> 8) & 0xFF;
+        blue[x+1][y-1] = color & 0xFF;
+    }
+
+    if (x - 1 >= 0 && y - 1 >= 0) {
+        red[x-1][y-1] = (color >> 16) & 0xFF;
+        green[x-1][y-1] = (color >> 8) & 0xFF;
+        blue[x-1][y-1] = color & 0xFF;
+    }
+}
+
+image image::draw(std::string shape, std::vector<float> params) {
     if (shape == "circle") {
         int cx = params[0];
         int cy = params[1];
@@ -369,9 +423,7 @@ void image::draw(std::string shape, std::vector<float> params) {
                 #pragma omp parallel for
                 for (int i=0; i<8; i++) {
                     if (x_vals[i] >= 0 && x_vals[i] < w && y_vals[i] >= 0 && y_vals[i] < h) {
-                        red[x_vals[i]][y_vals[i]] = (color >> 16) & 0xFF;
-                        green[x_vals[i]][y_vals[i]] = (color >> 8) & 0xFF;
-                        blue[x_vals[i]][y_vals[i]] = color & 0xFF;
+                        color_pixel(x_vals[i], y_vals[i], color);
                     }
                 }
 
@@ -395,6 +447,8 @@ void image::draw(std::string shape, std::vector<float> params) {
         float end_angle = params[4] * M_PI / 180;
         int color = params[5];
 
+        // std::cout << start_angle << " " << end_angle << std::endl;
+
         // get angle in 0 - 2pi
         if (start_angle < 0) {
             start_angle += 2*M_PI;
@@ -417,8 +471,8 @@ void image::draw(std::string shape, std::vector<float> params) {
 
         int err = 0;
 
-        cout << "-----" << start_angle * 180 / M_PI  << " " << end_angle * 180/M_PI << endl;
-        cout << "-----" << sin(start_angle) << " " << sin(end_angle) << endl;
+        // cout << "-----" << start_angle * 180 / M_PI  << " " << end_angle * 180/M_PI << endl;
+        // cout << "-----" << sin(start_angle) << " " << sin(end_angle) << endl;
 
         while (x >= y) {
             std::vector<int> x_vals = {cx + x, cx + y, cx - y, cx - x, cx - x, cx - y, cx + y, cx + x};
@@ -428,9 +482,7 @@ void image::draw(std::string shape, std::vector<float> params) {
             for (int i=0; i<8; i++) {
                 if (x_vals[i] >= 0 && x_vals[i] < w && y_vals[i] >= 0 && y_vals[i] < h) {
                     if (in_range(start_angle, end_angle, x_vals[i] - cx, y_vals[i] - cy)) {
-                        red[x_vals[i]][y_vals[i]] = (color >> 16) & 0xFF;
-                        green[x_vals[i]][y_vals[i]] = (color >> 8) & 0xFF;
-                        blue[x_vals[i]][y_vals[i]] = color & 0xFF;
+                        color_pixel(x_vals[i], y_vals[i], color);
                     }
                 }
             }
@@ -448,8 +500,9 @@ void image::draw(std::string shape, std::vector<float> params) {
     } else if (shape == "line") {
         int start_x = params[0];
         int start_y = params[1];
-        int end_x = params[2];
-        int end_y = params[3];
+        int end_x   = params[2];
+        int end_y   = params[3];
+        int color   = params[4];
 
         int dx = abs(end_x - start_x);
         int dy = abs(end_y - start_y);
@@ -460,9 +513,8 @@ void image::draw(std::string shape, std::vector<float> params) {
         int err = dx - dy;
 
         while (start_x < w-1 && start_y < h-1 && start_x >= 0 && start_y >= 0) {
-            red[start_x][start_y] = 0;
-            green[start_x][start_y] = 0;
-            blue[start_x][start_y] = 0;
+    
+            color_pixel(start_x, start_y, color);
 
             if (start_x == end_x && start_y == end_y) {
                 break;
@@ -481,6 +533,8 @@ void image::draw(std::string shape, std::vector<float> params) {
             }
         }
     }
+
+    return *this;
 }
 
 /// @brief Uses the NTSC formula to convert RGB to gray (See https://support.ptc.com/help/mathcad/r9.0/en/index.html#page/PTC_Mathcad_Help/example_grayscale_and_color_in_images.html)
@@ -1575,6 +1629,117 @@ image image::operator/(gray_image const img){
     return new_img;
 }
 
+image image::operator^(int const value){
+                    
+    image new_img(h, w, 0);
+
+    #pragma omp parallel for collapse(2)
+    for(int i=0; i<w; i++) {
+        for(int j=0; j<h; j++){
+            int val = red[i][j] ^ value; 
+            new_img.set_pixel(i, j, 0, val);
+
+            val = green[i][j] ^ value; 
+            new_img.set_pixel(i, j, 1, val);
+
+            val = blue[i][j] ^ value; 
+            new_img.set_pixel(i, j, 2, val);
+        }
+    }
+    return new_img;
+}
+
+image image::operator^(bool const value){
+                    
+    image new_img(h, w, 0);
+
+    #pragma omp parallel for collapse(2)
+    for(int i=0; i<w; i++) {
+        for(int j=0; j<h; j++){
+            int val = red[i][j] ^ value; 
+            new_img.set_pixel(i, j, 0, val);
+
+            val = green[i][j] ^ value; 
+            new_img.set_pixel(i, j, 1, val);
+
+            val = blue[i][j] ^ value; 
+            new_img.set_pixel(i, j, 2, val);
+        }
+    }
+    return new_img;
+}
+
+image image::operator^(float const value){
+    int int_val = (int)value;
+
+    image new_img(h, w, 0);
+
+    #pragma omp parallel for collapse(2)
+    for(int i=0; i<w; i++) {
+        for(int j=0; j<h; j++){
+            int val = red[i][j] ^ int_val; 
+            new_img.set_pixel(i, j, 0, val);
+
+            val = green[i][j] ^ int_val; 
+            new_img.set_pixel(i, j, 1, val);
+
+            val = blue[i][j] ^ int_val; 
+            new_img.set_pixel(i, j, 2, val);
+        }
+    }         
+    return new_img;          
+}
+
+image operator^(int const value, image const img){
+                        
+    image new_img(img.get_height(), img.get_width(), 0);
+
+    #pragma omp parallel for collapse(3)
+    for(int i=0; i<img.get_width(); i++) {
+        for(int j=0; j<img.get_height(); j++){
+            for (int k=0; k<3; k++) {
+                int val = img.get_pixel(i, j, k) ^ value; 
+                new_img.set_pixel(i, j, k, val);
+            }
+        }
+    }
+    return new_img;
+}
+
+image operator^(bool const value, image const img){
+                        
+    image new_img(img.get_height(), img.get_width(), 0);
+
+    #pragma omp parallel for collapse(3)
+    for(int i=0; i<img.get_width(); i++) {
+        for(int j=0; j<img.get_height(); j++){
+            for (int k=0; k<3; k++) {
+                int val = img.get_pixel(i, j, k) ^ value; 
+                new_img.set_pixel(i, j, k, val);
+            }
+        }
+    }
+    return new_img;
+}
+
+image operator^(float const value, image const img){
+    int int_val = (int)value;
+
+    image new_img(img.get_height(), img.get_width(), 0);
+
+    #pragma omp parallel for collapse(3)
+    for(int i=0; i<img.get_width(); i++) {
+        for(int j=0; j<img.get_height(); j++){
+            for (int k=0; k<3; k++) {
+                int val = img.get_pixel(i, j, k) ^ int_val; 
+                new_img.set_pixel(i, j, k, val);
+            }
+        }
+    }
+    return new_img;
+}
+
+
 video image::operator+(video const vid){
     int h = vid.get_height();
     int w = vid.get_width();
@@ -1834,17 +1999,85 @@ void gray_image::load(std::string filename, bool init) {
 /// @brief Convert the image to a .bmp file, and save it
 void gray_image::frame(std::string filename) {
     flip();
-    ofstream write(filename.c_str());
-    int BufferSize = 54 + w * h; //w is your image width, h is image height, both int
+    // ofstream write(filename.c_str());
+    // int BufferSize = 54 + w * h; //w is your image width, h is image height, both int
 
-    cout << "BufferSize: " << BufferSize << endl;
+    // cout << "BufferSize: " << BufferSize << endl;
 
-    unsigned char bmpfileheader[14] = {66, 77, 54, 4, 4, 0, 0, 0, 0, 0, 54, 4, 0, 0};
-    unsigned char bmpinfoheader[40] = {40, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 1, 0, 8, 0/*, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0*/};
-    bmpfileheader[ 2] = (unsigned char)(BufferSize    );
-    bmpfileheader[ 3] = (unsigned char)(BufferSize>> 8);
-    bmpfileheader[ 4] = (unsigned char)(BufferSize>>16);
-    bmpfileheader[ 5] = (unsigned char)(BufferSize>>24);
+    // unsigned char bmpfileheader[14] = {'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0};
+    // unsigned char bmpinfoheader[40] = {40, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 1, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    
+    // /*
+    
+    // unsigned char bmpfileheader[14] = {'B','M', 0,0,0,0, 0,0, 0,0, 54,0,0,0};
+    // unsigned char bmpinfoheader[40] = {40,0,0,0, 0,0,0,0, 0,0,0,0, 1,0, 24,0};
+    
+    // */
+
+    // bmpfileheader[10] = (unsigned char)(54           );
+    // bmpfileheader[11] = (unsigned char)(54>> 8       );
+    // bmpfileheader[12] = (unsigned char)(54>>16       );
+    // bmpfileheader[13] = (unsigned char)(54>>24       );
+
+    // bmpinfoheader[ 4] = (unsigned char)(       w    );
+    // bmpinfoheader[ 5] = (unsigned char)(       w>> 8);
+    // bmpinfoheader[ 6] = (unsigned char)(       w>>16);
+    // bmpinfoheader[ 7] = (unsigned char)(       w>>24);
+    // bmpinfoheader[ 8] = (unsigned char)(       h    );
+    // bmpinfoheader[ 9] = (unsigned char)(       h>> 8);
+    // bmpinfoheader[10] = (unsigned char)(       h>>16);
+    // bmpinfoheader[11] = (unsigned char)(       h>>24);
+    
+    
+    
+    // char* FileBuffer = new char[BufferSize];
+    // // set bmp file header
+    // for (int i = 0; i < 14; i++) {
+    //     FileBuffer[i] = bmpfileheader[i];
+    // }
+
+    // // set bmp info header
+    // for (int i = 0; i < 40; i++) {
+    //     FileBuffer[14 + i] = bmpinfoheader[i];
+    // }
+
+
+    // int count = 1;
+    // int extra = w % 4; // The nubmer of bytes in a row (cols) will be a multiple of 4.
+
+    // for (int i = 0; i < h; i++) {
+    //     count += extra;
+    //     for (int j = w - 1; j >= 0; j--) {
+    //         FileBuffer[BufferSize - count] = ::clip(gray[j][i]);
+    //         count++;
+    //     }
+    // }
+
+    // write.write(FileBuffer, BufferSize);
+    FILE *f;
+    int filesize = 54 + 3*w*h;  //w is your image width, h is image height, both int
+    unsigned char *canvas = NULL;
+    canvas = (unsigned char *)malloc(3*w*h);
+    memset(canvas,0,3*w*h);
+
+    #pragma omp parallel for collapse(2)
+    for(int i=0; i<h; i++) {
+        for(int j=0; j<w; j++) {
+            int x=i; int y=j;
+            canvas[(y+x*w)*3+0] = (unsigned char)(::clip(gray[j][i]));
+            canvas[(y+x*w)*3+1] = (unsigned char)(::clip(gray[j][i]));
+            canvas[(y+x*w)*3+2] = (unsigned char)(::clip(gray[j][i]));
+        } 
+    }
+
+    unsigned char bmpfileheader[14] = {'B','M', 0,0,0,0, 0,0, 0,0, 54,0,0,0};
+    unsigned char bmpinfoheader[40] = {40,0,0,0, 0,0,0,0, 0,0,0,0, 1,0, 24,0};
+    unsigned char bmppad[3] = {0,0,0};
+
+    bmpfileheader[ 2] = (unsigned char)(filesize    );
+    bmpfileheader[ 3] = (unsigned char)(filesize>> 8);
+    bmpfileheader[ 4] = (unsigned char)(filesize>>16);
+    bmpfileheader[ 5] = (unsigned char)(filesize>>24);
 
     bmpinfoheader[ 4] = (unsigned char)(       w    );
     bmpinfoheader[ 5] = (unsigned char)(       w>> 8);
@@ -1854,33 +2087,18 @@ void gray_image::frame(std::string filename) {
     bmpinfoheader[ 9] = (unsigned char)(       h>> 8);
     bmpinfoheader[10] = (unsigned char)(       h>>16);
     bmpinfoheader[11] = (unsigned char)(       h>>24);
-    
-    
-    
-    char* FileBuffer = new char[BufferSize];
-    // set bmp file header
-    for (int i = 0; i < 14; i++) {
-        FileBuffer[i] = bmpfileheader[i];
+
+    f = fopen(filename.c_str(), "wb");
+    fwrite(bmpfileheader, 1, 14, f);
+    fwrite(bmpinfoheader, 1, 40, f);
+
+    for(int i=0; i<h; i++) {
+        fwrite(canvas+(w*(h-i-1)*3),3,w,f);
+        fwrite(bmppad,1,(4-(w*3)%4)%4,f);
     }
 
-    // set bmp info header
-    for (int i = 0; i < 40; i++) {
-        FileBuffer[14 + i] = bmpinfoheader[i];
-    }
-
-
-    int count = 1;
-    int extra = w % 4; // The nubmer of bytes in a row (cols) will be a multiple of 4.
-
-    for (int i = 0; i < h; i++) {
-        count += extra;
-        for (int j = w - 1; j >= 0; j--) {
-            FileBuffer[BufferSize - count] = ::clip(gray[j][i]);
-            count++;
-        }
-    }
-
-    write.write(FileBuffer, BufferSize);
+    free(canvas);
+    fclose(f);
     flip();
     // FILE *f;
     // int filesize = 54 + w*h;  //w is your image width, h is image height, both int
@@ -2387,6 +2605,89 @@ gray_image& gray_image::operator=(image val){
     return *this;
 }
 
+gray_image gray_image::operator^(int const int_val){
+    gray_image new_img(h, w, 0);
+
+    #pragma omp parallel for collapse(2)
+    for(int i=0; i<w; i++) {
+        for(int j=0; j<h; j++){
+            int val = gray[i][j] ^ int_val; 
+            new_img.set_pixel(i, j, val);
+        }
+    }
+    return new_img;
+}
+
+gray_image gray_image::operator^(bool const bool_val){
+    gray_image new_img(h, w, 0);
+
+    #pragma omp parallel for collapse(2)
+    for(int i=0; i<w; i++) {
+        for(int j=0; j<h; j++){
+            int val = gray[i][j] ^ bool_val; 
+            new_img.set_pixel(i, j, val);
+        }
+    }
+    return new_img;
+}
+
+gray_image gray_image::operator^(float const float_val){
+    gray_image new_img(h, w, 0);
+    int float_val_int = (int)float_val;
+
+    #pragma omp parallel for collapse(2)
+    for(int i=0; i<w; i++) {
+        for(int j=0; j<h; j++){
+            int val = gray[i][j] ^ float_val_int; 
+            new_img.set_pixel(i, j, val);
+        }
+    }
+    return new_img;
+}
+
+gray_image operator^(int const value, gray_image const img){
+    gray_image new_img(img.get_height(), img.get_width(), 0);
+    int value_int = (int)value;
+
+    #pragma omp parallel for collapse(2)
+    for(int i=0; i<img.get_width(); i++) {
+        for(int j=0; j<img.get_height(); j++) {
+            int val = value_int ^ img.get_pixel(i, j); 
+            new_img.set_pixel(i, j, val);
+        }
+    }
+    return new_img;
+}
+
+gray_image operator^(bool const value, gray_image const img){
+    gray_image new_img(img.get_height(), img.get_width(), 0);
+    int value_int = (int)value;
+
+    #pragma omp parallel for collapse(2)
+    for(int i=0; i<img.get_width(); i++) {
+        for(int j=0; j<img.get_height(); j++) {
+            int val = value_int ^ img.get_pixel(i, j); 
+            new_img.set_pixel(i, j, val);
+        }
+    }
+    return new_img;
+}
+
+gray_image operator^(float const value, gray_image const img){
+    gray_image new_img(img.get_height(), img.get_width(), 0);
+    int value_int = (int)value;
+
+    #pragma omp parallel for collapse(2)
+    for(int i=0; i<img.get_width(); i++) {
+        for(int j=0; j<img.get_height(); j++) {
+            int val = value_int ^ img.get_pixel(i, j); 
+            new_img.set_pixel(i, j, val);
+        }
+    }
+    return new_img;
+}
+
+
 video gray_image::operator+(video const vid){
     int h = vid.get_height();
     int w = vid.get_width();
@@ -2424,6 +2725,145 @@ gray_video gray_image::operator+(gray_video const vid){
 /*------------------------------------------------------------------------
  * Image manipulation functions
  *------------------------------------------------------------------------*/
+
+ gray_image gray_image::draw(std::string shape, std::vector<float> params) {
+    if (shape == "circle") {
+        int cx = params[0];
+        int cy = params[1];
+        int r = params[2];
+        int color = params[3];
+        int fill = params[4];
+        assert(color >= 0x000000 && color <= 0xFFFFFF);
+        
+        if (fill) {
+            for (int y=max(0, cy-r); y<=min(h-1, cy+r); y++) {
+                for (int x=max(0, cx-r); x<=min(w-1, cx+r); x++) {
+                    if ((x-cx)*(x-cx) + (y-cy)*(y-cy) <= r*r) {
+                        gray[x][y] = color;
+                    }
+                }
+            }
+        } else {
+            int x = r;
+            int y = 0;
+            int err = 0;
+
+            while (x >= y) {
+                std::vector<int> x_vals = {cx + x, cx + y, cx - y, cx - x, cx - x, cx - y, cx + y, cx + x};
+                std::vector<int> y_vals = {cy + y, cy + x, cy + x, cy + y, cy - y, cy - x, cy - x, cy - y};
+
+                #pragma omp parallel for
+                for (int i=0; i<8; i++) {
+                    if (x_vals[i] >= 0 && x_vals[i] < w && y_vals[i] >= 0 && y_vals[i] < h) {
+                        gray[x_vals[i]][y_vals[i]] = color;
+                    }
+                }
+
+                if (err <= 0) {
+                    y += 1;
+                    err += 2*y + 1;
+                }
+
+                if (err > 0) {
+                    x -= 1;
+                    err -= 2*x + 1;
+                }
+            }
+
+        }
+    } else if (shape == "arc") {
+        int cx = params[0];
+        int cy = params[1];
+        int r = params[2];
+        float start_angle = params[3] * M_PI / 180;
+        float end_angle = params[4] * M_PI / 180;
+        int color = params[5];
+
+        // get angle in 0 - 2pi
+        if (start_angle < 0) {
+            start_angle += 2*M_PI;
+        }
+
+        if (end_angle < 0) {
+            end_angle += 2*M_PI;
+        }
+
+        if (start_angle > 2*M_PI) {
+            start_angle -= 2*M_PI;
+        }
+
+        if (end_angle > 2*M_PI) {
+            end_angle -= 2*M_PI;
+        }
+
+        int x = r;
+        int y = 0;
+
+        int err = 0;
+
+        // cout << "-----" << start_angle * 180 / M_PI  << " " << end_angle * 180/M_PI << endl;
+        // cout << "-----" << sin(start_angle) << " " << sin(end_angle) << endl;
+
+        while (x >= y) {
+            std::vector<int> x_vals = {cx + x, cx + y, cx - y, cx - x, cx - x, cx - y, cx + y, cx + x};
+            std::vector<int> y_vals = {cy + y, cy + x, cy + x, cy + y, cy - y, cy - x, cy - x, cy - y};
+
+            #pragma omp parallel for
+            for (int i=0; i<8; i++) {
+                if (x_vals[i] >= 0 && x_vals[i] < w && y_vals[i] >= 0 && y_vals[i] < h) {
+                    if (in_range(start_angle, end_angle, x_vals[i] - cx, y_vals[i] - cy)) {
+                        gray[x_vals[i]][y_vals[i]] = color;
+                    }
+                }
+            }
+
+            if (err <= 0) {
+                y += 1;
+                err += 2*y + 1;
+            }
+
+            if (err > 0) {
+                x -= 1;
+                err -= 2*x + 1;
+            }
+        }     
+    } else if (shape == "line") {
+        int start_x = params[0];
+        int start_y = params[1];
+        int end_x = params[2];
+        int end_y = params[3];
+
+        int dx = abs(end_x - start_x);
+        int dy = abs(end_y - start_y);
+
+        // this is the direction in which we are moving
+        int sx = (start_x < end_x) ? 1 : -1; 
+        int sy = (start_y < end_y) ? 1 : -1; 
+        int err = dx - dy;
+
+        while (start_x < w-1 && start_y < h-1 && start_x >= 0 && start_y >= 0) {
+            gray[start_x][start_y] = 0;
+
+            if (start_x == end_x && start_y == end_y) {
+                break;
+            }
+
+            int e2 = 2*err;
+
+            if (e2 > -dy) {
+                err -= dy;
+                start_x += sx;
+            }
+
+            if (e2 < dx) {
+                err += dx;
+                start_y += sy;
+            }
+        }
+    }
+
+    return *this;
+}
 
 /// @brief Converts a gray-scale image to 2D std::vector
 std::vector<std::vector<float>> gray_image::to_vector() {
@@ -2831,8 +3271,18 @@ void video::play() {
             system("clear");
             std::string s = "tiv -w 1000 -h 1000 temp" + std::to_string(j) + ".bmp";
             system(s.c_str());
-            usleep(100000/fps);
+            usleep(1000000/fps);
         }
+    }
+    #pragma omp parallel for num_threads(n)
+    for(int i=divisions*n; i<this->get_num_frames(); i++) {
+        frames_vec[i].frame("temp" + std::to_string(i) + ".bmp");
+    }
+    for (int i=divisions*n; i<this->get_num_frames(); i++) {
+        system("clear");
+        std::string s = "tiv -w 1000 -h 1000 temp" + std::to_string(i) + ".bmp";
+        system(s.c_str());
+        usleep(1000000/fps);
     }
     for (int i=0; i<n; i++) {
         std::string s = "rm temp" + std::to_string(i) + ".bmp";
@@ -2947,6 +3397,56 @@ video video::operator+(gray_image img) {
     return *this;
 }
 
+image operator~(image const img) {
+    image new_img(img.get_height(), img.get_width(), 0);
+
+    // invert all channels
+    #pragma omp parallel for collapse(3)
+    for(int i=0; i<img.get_width(); i++) {
+        for(int j=0; j<img.get_height(); j++) {
+            for(int k=0; k<3; k++) {
+                int val = 255 - img.get_pixel(i, j, k); 
+                new_img.set_pixel(i, j, k, val);
+            }
+        }
+    }
+    return new_img;
+}
+
+gray_image operator~(gray_image const img) {
+    gray_image new_img(img.get_height(), img.get_width(), 0);
+
+    #pragma omp parallel for collapse(2)
+    for(int i=0; i<img.get_width(); i++) {
+        for(int j=0; j<img.get_height(); j++) {
+            int val = 255 - img.get_pixel(i, j); 
+            new_img.set_pixel(i, j, val);
+        }
+    }
+    return new_img;
+}
+
+video operator~(video const vid) {
+    video new_vid(vid.get_height(), vid.get_width(), vid.get_fps());
+
+    for (int i=0; i<vid.get_num_frames(); i++) {
+        new_vid.frames_vec.push_back(~vid[i]);
+    }
+
+    return new_vid;
+}
+
+gray_video operator~(gray_video const vid) {
+    gray_video new_vid(vid.get_height(), vid.get_width(), vid.get_fps());
+
+    for (int i=0; i<vid.get_num_frames(); i++) {
+        new_vid.frames_vec.push_back(~vid[i]);
+    }
+
+    return new_vid;
+}
+
+
 /*------------------------------------------------------------------------
  * Getters and Setters
  *------------------------------------------------------------------------*/
@@ -3029,8 +3529,18 @@ void gray_video::play() {
             system("clear");
             std::string s = "tiv -w 1000 -h 1000 temp" + std::to_string(j) + ".bmp";
             system(s.c_str());
-            usleep(100000/fps);
+            usleep(1000000/fps);
         }
+    }
+    #pragma omp parallel for num_threads(n)
+    for(int i=divisions*n; i<this->get_num_frames(); i++) {
+        frames_vec[i].frame("temp" + std::to_string(i) + ".bmp");
+    }
+    for (int i=divisions*n; i<this->get_num_frames(); i++) {
+        system("clear");
+        std::string s = "tiv -w 1000 -h 1000 temp" + std::to_string(i) + ".bmp";
+        system(s.c_str());
+        usleep(1000000/fps);
     }
     for (int i=0; i<n; i++) {
         std::string s = "rm temp" + std::to_string(i) + ".bmp";
@@ -3200,6 +3710,10 @@ void gray_video::set_frame(int i, gray_image const& img) {
     assert(h == this->h); assert(w == this->w);
 
     frames_vec[i] = img;
+}
+
+void gray_video::concat_frame(gray_image const& frame){
+    frames_vec.push_back(frame);
 }
 
 

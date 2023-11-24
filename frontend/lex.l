@@ -29,13 +29,13 @@ comments "#"|"#*"|"*#"
 punctuators [\{\}\[\]\(\)';,]
 operators "="|"+"|"-"|"*"|"/"|"^"|"~"|"++"|"--"|"<<"
 path \'([^'\\])*\'
-
+reserved "__i__"|"__t__"|"__tglobal__"
 
 %%
 
 {newline_token} {
     if(strcmp(yytext, "\n") == 0) {
-        if (inline_comment) 
+        if (inline_comment)
             inline_comment = 0;
         lineno++;   // increment line number on encountering new line
         // std::cout << "Line number: " << yylineno << std::endl;
@@ -148,7 +148,11 @@ path \'([^'\\])*\'
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"constant: %s\n", yytext);
-        yylval.ival = atoi(yytext);
+        // If not hex
+        if (yytext[0] != '0' || yytext[1] != 'x')
+            yylval.ival = atoi(yytext);
+        else 
+            yylval.ival = (int)strtol(yytext, NULL, 16);
         return NUM_CONST;
     }
 }
@@ -180,6 +184,17 @@ path \'([^'\\])*\'
         yylval.tval = tinfo;
         return PATH;
     }
+}
+
+{reserved} {
+    if (!inline_comment && !block_comment) {
+        fprintf(fparser,"%s", yytext);
+        fprintf(ftoken,"reserved: %s\n", yytext);
+        std::string s = "Reserved identifier used: " + std::string(yytext);
+        yyerror(s.c_str());
+        exit(1);
+    }
+
 }
 
 {keywords} {
@@ -216,7 +231,7 @@ path \'([^'\\])*\'
         }
         else if (strcmp(yytext,"gray_vid")==0) {
             tinfo->eleType = ELETYPE::ELE_GRAY_VID;
-            std::vector <int>* dim_list = new std::vector<int>(3);
+            std::vector <int>* dim_list = new std::vector<int>(4);
             dim_list->at(0) = -1; dim_list->at(1) = -1; dim_list->at(2) = 1; dim_list->at(3) = 30; 
             tinfo->dim_list = dim_list;
             yylval.tval = tinfo;

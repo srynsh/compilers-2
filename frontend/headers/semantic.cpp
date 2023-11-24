@@ -4,8 +4,7 @@
 #include "sym_tab.hpp"
 #include "utils.hpp"
 
-
-#define THRESHOLD 7
+#define THRESHOLD 3
 
 extern void yyerror(const char *s);
 extern int lineno;
@@ -14,11 +13,13 @@ extern int lineno;
 /// @brief vector of inbuilt functions
 std::vector<std::string> inbuilt_functions = {"blur", "sharpen", "sobel", "T", "vflip", 
                                 "hflip", "pixelate", "invert", "noise", "bnw",
-                                "get", "set", "convolve", "paint", "frame",
-                                "play", "len", "append", "height", "width", "draw"};
+                                "get_pixel", "set_pixel", "convolve", "paint", "frame",
+                                "play", "get_num_frames", "concat_frame", "get_height", "get_width",
+                                "grayscale", "clip", "crystallize", "to_image", "draw", "get_fps", "get_frame",
+                                 "set_fps", "set_frame"};
 
 std::vector<std::string> inbuilt_sketches = {"penup", "pendown", "set_pen_color", "circle", "arc", "rotate",
-                                        "forward"};
+                                        "forward", "go_to"};
 
 /* ---------------------------------------------------------- 
  * Helper functions
@@ -726,6 +727,9 @@ struct type_info* check_sketch_call(symbol_table_sketch* SymbolTableSketch, std:
 
 struct type_info* check_inbuilt_func_call(struct type_info* ti, std::string func_name, std::vector<struct type_info*> *arg_list) {
     auto const [idx, dist] = FindClosest(inbuilt_functions, func_name);
+    struct type_info* t_error = new struct type_info;
+    t_error->type = TYPE::SIMPLE;
+    t_error->eleType = ELETYPE::ELE_ERROR;
     if (inbuilt_functions[idx] != func_name) {
         // arbitrary threshold of 7
         std::string err;
@@ -735,21 +739,26 @@ struct type_info* check_inbuilt_func_call(struct type_info* ti, std::string func
             err = func_name + " is not an inbuilt function";
         }
         yyerror(err.c_str());
-        
+        // exit(1);
+        return t_error;
     }
 
     // Takes 1 argument
     if (func_name == "pixelate" || func_name == "noise"){
             if (arg_list == NULL || arg_list->size() != 1) {
-                yyerror("in-built function takes exactly 1 argument");
-                
+                std::string err = "in-built function " + func_name + " takes exactly 1 argument";
+                yyerror(err.c_str());
+                return t_error;
             }
-            if (arg_list->at(0)->type != TYPE::SIMPLE && !is_primitive(arg_list->at(0)->eleType)) {
-                yyerror("in-built function takes only primitive arguments (type will be casted to num)");
-                
+            if (arg_list != NULL && (arg_list->at(0)->type != TYPE::SIMPLE && !is_primitive(arg_list->at(0)->eleType))) {
+                std::string err = "in-built function " + func_name + " takes only primitive arguments (type will be casted to num)";
+                yyerror(err.c_str());
+                return t_error;
             }
             if (!is_img(ti->eleType)) {
-                yyerror("in-built function can only be applied to images");
+                std::string err = "in-built function " + func_name + " can only be applied to images";
+                yyerror(err.c_str());
+                return t_error;
             }
             struct type_info* t_return = new struct type_info;
             t_return->type = TYPE::SIMPLE;
@@ -764,13 +773,19 @@ struct type_info* check_inbuilt_func_call(struct type_info* ti, std::string func
     // Can have 0 or 1 argument
     else if (func_name == "blur" || func_name == "sharpen" || func_name == "bnw" || func_name == "crystallize") {
         if (arg_list != NULL && arg_list->size() != 1) {
-                yyerror("in-built function takes 1 or 0 arguments");
-            }
+            std::string err = "in-built function " + func_name + " takes 0 or 1 argument";
+            yyerror(err.c_str());
+            return t_error;
+        }
         if (arg_list != NULL && arg_list->at(0)->type != TYPE::SIMPLE && !is_primitive(arg_list->at(0)->eleType)) {
-                yyerror("in-built function takes only primitive arguments (type will be casted to num)");
-            }
+            std :: string err = "in-built function " + func_name + " takes only primitive arguments (type will be casted to num)";
+            yyerror(err.c_str());
+            return t_error;
+        }
         if (!is_img(ti->eleType)) {
-            yyerror("in-built function can only be applied to images");
+            std::string err = "in-built function " + func_name + " can only be applied to images";
+            yyerror(err.c_str());
+            return t_error;
         }
         struct type_info* t_return = new struct type_info;
         t_return->type = TYPE::SIMPLE;
@@ -784,10 +799,14 @@ struct type_info* check_inbuilt_func_call(struct type_info* ti, std::string func
     }
     else if (func_name == "T" || func_name == "invert" || func_name == "paint" || func_name == "sobel" || func_name == "vflip" || func_name == "hflip") {
         if (arg_list != NULL && arg_list->size() != 0) {
-            yyerror("in-built function takes no arguments");
+            std::string err = "in-built function " + func_name + " takes no arguments";
+            yyerror(err.c_str());
+            return t_error;
         }
         if (!is_img(ti->eleType)) {
-            yyerror("in-built function can only be applied to images");
+            std::string err = "in-built function " + func_name + " can only be applied to images";
+            yyerror(err.c_str());
+            return t_error;
         }
         struct type_info* t_return = new struct type_info;
         t_return->type = TYPE::SIMPLE;
@@ -810,22 +829,352 @@ struct type_info* check_inbuilt_func_call(struct type_info* ti, std::string func
         return t_return;
     }
     else if (func_name == "play") {
-        if (arg_list->size() != 0) {
-                yyerror("in-built function takes no arguments"); 
+        if (arg_list != NULL && arg_list->size() != 0) {
+            std::string err = "in-built function " + func_name + " takes no arguments";
+            yyerror(err.c_str());
+            return t_error;
         }
         if (!is_vid(ti->eleType)) {
-            yyerror("in-built function can only be applied to videos");
+            yyerror("in-built function play can only be applied to videos");
+            // exit(1);
+            return t_error;
         }
         struct type_info* t_return = new struct type_info;
         t_return->type = TYPE::SIMPLE;
         t_return->eleType = ELETYPE::ELE_VOID;
         return t_return;
     }
+    else if (func_name == "frame"){
+        if (arg_list != NULL && arg_list->size() != 1) {
+            yyerror("in-built function frame takes exactly 1 argument");
+            return t_error;
+        }
+        if (!is_img(ti->eleType)) {
+            yyerror("in-built function frame can only be applied to images");
+            return t_error;
+        }
+        if (arg_list != NULL && (arg_list->at(0)->type != TYPE::SIMPLE || arg_list->at(0)->eleType != ELETYPE::ELE_STR)){
+            yyerror("in-built function frame takes only string argument");
+            return t_error;
+        }
+        struct type_info* t_return = new struct type_info;
+        t_return->type = TYPE::SIMPLE;
+        t_return->eleType = ELETYPE::ELE_VOID;
+        return t_return;
+    }
+    else if (func_name == "draw"){
+        // if (arg_list == NULL || arg_list->size() != 2) {
+        //     yyerror("in-built function draw takes exactly 2 arguments");
+        //     return t_error;
+        // }
+        if (!is_img(ti->eleType)) {
+            yyerror("in-built function draw can only be applied to images");
+            return t_error;
+        }
+        if (arg_list!= NULL && (arg_list->at(0)->type != TYPE::SIMPLE || arg_list->at(0)->eleType != ELETYPE::ELE_STR)){
+            yyerror("in-built function draw takes only string as first argument");
+            return t_error;
+        }
+        // if "circle" -> 6 params
+        // if "arc" -> 7 params
+        // if "line" -> 5 params
+        if (arg_list->at(0)->name == "\"circle\"" && arg_list->size() != 6){
+                yyerror("in-built function draw takes 6 arguments for circle");
+                return t_error;
+        }
+        if (arg_list->at(0)->name == "\"arc\"" && arg_list->size() != 7){
+                yyerror("in-built function draw takes 7 arguments for arc");
+                return t_error;
+        }
+        if (arg_list->at(0)->name == "\"line\"" && arg_list->size() != 5){
+                yyerror("in-built function draw takes 5 arguments for line");
+                return t_error;
+        }
+        if (arg_list->at(0)->name != "\"circle\"" && arg_list->at(0)->name != "\"arc\"" && arg_list->at(0)->name != "\"line\""){
+                yyerror("in-built function draw takes only \"circle\", \"arc\" or \"line\" as first argument");
+                return t_error;
+        }
+
+        // All params should be simple and primitive
+        for (int i = 1; i < arg_list->size(); i++) {
+            if (arg_list->at(i)->type != TYPE::SIMPLE || !is_primitive(arg_list->at(i)->eleType)) {
+                yyerror("in-built function draw takes only primitive args (type will be casted to real)");
+                return t_error;
+            }
+        }
+
+        struct type_info* t_return = new struct type_info;
+        t_return->type = TYPE::SIMPLE;
+        t_return->eleType = ti->eleType;
+        t_return->dim_list = new std::vector<int>(3);
+        for (int i = 0; i < 3; i++) {
+                t_return->dim_list->at(i) = ti->dim_list->at(i);
+        }
+        return t_return;
+    }
+    else if (func_name == "grayscale"){
+        if (arg_list != NULL && arg_list->size() != 0) {
+            yyerror("in-built function grayscale takes no arguments");
+            return t_error;
+        }
+        if (ti->eleType != ELETYPE::ELE_IMG || ti->type != TYPE::SIMPLE) {
+            yyerror("in-built function grayscale can only be applied to images");
+            return t_error;
+        }
+        struct type_info* t_return = new struct type_info;
+        t_return->type = TYPE::SIMPLE;
+        t_return->eleType = ELETYPE::ELE_GRAY_IMG;
+        t_return->dim_list = new std::vector<int>(3);
+        for (int i = 0; i < 3; i++) {
+                t_return->dim_list->at(i) = ti->dim_list->at(i);
+        }
+        return t_return;
+    }
+    else if (func_name == "clip"){
+        if (arg_list != NULL && arg_list->size() != 0) {
+            yyerror("in-built function clip takes no arguments");
+            return t_error;
+        }
+        if (ti->eleType != ELETYPE::ELE_IMG || ti->type != TYPE::SIMPLE) {
+            yyerror("in-built function clip can only be applied to images");
+            return t_error;
+        }
+        struct type_info* t_return = new struct type_info;
+        t_return->type = TYPE::SIMPLE;
+        t_return->eleType = ELETYPE::ELE_IMG;
+        t_return->dim_list = new std::vector<int>(3);
+        for (int i = 0; i < 3; i++) {
+                t_return->dim_list->at(i) = ti->dim_list->at(i);
+        }
+        return t_return;
+    }
+    else if (func_name == "get_height" || func_name == "get_width") {
+        if (arg_list != NULL && arg_list->size() != 0) {
+            std::string err = "in-built function " + func_name + " takes no arguments";
+            yyerror(err.c_str());
+            return t_error;
+        }
+        if (!is_img(ti->eleType) && !is_vid(ti->eleType)) {
+            std::string err = "in-built function " + func_name + " can only be applied to images or videos";
+            yyerror(err.c_str());
+            return t_error;
+        }
+        struct type_info* t_return = new struct type_info;
+        t_return->type = TYPE::SIMPLE;
+        t_return->eleType = ELETYPE::ELE_NUM;
+        return t_return;
+    }
+    else if (func_name == "get_pixel") {
+        if (arg_list == NULL || (arg_list->size() != 3 && arg_list->size() !=2 ) ) {
+            yyerror("in-built function get_pixel takes 2 or 3 arguments");
+            return t_error;
+        }
+        if (!is_img(ti->eleType)) {
+            yyerror("in-built function get_pixel can only be applied to images");
+            return t_error;
+        }
+        if (ti->eleType == ELETYPE::ELE_IMG && arg_list != NULL && arg_list->size() != 3) {
+            yyerror("in-built function get_pixel takes 3 arguments for images");
+            return t_error;
+        }
+        if (ti->eleType == ELETYPE::ELE_GRAY_IMG && arg_list != NULL && arg_list->size() != 2) {
+            yyerror("in-built function get_pixel takes 2 arguments for gray images");
+            return t_error;
+        }
+        if (arg_list != NULL && (arg_list->at(0)->type != TYPE::SIMPLE || arg_list->at(0)->eleType != ELETYPE::ELE_NUM)){
+            yyerror("in-built function get_pixel takes only num as first argument");
+            return t_error;
+        }
+        if (arg_list != NULL && (arg_list->at(1)->type != TYPE::SIMPLE || arg_list->at(1)->eleType != ELETYPE::ELE_NUM)){
+            yyerror("in-built function get_pixel takes only num as second argument");
+            return t_error;
+        }
+        if (arg_list != NULL && ti->eleType == ELETYPE::ELE_IMG && (arg_list->at(2)->type != TYPE::SIMPLE || arg_list->at(2)->eleType != ELETYPE::ELE_NUM)){
+            yyerror("in-built function get_pixel takes only num as third argument");
+            return t_error;
+        }
+
+        struct type_info* t_return = new struct type_info;
+        t_return->type = TYPE::SIMPLE;
+        t_return->eleType = ELETYPE::ELE_NUM;
+        return t_return;
+    }
+    else if (func_name == "set_pixel") {
+        if (arg_list == NULL || (arg_list->size() != 3 && arg_list->size() !=4 )) {
+            yyerror("in-built function set_pixel takes 3 or 4 arguments");
+            return t_error;
+        }
+        if (!is_img(ti->eleType)) {
+            yyerror("in-built function get_pixel can only be applied to images");
+        }
+        if (ti->eleType == ELETYPE::ELE_IMG && arg_list != NULL && arg_list->size() != 4) {
+            yyerror("in-built function get_pixel takes 4 arguments for images");
+            return t_error;
+        }
+        if (ti->eleType == ELETYPE::ELE_GRAY_IMG && arg_list != NULL && arg_list->size() != 3) {
+            yyerror("in-built function get_pixel takes 3 arguments for gray images");
+            return t_error;
+        }
+        if (arg_list != NULL && (arg_list->at(0)->type != TYPE::SIMPLE || arg_list->at(0)->eleType != ELETYPE::ELE_NUM)){
+            yyerror("in-built function get_pixel takes only num as first argument");
+            return t_error;
+        }
+        if (arg_list != NULL && (arg_list->at(1)->type != TYPE::SIMPLE || arg_list->at(1)->eleType != ELETYPE::ELE_NUM)){
+            yyerror("in-built function get_pixel takes only num as second argument");
+            return t_error;
+        }
+        if (arg_list != NULL && (arg_list->at(2)->type != TYPE::SIMPLE || arg_list->at(2)->eleType != ELETYPE::ELE_NUM)){
+            yyerror("in-built function get_pixel takes only num as third argument");
+            return t_error;
+        }
+        if (arg_list != NULL && ti->eleType == ELETYPE::ELE_IMG && (arg_list->at(3)->type != TYPE::SIMPLE || arg_list->at(3)->eleType != ELETYPE::ELE_NUM)){
+            yyerror("in-built function get_pixel takes only num as fourth argument");
+            return t_error;
+        }
+        struct type_info* t_return = new struct type_info;
+        t_return->type = TYPE::SIMPLE;
+        t_return->eleType = ELETYPE::ELE_VOID;
+        return t_return;
+    }
+    else if (func_name == "to_image") {
+        if (arg_list != NULL && arg_list->size() != 0) {
+            std::string err = "in-built function " + func_name + " takes no arguments";
+            yyerror(err.c_str());
+            return t_error;
+        }
+        if (ti->eleType != ELETYPE::ELE_IMG) {
+            yyerror("in-built function to_image can only be applied to images");
+            return t_error;
+        }
+        struct type_info* t_return = new struct type_info;
+        t_return->type = TYPE::SIMPLE;
+        t_return->eleType = ELETYPE::ELE_IMG;
+        t_return->dim_list = new std::vector<int>(3);
+        for (int i = 0; i < 3; i++) {
+                t_return->dim_list->at(i) = ti->dim_list->at(i);
+        }
+        return t_return;
+    }
+    else if (func_name == "get_fps" || func_name == "get_num_frames"){
+        if (arg_list != NULL && arg_list->size() != 0) {
+            std::string err = "in-built function " + func_name + " takes no arguments";
+            yyerror(err.c_str());
+            return t_error;
+        }
+        if (!is_vid(ti->eleType)) {
+            std::string err = "in-built function " + func_name + " can only be applied to videos";
+            yyerror(err.c_str());
+            return t_error;
+        }
+        struct type_info* t_return = new struct type_info;
+        t_return->type = TYPE::SIMPLE;
+        t_return->eleType = ELETYPE::ELE_NUM;
+        return t_return;
+    }
+    else if (func_name == "get_frame"){
+        if (arg_list == NULL || arg_list->size() != 1) {
+            yyerror("in-built function get_frame takes exactly 1 argument");
+            return t_error;
+        }
+        if (!is_vid(ti->eleType)) {
+            yyerror("in-built function get_frame can only be applied to videos");
+            return t_error;
+        }
+        if (arg_list != NULL && (arg_list->at(0)->type != TYPE::SIMPLE || arg_list->at(0)->eleType != ELETYPE::ELE_NUM)){
+            yyerror("in-built function get_frame takes only num as argument");
+            return t_error;
+        }
+        struct type_info* t_return = new struct type_info;
+        t_return->type = TYPE::SIMPLE;
+        t_return->dim_list = new std::vector<int>(3);
+        for (int i = 0; i < 3; i++) {
+                t_return->dim_list->at(i) = ti->dim_list->at(i);
+        }
+        if (ti->eleType == ELETYPE::ELE_VID)
+            t_return->eleType = ELETYPE::ELE_IMG;
+            
+        else t_return->eleType = ELETYPE::ELE_GRAY_IMG;
+        return t_return;
+    }
+    else if (func_name == "set_fps") {
+        if (arg_list == NULL || arg_list->size() != 1) {
+            yyerror("in-built function set_fps takes exactly 1 argument");
+            return t_error;
+        }
+        if (!is_vid(ti->eleType)) {
+            yyerror("in-built function set_fps can only be applied to videos");
+            return t_error;
+        }
+        if (arg_list != NULL && (arg_list->at(0)->type != TYPE::SIMPLE || arg_list->at(0)->eleType != ELETYPE::ELE_NUM)){
+            yyerror("in-built function set_fps takes only num as argument");
+            return t_error;
+        }
+        struct type_info* t_return = new struct type_info;
+        t_return->type = TYPE::SIMPLE;
+        t_return->eleType = ELETYPE::ELE_VOID;
+        return t_return;
+    }
+    else if (func_name == "set_frame") {
+        if (arg_list == NULL || arg_list->size() != 2) {
+            yyerror("in-built function set_frame takes exactly 2 arguments");
+            return t_error;
+        }
+        if (!is_vid(ti->eleType)) {
+            yyerror("in-built function set_frame can only be applied to videos");
+            return t_error;
+        }
+        if (arg_list != NULL && (arg_list->at(0)->type != TYPE::SIMPLE || arg_list->at(0)->eleType != ELETYPE::ELE_NUM)){
+            yyerror("in-built function set_frame takes only num as first argument");
+            return t_error;
+        }
+        if (ti->eleType == ELETYPE::ELE_GRAY_VID && arg_list != NULL && (arg_list->at(1)->type != TYPE::SIMPLE || arg_list->at(1)->eleType != ELETYPE::ELE_GRAY_IMG)){
+            yyerror("in-built function set_frame should be applied to gray images");
+            return t_error;
+        }
+        if (ti->eleType == ELETYPE::ELE_VID && arg_list != NULL && (arg_list->at(1)->type != TYPE::SIMPLE || arg_list->at(1)->eleType != ELETYPE::ELE_IMG)){
+            yyerror("in-built function set_frame should be applied to images");
+            return t_error;
+        }
+        struct type_info* t_return = new struct type_info;
+        t_return->type = TYPE::SIMPLE;
+        t_return->eleType = ELETYPE::ELE_VOID;
+        return t_return;
+    }
+    
+    // Only 1 argument (an image). Returns void
+    else if (func_name == "concat_frame"){
+        if (arg_list == NULL || arg_list->size() != 1) {
+            yyerror("in-built function concat_frame takes exactly 1 argument");
+            return t_error;
+        }
+        // ti should be a video
+        if (!is_vid(ti->eleType)) {
+            yyerror("in-built function concat_frame can only be applied to videos");
+            return t_error;
+        }
+        // If gray video -> arg should be gray image; if video -> arg should be image
+        if (ti->eleType == ELETYPE::ELE_GRAY_VID && arg_list != NULL && arg_list->at(0)->eleType != ELETYPE::ELE_GRAY_IMG) {
+            yyerror("in-built function concat_frame should be applied to gray images");
+            return t_error;
+        }
+        if (ti->eleType == ELETYPE::ELE_VID && arg_list != NULL && arg_list->at(0)->eleType != ELETYPE::ELE_IMG) {
+            yyerror("in-built function concat_frame should be applied to images");
+            return t_error;
+        }
+
+        struct type_info* t_return = new struct type_info;
+        t_return->type = TYPE::SIMPLE;
+        t_return->eleType = ELETYPE::ELE_VOID;
+        return t_return;
+    }
+
+    
     return nullptr; //temp
 }
 
 
 void check_inbuilt_sketch_call(std::string func_name, std::vector<struct type_info*> *arg_list) {
+
     auto const [idx, dist] = FindClosest(inbuilt_sketches, func_name);
     if (inbuilt_sketches[idx] != func_name) {
         // arbitrary threshold of 7
@@ -836,6 +1185,7 @@ void check_inbuilt_sketch_call(std::string func_name, std::vector<struct type_in
             err = func_name + " is not an inbuilt sketch";
         }
         yyerror(err.c_str());
+        return;
     }
 
     // Takes 1 argument
@@ -843,24 +1193,42 @@ void check_inbuilt_sketch_call(std::string func_name, std::vector<struct type_in
         if (arg_list == NULL || arg_list->size() != 1) {
             std::string err = "in-built sketch function " + func_name + "takes exactly 1 argument";
             yyerror(err.c_str());
-            exit(1);
+            return;
         }
-        if (arg_list->at(0)->type != TYPE::SIMPLE || !is_primitive(arg_list->at(0)->eleType)) {
+        if (arg_list != NULL && (arg_list->at(0)->type != TYPE::SIMPLE || !is_primitive(arg_list->at(0)->eleType))) {
             std::string err = "in-built sketch function " + func_name + "takes only primitive arguments (type will be casted to num)";
             yyerror(err.c_str());
-            exit(1); 
+            return;
         }
     }
     else if (func_name == "arc"){
         if (arg_list == NULL || arg_list->size() != 2) {
             std::string err = "in-built sketch function " + func_name + "takes exactly 2 arguments";
             yyerror(err.c_str());
-            exit(1);
+            return;
         }
-        if (arg_list->at(0)->type != TYPE::SIMPLE || !is_primitive(arg_list->at(0)->eleType)) {
+        if (arg_list != NULL && (arg_list->at(0)->type != TYPE::SIMPLE || !is_primitive(arg_list->at(0)->eleType))) {
             std::string err = "in-built sketch function " + func_name + "takes only primitive arguments (type will be casted to num)";
             yyerror(err.c_str());
-            exit(1);
+            return;
+        }
+    }
+    // Only 2 arguments
+    else if (func_name == "go_to"){
+        if (arg_list == NULL || arg_list->size() != 2) {
+            std::string err = "in-built sketch function " + func_name + "takes exactly 2 arguments";
+            yyerror(err.c_str());
+            return;
+        }
+        if (arg_list != NULL && (arg_list->at(0)->type != TYPE::SIMPLE || !is_primitive(arg_list->at(0)->eleType))) {
+            std::string err = "in-built sketch function " + func_name + "takes only primitive arguments (type will be casted to num)";
+            yyerror(err.c_str());
+            return;
+        }
+        if (arg_list != NULL && (arg_list->at(1)->type != TYPE::SIMPLE || !is_primitive(arg_list->at(1)->eleType))) {
+            std::string err = "in-built sketch function " + func_name + "takes only primitive arguments (type will be casted to num)";
+            yyerror(err.c_str());
+            return;
         }
     }
 }
