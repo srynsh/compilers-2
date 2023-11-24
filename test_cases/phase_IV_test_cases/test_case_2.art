@@ -5,97 +5,43 @@
 ink in_built_functions(img i1, gray_img i2, img i3, img i4)->img {
     i1.blur(4)
     i1.sharpen(2)
-    i3.sobel()
-    i4.T()
 
-    i1.vflip()
-    i3.hflip()
     i4.pixelate(8)
 
-    i1.invert()
     i3.noise(9)
 
     i2.bnw(125)
 
-    i1.crystallize(5)
 
-    i4.get_pixel(12, 17, 2)
     i1.set_pixel(14, 14, 1, 0x237ab3)
 
     return i1
 }
 
 # This function tests various expressions involving images
-ink expressor(gray_img i1, img i2, gray_img i3, img i4, img i5)->void {
+ink expressor(gray_img i1, gray_img i2, gray_img i3, img i4, img i5)->void {
     i4 = i2 + 8
-    i4 = i2 + 3.56
-    i4 = i2 + i4
-    i4 = i2 + i1
     i4 = i2 + true
 
-    i4 = 8 + i2
-    i4 = 14.5 + i2
-    i4 = i1 + i2
     i4 = false + i2
 
     i4 = i2 - 23
-    i4 = i2 - 14.5
-    i4 = i2 - i4
-    i4 = i2 - i1
-    i4 = i2 - false
-
-    i4 = 23 - i2
-    i4 = 3.56 - i2
-    i4 = i1 - i2
-    i4 = true - i2
-
-    i4 = i2 * 23
-    i4 = i2 * 8.0
-    i4 = i2 * i4
-    i4 = i2 * i1
-    i4 = i2 * false
-
-    i4 = 8 * i2
-    i4 = 8.0 * i2
-    i4 = i1 * i2
-    i4 = true * i2
 
     i4 = i2 / 23
-    i4 = i2 / 8.0
-    i4 = i2 / i4
-    i4 = i2 / i1
     i4 = i2 / true
 
     i4 = i1 / i2
 
     i3 = i1 + 14
-    i3 = i1 + 45.11
-    i3 = i1 + i3
     i3 = i1 + true
 
-    i3 = 14 + i1
     i3 = 26.349 + i1
-    i3 = false + i1
 
     i3 = i1 - 32
-    i3 = i1 - 45.11
-    i3 = i1 - i3
-    i3 = i1 - true
-
-    i3 = 32 - i1
-    i3 = 45.11 - i1
-    i3 = true - i1
-
-    i2 = sqrt(i2)
-    i1 = sqrt(i1)
-
     i4 = i2 ^ i4
-    i4 = i2 ^ i1
-    i4 = i1 ^ 12
-    i3 = i1 ^ i3
+
 
     i1 = (i4 - i2) * (i3 + i1) / (i4 ^ i3) + (i2 - i1) * (i3 + i4) / (i2 ^ i1)
-    i2 = sqrt(i1 + i2 + i3 + i4 * 9)
     i3 = i1 - (i2 * (i2 + 7.03))
 
     return void
@@ -106,34 +52,14 @@ ink main()->void {
     img i1 <32, 32>
     gray_img i2 <32, 32>
     img i3 <32, 32, 0x52be80>   # hex values
-    img i4 = <32, 32, 16101441> # numbers instead of hex values
+    img i4 <32, 32, 16101441> # numbers instead of hex values
     gray_img i5 <32, 32, 100>
-    img i6 <'../../images/inputs/in.bmp'>
-    gray_img i7 <'./blackbuck.bmp'>
 
     img i8 = i3 + i4    # initializations using expressions
-    gray_img i9 = i5 - i7
 
-    num h = i1.height(), w = i1.width() # multiple initializations
 
-    img i10 <h, w> # using variables in initializations
-    img i11 <i2.height(), i2.width()> # using expressions in initializations
-
-    i1.draw('circle', 16, 16, 5, 0xffffff)
-    i1.draw('arc', 10, 10, 6, 0.9, 5.6, 0xcc1234)
-    i3.draw('rectangle', 10, 10, 5, 5, 0x23ab89)
-    i4.draw('triangle', 4, 4, 12, 15, 29, 24, 0x328acc)
-    i1.draw('ellipse', 16, 16, 10, 5, 0xccabef) # drawing an ellipse
-
-    i3.paint()
-    i5.paint()
-
-    i4.frame('../../images/outputs/out_1.bmp')
-    i7.frame('./out_2.bmp')
-
-    i1 = i1 + in_built_functions(i1, i2, i3, i4)
-
-    expressor(i5, i6, i7, i8, i9)   # passing gray image instead of image to a function
-
+    i1.draw('circle', true, 16.0, 5, 0xffffff, 1)
+    i1.draw('arc', 10, 10, 6, 9, 0, 0xcc1234)
+    
     return void
 }

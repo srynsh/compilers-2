@@ -24,3 +24,8 @@ ink func2() -> void
 
     return void
 }
+
+ink main() -> void
+{
+    return void
+}

@@ -9,6 +9,7 @@ ink foo(img i1, gray_img i2) -> img {
 }
 
 ink bar(gray_img i1) -> img {
+    img i2 <30, 30, 0x000000>
     i1.vflip()
     i2.hflip()
 

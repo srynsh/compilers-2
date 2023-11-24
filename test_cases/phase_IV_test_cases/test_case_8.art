@@ -1,11 +1,32 @@
 # This program has a semantic error
 # The main function is not the last function in the program
 
+ink foo(num n) -> bool
+{
+    num[2, 3] arr = {{1, 2, 3}, {4, 5, 6}}
+    num[2, 3] arr2 = {{1, 2, 3}, {4, 5, 6, 7}} # semantic error: array dimensions do not match
+
+    $ (n <= 1) ->
+    {
+        return false
+    }
+    
+    spool (num i = 2; i <= n; i++)
+    {
+        $ (n / i == 0) ->
+        {
+            return false
+        }
+    }
+
+    return true
+}
+
 ink main()-> void
 {
     num n = 59
 
-    $ isPrime(n) ->
+    $ (isPrime(n)) ->
     {
         n = true
     } -> {
@@ -17,14 +38,14 @@ ink main()-> void
 
 ink isPrime(num n) -> bool
 {
-    $ (n <= 1)
+    $ (n <= 1) ->
     {
         return false
     }
     
-    for (num i = 2; i * i <= n; i++)
+    spool (num i = 2; i <= n; i++)
     {
-        $ (n % i == 0)
+        $ (n / i == 0) ->
         {
             return false
         }
@@ -32,3 +53,4 @@ ink isPrime(num n) -> bool
 
     return true
 }
+

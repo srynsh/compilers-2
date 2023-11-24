@@ -4,7 +4,7 @@
 ink operations(vid v1, gray_vid v2, img i1, gray_img i2)->void {
     vid v3 <100, 100, 60>
     gray_vid v4 <100, 100, 60>
-
+    # v2.set_fps(60)
     v3 = v1 + v3
     v3 = v1 + v2
     v3 = v1 + i1
@@ -20,18 +20,6 @@ ink operations(vid v1, gray_vid v2, img i1, gray_img i2)->void {
 
     v4 = i1 + v2
     v4 = i2 + v2
-
-    v1.append(i1)
-    v2.append(i2)
-    v1.append(i1)
-    v2.append(i2)
-    v2.append(i2)
-    v2.append(i2)
-
-    i1 = v1[1]
-    i2 = v2[1]
-
-    v1[0] = v2[0] - 23
 
     return void
 }

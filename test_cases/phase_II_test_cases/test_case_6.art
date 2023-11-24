@@ -5,7 +5,7 @@ ink fibonacci(num n) -> num {
     $ (n <= 1) -> {
         return n
     } -> {
-        return fibonacci(n - 1) + fibonacci(n - 2);=
+        return fibonacci(n - 1) + fibonacci(n - 2)
     }
 }
 
@@ -15,10 +15,10 @@ ink main()->void {
 
     $ (fibonacci(10) > 1000) ->
     {
-        i1.draw('circle', 10, 10, 2, 0xccff23)
+        i1.draw('circle', 10, 10, 2, 0xccff23, 0)
     }
     -> {
-        i1.draw('circle', 10, 10, 2, 0xffffff)
+        i1.draw('circle', 10, 10, 2, 0xffffff, 0)
     }
 
     return void

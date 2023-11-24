@@ -15,18 +15,16 @@ ink square(real x) -> real {
 ink power(real base, num exponent) -> real {
     real result = 1.0
 
-    for (num i = 0; i < exponent; i++) {
-        result *= base
+    spool (num i = 0; i < exponent; i++) {
+        result = result * base
     }
 
-    return result;
+    return result
 }
 
 ink main()-> void {
-    num a, real # lexical error here
-    num c, 4_d  # lexical error here
-
-    img ink <20, 20, 0xffddcc>  # lexical error here
+    | | | # lexical error here
+    @ % # lexical error here
 
     return void
 }

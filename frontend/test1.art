@@ -1,135 +1,167 @@
 # This program doesn't have any errors
-# This program tests various features for images
+# This program tests basic language features
 
-# This function tests various in-built functions for images
-ink in_built_functions(img i1, gray_img i2, img i3, img i4)->img {
-    i1.blur(4)
-    i1.sharpen(2)
-    i3.sobel()
-    i4.T()
-
-    i1.vflip()
-    i3.hflip()
-    i4.pixelate(8)
-
-    i1.invert()
-    i3.noise(9)
-
-    i2.bnw(125)
-
-    i1.crystallize(5)
-
-    i4.get_pixel(12, 17, 2)
-    i1.set_pixel(14, 14, 1, 0x237ab3)
-
-    return i1
+ink sum (num a, num b, real c, real d) -> real {
+    return a + b + c + d
 }
 
-# This function tests various expressions involving images
-ink expressor(gray_img i1, img i2, gray_img i3, img i4, img i5)->void {
-    i4 = i2 + 8
-    i4 = i2 + 3.56
-    i4 = i2 + i4
-    i4 = i2 + i1
-    i4 = i2 + true
+ink declarator() -> void
+{
+    num a = 3
+    real b = 23.48
+    bool c = false
+    bool d = true
 
-    i4 = 8 + i2
-    i4 = 14.5 + i2
-    i4 = i1 + i2
-    i4 = false + i2
+    num[10] arr1
+    real[4] arr2 = {1.5, 2.5, 3.5, 4.5}
 
-    i4 = i2 - 23
-    i4 = i2 - 14.5
-    i4 = i2 - i4
-    i4 = i2 - i1
-    i4 = i2 - false
+    num[32, 32] arr3
+    num[3, 3] arr4 = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}
 
-    i4 = 23 - i2
-    i4 = 3.56 - i2
-    i4 = i1 - i2
-    i4 = true - i2
 
-    i4 = i2 * 23
-    i4 = i2 * 8.0
-    i4 = i2 * i4
-    i4 = i2 * i1
-    i4 = i2 * false
-
-    i4 = 8 * i2
-    i4 = 8.0 * i2
-    i4 = i1 * i2
-    i4 = true * i2
-
-    i4 = i2 / 23
-    i4 = i2 / 8.0
-    i4 = i2 / i4
-    i4 = i2 / i1
-    i4 = i2 / true
-
-    i4 = i1 / i2
-
-    i3 = i1 + 14
-    i3 = i1 + 45.11
-    i3 = i1 + i3
-    i3 = i1 + true
-
-    i3 = 14 + i1
-    i3 = 26.349 + i1
-    i3 = false + i1
-
-    i3 = i1 - 32
-    i3 = i1 - 45.11
-    i3 = i1 - i3
-    i3 = i1 - true
-
-    i3 = 32 - i1
-    i3 = 45.11 - i1
-    i3 = true - i1
-
-    i4 = i2 ^ i4
-    i4 = i2 ^ i1
-    i4 = i1 ^ 12
-    i3 = i1 ^ i3
-
-    i1 = (i4 - i2) * (i3 + i1) / (i4 ^ i3) + (i2 - i1) * (i3 + i4) / (i2 ^ i1)
-    i3 = i1 - (i2 * (i2 + 7.03))
+    num[10] abcd
+    num[10, 10] asadsda
+    real[10, 10, 10] arr5
 
     return void
 }
 
-# This function has various types of declarations of images and some basic in-built functions for images
+ink conditioner() -> bool {
+    num a, b, c
+    real d, e, f
+    bool g, h, i
+
+    $ ((a < b) == true) ->
+    {
+        a = b * 8 - 9.34
+    }
+    $$ (g == false) -> {
+        e = 23 / 14 - c * i
+    }
+    -> {
+        f = 23.4
+    }
+
+    $ (g == h and d <= e) ->
+    {
+        a++
+    }
+    $$ (i == h or c > b) ->
+    {
+        b--
+    }
+    ->
+    {
+        $ (a == b) ->
+        {
+            c = 56
+        }
+        $$ (c == d) ->
+        {
+            return true
+        }
+    }
+
+    $ (a != b) -> {
+        c = 1
+    } $$ (c == d) -> {
+        d = 2
+    } -> {
+        e = 3
+    }
+
+    return d > e
+}
+
+ink looper(num a,   real b, bool c) -> num {
+    num i = 0
+
+    spool(i = 0; i < 10; i++)
+    {
+        a = a + 1
+
+        $ (a == 8) -> {
+            break
+        }
+    }
+
+    i = 0
+
+    spool (i < 10) {    # testing while equivalent
+        b = b * c
+        i++
+    }
+
+    spool (i = 0; i < 10; i++) {
+        num j
+
+        $ (i == 5) -> {
+            continue
+        }
+
+        spool (j = 0; j < 100; j++) {
+            b = b * c
+            c = 3 * b - 1
+        }
+    }
+
+    return 9 + 4.5 - a
+}
+
+ink scoper(num a, num b, real c, real d, bool e) -> real {
+    num i, p, q, r
+
+    spool (i = 0; i < 10; i++) {
+        num p, q, r
+        p = c
+        q = p * 23 - e
+        r = q -     1 * b
+    }
+
+    p = 9
+
+    spool   (i = 0; i < 10; i++) {
+        num p, q, r
+        p = 2
+        q = p * 23 - 4
+        r = p / q + 5
+    }
+
+    return 1
+}
+
+ink array_operations() -> void {
+    num[100] a
+    real[20] b
+
+    num[10,10] c
+
+    spool (num i = 1; i < 10; i++)
+    {
+        a[i] = i * 2 + 3
+        b[i] = i / 8.0 + 0.3 + a[i]
+        c[i, i] = a[i] * b[i] + c[i, i]
+    }
+
+    return void
+}
+
 ink main()->void {
-    img i1 <32, 32>
-    gray_img i2 <32, 32>
-    img i3 <32, 32, 0x52be80>   # hex values
-    img i4 = <32, 32, 16101441> # numbers instead of hex values
-    gray_img i5 <32, 32, 100>
-    img i6 <'../../images/inputs/in.bmp'>
-    gray_img i7 <'./blackbuck.bmp'>
+    #* This is
+    a test for
+    multiline comments *#
 
-    img i8 = i3 + i4    # initializations using expressions
-    gray_img i9 = i5 - i7
+    num __a, _a238
+    real _a, _23sdah, hello, h8756
+    bool main, _384, a__b
 
-    num h = i1.height(), w = i1.width() # multiple initializations
+    __a = 3 + 4 * (sum(3, 4, 5.6, 7.8) - 2)
 
-    img i10 <h, w> # using variables in initializations
-    img i11 <i2.height(), i2.width()> # using expressions in initializations
-
-    i1.draw('circle', 16, 16, 5, 0xffffff)
-    i1.draw('arc', 10, 10, 6, 0.9, 5.6, 0xcc1234)
-    i3.draw('rectangle', 10, 10, 5, 5, 0x23ab89)
-    i4.draw('triangle', 4, 4, 12, 15, 29, 24, 0x328acc)
-    i1.draw('ellipse', 16, 16, 10, 5, 0xccabef) # drawing an ellipse
-
-    i3.paint()
-    i5.paint()
-
-    i4.frame('../../images/outputs/out_1.bmp')
-    i7.frame('./out_2.bmp')
-
-    i1 = i1 + in_built_functions(i1, i2, i3, i4)
-
-    expressor(i5, i6, i7, i8, i9)   # passing gray image instead of image to a function
+    declarator()
+    conditioner()
+    looper(__a, _a, main)
+    scoper(_a238, __a, _23sdah, _a, a__b)
+    array_operations()
 
     return void
 }

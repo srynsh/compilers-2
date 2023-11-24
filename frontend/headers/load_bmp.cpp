@@ -64,9 +64,6 @@ bool FillAndAllocate(char*& buffer, const char* Picture, int& rows, int& cols, i
         cols = info_header->biWidth;
         BufferSize = file_header->bfSize;
         
-        cout << "rows: " << rows << endl;
-        cout << "cols: " << cols << endl;
-        cout << "BufferSize: " << BufferSize << endl;
         // print the header
         for (int i = 0; i < 54; i++) {
             cout << (int)buffer[i];

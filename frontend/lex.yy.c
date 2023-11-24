@@ -1060,7 +1060,7 @@ YY_RULE_SETUP
         else if (strcmp(yytext,"vid")==0) {
             tinfo->eleType = ELETYPE::ELE_VID;
             std::vector<int>* dim_list = new std::vector<int>(4);
-            dim_list->at(0) = -1; dim_list->at(1) = -1; dim_list->at(2) = 3, dim_list->at(3) = 30; 
+            dim_list->at(0) = -1; dim_list->at(1) = -1; dim_list->at(2) = 3, dim_list->at(3) = -1; 
             tinfo->dim_list = dim_list; 
             yylval.tval = tinfo;
             return VID;
@@ -1068,7 +1068,7 @@ YY_RULE_SETUP
         else if (strcmp(yytext,"gray_vid")==0) {
             tinfo->eleType = ELETYPE::ELE_GRAY_VID;
             std::vector <int>* dim_list = new std::vector<int>(4);
-            dim_list->at(0) = -1; dim_list->at(1) = -1; dim_list->at(2) = 1; dim_list->at(3) = 30; 
+            dim_list->at(0) = -1; dim_list->at(1) = -1; dim_list->at(2) = 1; dim_list->at(3) = -1; 
             tinfo->dim_list = dim_list;
             yylval.tval = tinfo;
             return GRAY_VID;

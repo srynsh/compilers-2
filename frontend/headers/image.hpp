@@ -96,6 +96,7 @@ class image {
         image operator+(image const img);
         image operator-(image const img);
         image operator*(image const img);
+        image operator/(image const img);
         image operator/(float const val);
 
         image& operator=(gray_image const img);
@@ -141,7 +142,8 @@ class image {
         friend image operator^(int const value, image const img);
         friend image operator^(float const value, image const img);
         friend image operator^(bool const value, image const img);
-
+        image operator^(gray_image const img);
+        image operator^(image const img);
 
         friend image operator ~(image const img);
 
@@ -185,6 +187,7 @@ class gray_image {
         gray_image operator+(gray_image const img);
         gray_image operator-(gray_image const img);
         gray_image operator*(gray_image const img);
+        gray_image operator/(gray_image const img);
         gray_image operator/(float const val);
         gray_image& operator=(gray_image const img);
         gray_image sqrt();
@@ -225,10 +228,14 @@ class gray_image {
         friend gray_image operator^(float const value, gray_image const img);
         friend gray_image operator^(bool const value, gray_image const img);
 
+        gray_image operator^(gray_image const img);
+        image operator^(image const img);
+
         friend gray_image operator ~(gray_image const img);
 
         video operator+(video const vid); 
         gray_video operator+(gray_video const vid);
+        void color_pixel(int x, int y, int color);
 
 
         // Getters and Setters

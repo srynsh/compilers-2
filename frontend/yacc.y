@@ -213,6 +213,7 @@ par :
             struct type_info* t = new struct type_info;
             t->type = $1->type;
             t->eleType = $1->eleType;
+
             
             if (is_vid(t->eleType) || is_img(t->eleType)) {
                 t->dim_list = new std::vector<int>;
@@ -688,7 +689,7 @@ conditional_stmt : if_block optional_new_lines else_if_block_list optional_new_l
 if_block : IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body 
         {
             if (!cast_bool($4.ti)) {
-                yyerror("experssion cannot to evaluated to a boolean");
+                yyerror("expression cannot to evaluated to a boolean");
             } else {
                 $$ = new std::string("if (" + *($4.str) + ") \n" + *($9) + "\n");
             }
@@ -698,7 +699,7 @@ if_block : IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW opti
 else_if_block_list : else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body 
         {
             if (!cast_bool($5.ti)) {
-                yyerror("experssion cannot to evaluated to a boolean");
+                yyerror("expression cannot to evaluated to a boolean");
             } else {
                 $$ = new std::string(*($1) + "else if (" + *($5.str) + ") \n" + *($10) + "\n");
             }
@@ -706,7 +707,7 @@ else_if_block_list : else_if_block_list optional_new_lines ELSE_IF '(' expr_pred
         | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
         {
             if (!cast_bool($3.ti)) {
-                yyerror("experssion cannot to evaluated to a boolean");
+                yyerror("expression cannot to evaluated to a boolean");
             } else {
                 $$ = new std::string("else if (" + *($3.str) + ") \n" + *($8) + "\n");
             }
@@ -739,7 +740,7 @@ loop_block : LOOP optional_new_lines '(' increment_scope optional_loop_expr ')' 
 optional_loop_expr : expr_pred 
         { 
             if (!cast_bool($1.ti)) {
-                yyerror("experssion cannot to evaluated to a boolean");
+                yyerror("expression cannot to evaluated to a boolean");
             } else {
                 $$ = new std::string(*($1.str));
             }
@@ -779,23 +780,23 @@ loop_stmt : decl_stmt /* new_lines is included in decl_stmt */ { $$ = new std::s
 
 loop_if_block : IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body 
         {
-            $$ = new std::string("if (" + *($4.str) + ") {\n" + *($9) + "}\n");
+            $$ = new std::string("if (" + *($4.str) + ") \n" + *($9) + "\n");
         }
         ;
 
 loop_else : ARROW optional_new_lines loop_body 
         {
-            $$ = new std::string("else {\n" + *($3) + "}\n");
+            $$ = new std::string("else \n" + *($3) + "\n");
         }
         ;
 
 loop_else_if_block_list : loop_else_if_block_list optional_new_lines ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body
         {
-            $$ = new std::string(*($1) + "else if (" + *($5.str) + ") {\n" + *($10) + "}\n");
+            $$ = new std::string(*($1) + "else if (" + *($5.str) + ") \n" + *($10) + "\n");
         }
         | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines loop_body 
         {
-            $$ = new std::string("else if (" + *($3.str) + ") {\n" + *($8) + "}\n");
+            $$ = new std::string("else if (" + *($3.str) + ") \n" + *($8) + "\n");
         }
         ;
 
@@ -937,7 +938,7 @@ expr_pred :
                 ti->type = TYPE::SIMPLE;
                 ti->eleType = ELETYPE::ELE_REAL;
                 $$.ti = ti;
-                $$.str = new std::string(std::to_string($1));
+                $$.str = new std::string("(float)" + std::to_string($1));
             }
         | BOOL_CONST
             {
@@ -1389,7 +1390,7 @@ sketch_expr_or_decl_stmt
 sketch_optional_loop_expr : sketch_expr_pred
     {
         if (!cast_bool($1.ti)) {
-            yyerror("experssion cannot to evaluated to a boolean");
+            yyerror("expression cannot to evaluated to a boolean");
         } else {
             $$ = new std::string(*($1.str));
         }

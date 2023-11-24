@@ -14,10 +14,12 @@ ink temp()->void {
 }
 
 ink main()->void {
-    num 1i  # lexical error here
+    ⤜ⱺʖ̯ⱺ⤏ # lexical error here
+    
+    num j
 
     spool (num i = 0; i < 10; i++) {
-        1i = 5 * i + 4
+        j = 5 * i + 4
     }
 
     return void

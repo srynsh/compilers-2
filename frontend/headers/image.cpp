@@ -115,10 +115,10 @@ image::image(const image &img) {
 
     this->buffer_size = img.get_buffer_size();
     this->made = img.get_made();
-    if (!this->made) {
-        this->FileBuffer = new char[this->buffer_size];
-        memcpy(this->FileBuffer, img.get_buffer(), this->buffer_size);
-    }
+    // if (!this->made) {
+    //     this->FileBuffer = new char[this->buffer_size];
+    //     memcpy(this->FileBuffer, img.get_buffer(), this->buffer_size);
+    // }
 }
 
 bool image::get_made() const {
@@ -140,9 +140,9 @@ void image::load(std::string filename, bool init) {
         delete [] this->green;
         delete [] this->blue; 
 
-        if (!this->made) {
-            // delete this->FileBuffer;
-        }
+        // if (!this->made) {
+        //     // delete this->FileBuffer;
+        // }
     }    
 
     if (!FillAndAllocate(this->FileBuffer, filename.c_str(), this->h, this->w, this->buffer_size)) {
@@ -261,45 +261,45 @@ void image::frame_self(std::string filename) {
 }
 
 void image::frame_pre(std::string filename) {
-    uint8_t** red_temp = new uint8_t*[w];
-    uint8_t** green_temp = new uint8_t*[w];
-    uint8_t** blue_temp = new uint8_t*[w];
+    // uint8_t** red_temp = new uint8_t*[w];
+    // uint8_t** green_temp = new uint8_t*[w];
+    // uint8_t** blue_temp = new uint8_t*[w];
 
-    #pragma omp parallel for
-    for (int i=0; i<w; i++) {
-        red_temp[i] = new uint8_t[h];
-        green_temp[i] = new uint8_t[h];
-        blue_temp[i] = new uint8_t[h];
-    }
+    // #pragma omp parallel for
+    // for (int i=0; i<w; i++) {
+    //     red_temp[i] = new uint8_t[h];
+    //     green_temp[i] = new uint8_t[h];
+    //     blue_temp[i] = new uint8_t[h];
+    // }
 
-    #pragma omp parallel for collapse(2)
-    for(int i=0; i<w; i++) {
-        for(int j=0; j<h; j++){
-            red_temp[i][j] = ::clip(red[i][j]);
-            green_temp[i][j] = ::clip(green[i][j]);
-            blue_temp[i][j] = ::clip(blue[i][j]);
-        }
-    }
+    // #pragma omp parallel for collapse(2)
+    // for(int i=0; i<w; i++) {
+    //     for(int j=0; j<h; j++){
+    //         red_temp[i][j] = ::clip(red[i][j]);
+    //         green_temp[i][j] = ::clip(green[i][j]);
+    //         blue_temp[i][j] = ::clip(blue[i][j]);
+    //     }
+    // }
 
 
-    WriteOutBmp24(FileBuffer, filename.c_str(), buffer_size, h, w, red_temp, green_temp, blue_temp);
+    // WriteOutBmp24(FileBuffer, filename.c_str(), buffer_size, h, w, red_temp, green_temp, blue_temp);
 
-    for (int i=0; i<w; i++) {
-        delete [] red_temp[i];
-        delete [] green_temp[i];
-        delete [] blue_temp[i];
-    }
+    // for (int i=0; i<w; i++) {
+    //     delete [] red_temp[i];
+    //     delete [] green_temp[i];
+    //     delete [] blue_temp[i];
+    // }
 
-    delete [] red_temp;
-    delete [] green_temp;
-    delete [] blue_temp;
+    // delete [] red_temp;
+    // delete [] green_temp;
+    // delete [] blue_temp;
 }
 
 /// @brief prints the image to the terminal
 void image::paint() {
-    this->frame("temp.bmp");
+    this->frame("./temp.bmp");
     system("clear");
-    system("tiv -w 1000 -h 1000 temp.bmp");
+    system("tiv -w 1000 -h 1000 ./temp.bmp");
     system("rm temp.bmp");
 }
 
@@ -723,12 +723,12 @@ image image::hflip() {
         }
     }
 
-    if (!made) {
-        new_img.made = 0;
-        new_img.FileBuffer = new char[buffer_size];
-        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
-        new_img.buffer_size = buffer_size;
-    }
+    // if (!made) {
+    //     new_img.made = 0;
+    //     new_img.FileBuffer = new char[buffer_size];
+    //     memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+    //     new_img.buffer_size = buffer_size;
+    // }
 
     return new_img;
 }
@@ -891,11 +891,11 @@ image& image::operator=(image const img) {
     this->green = new int*[w];
     this->blue = new int*[w];
 
-    if (!img.get_made()) {
-        this->FileBuffer = new char[img.get_buffer_size()];
-        memcpy(this->FileBuffer, img.get_buffer(), img.get_buffer_size());
-        this->buffer_size = img.get_buffer_size();
-    }
+    // if (!img.get_made()) {
+    //     this->FileBuffer = new char[img.get_buffer_size()];
+    //     memcpy(this->FileBuffer, img.get_buffer(), img.get_buffer_size());
+    //     this->buffer_size = img.get_buffer_size();
+    // }
 
     this->made = img.get_made();
 
@@ -1033,6 +1033,42 @@ image image::operator*(image const img){
 
             val = blue[i][j] * img.get_pixel(i, j, 2);
             new_img.set_pixel(i, j, 2, val);
+        }
+    }
+    return new_img;
+}
+
+image image::operator/(image const img){
+
+    assert(w == img.get_width());
+    assert(h == img.get_height());
+
+    image new_img(h, w, 0);
+
+    #pragma omp parallel for collapse(2)
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+
+            if (img.get_pixel(i, j, 0) == 0) {
+                new_img.set_pixel(i, j, 0, 0);
+            } else {
+                int val = red[i][j] / img.get_pixel(i, j, 0);
+                new_img.set_pixel(i, j, 0, val);
+            }
+
+            if (img.get_pixel(i, j, 1) == 0) {
+                new_img.set_pixel(i, j, 1, 0);
+            } else {
+                int val = green[i][j] / img.get_pixel(i, j, 1);
+                new_img.set_pixel(i, j, 1, val);
+            }
+
+            if (img.get_pixel(i, j, 2) == 0) {
+                new_img.set_pixel(i, j, 2, 0);
+            } else {
+                int val = blue[i][j] / img.get_pixel(i, j, 2);
+                new_img.set_pixel(i, j, 2, val);
+            }
         }
     }
     return new_img;
@@ -1690,6 +1726,52 @@ image image::operator^(float const value){
     return new_img;          
 }
 
+image image::operator^(image const img){
+                        
+    assert(w == img.get_width());
+    assert(h == img.get_height());
+
+    image new_img(h, w, 0);
+
+    #pragma omp parallel for collapse(2)
+    for(int i=0; i<w; i++) {
+        for(int j=0; j<h; j++){
+            int val = red[i][j] ^ img.get_pixel(i, j, 0); 
+            new_img.set_pixel(i, j, 0, val);
+
+            val = green[i][j] ^ img.get_pixel(i, j, 1); 
+            new_img.set_pixel(i, j, 1, val);
+
+            val = blue[i][j] ^ img.get_pixel(i, j, 2); 
+            new_img.set_pixel(i, j, 2, val);
+        }
+    }
+    return new_img;
+}
+
+image image::operator^(gray_image const img){
+                        
+    assert(w == img.get_width());
+    assert(h == img.get_height());
+
+    image new_img(h, w, 0);
+
+    #pragma omp parallel for collapse(2)
+    for(int i=0; i<w; i++) {
+        for(int j=0; j<h; j++){
+            int val = red[i][j] ^ img.get_pixel(i, j); 
+            new_img.set_pixel(i, j, 0, val);
+
+            val = green[i][j] ^ img.get_pixel(i, j); 
+            new_img.set_pixel(i, j, 1, val);
+
+            val = blue[i][j] ^ img.get_pixel(i, j); 
+            new_img.set_pixel(i, j, 2, val);
+        }
+    }
+    return new_img;
+}
+
 image operator^(int const value, image const img){
                         
     image new_img(img.get_height(), img.get_width(), 0);
@@ -1871,11 +1953,11 @@ gray_image::gray_image(const gray_image &img) {
 
     this->made = img.get_made();
 
-    if (!img.get_made()) {
-        this->FileBuffer = new char[img.get_buffer_size()];
-        memcpy(this->FileBuffer, img.get_buffer(), img.get_buffer_size());
-        this->buffer_size = img.get_buffer_size();
-    }
+    // if (!img.get_made()) {
+    //     this->FileBuffer = new char[img.get_buffer_size()];
+    //     // memcpy(this->FileBuffer, img.get_buffer(), img.get_buffer_size());
+    //     this->buffer_size = img.get_buffer_size();
+    // }
 }
 
 void gray_image::flip() {
@@ -2134,9 +2216,9 @@ void gray_image::frame(std::string filename) {
 
 /// @brief prints the image to the terminal
 void gray_image::paint() {
-    this->frame("temp.bmp");
+    this->frame("./temp.bmp");
     system("clear");
-    system("tiv -w 1000 -h 1000 temp.bmp");
+    system("tiv -w 1000 -h 1000 ./temp.bmp");
     system("rm temp.bmp");
 }
 
@@ -2214,11 +2296,11 @@ gray_image& gray_image::operator=(gray_image const img) {
 
     this->made = img.get_made();
 
-    if (!img.get_made()) {
-        this->FileBuffer = new char[img.get_buffer_size()];
-        memcpy(this->FileBuffer, img.get_buffer(), img.get_buffer_size());
-        this->buffer_size = img.get_buffer_size();
-    }
+    // if (!img.get_made()) {
+    //     this->FileBuffer = new char[img.get_buffer_size()];
+    //     memcpy(this->FileBuffer, img.get_buffer(), img.get_buffer_size());
+    //     this->buffer_size = img.get_buffer_size();
+    // }
 
     for (int i=0; i<w; i++) {
         delete [] gray[i];
@@ -2262,6 +2344,28 @@ gray_image gray_image::operator*(gray_image const img) {
     for (int i=0; i<w; i++) {
         for (int j=0; j<h; j++) {
             int val = gray[i][j] * img.get_pixel(i, j); 
+            new_img.set_pixel(i, j, val);
+        }
+    }
+
+    return new_img;
+}
+
+gray_image gray_image::operator^(gray_image const img) {
+    /*
+        params:
+            img: image to be XORed
+    */
+
+    assert(w == img.get_width());
+    assert(h == img.get_height());
+
+    gray_image new_img(h, w, 0);
+
+    #pragma omp parallel for collapse(2)
+    for (int i=0; i<w; i++) {
+        for (int j=0; j<h; j++) {
+            int val = gray[i][j] ^ img.get_pixel(i, j); 
             new_img.set_pixel(i, j, val);
         }
     }
@@ -2687,6 +2791,44 @@ gray_image operator^(float const value, gray_image const img){
     return new_img;
 }
 
+gray_image gray_image::operator/(gray_image const img){
+    gray_image new_img(h, w, 0);
+    
+    assert(w == img.get_width());
+    assert(h == img.get_height());
+
+    #pragma omp parallel for collapse(2)
+    for(int i=0; i<w; i++) {
+        for(int j=0; j<h; j++){
+            int val = gray[i][j] / img.get_pixel(i, j); 
+            new_img.set_pixel(i, j, val);
+        }
+    }
+    return new_img;
+}
+
+
+image gray_image::operator^(image const img){
+    image new_img(h, w, 0);
+
+    assert(w == img.get_width());
+    assert(h == img.get_height());
+
+    #pragma omp parallel for collapse(2)
+    for(int i=0; i<w; i++) {
+        for(int j=0; j<h; j++){
+            int val = gray[i][j] ^ img.get_pixel(i, j, 0);
+            new_img.set_pixel(i, j, 0, val);
+
+            val = gray[i][j] ^ img.get_pixel(i, j, 1);
+            new_img.set_pixel(i, j, 1, val);
+
+            val = gray[i][j] ^ img.get_pixel(i, j, 2);
+            new_img.set_pixel(i, j, 2, val);
+        }
+    }
+    return new_img;
+}
 
 video gray_image::operator+(video const vid){
     int h = vid.get_height();
@@ -2722,6 +2864,42 @@ gray_video gray_image::operator+(gray_video const vid){
     return new_vid;
 }
 
+void gray_image::color_pixel(int x, int y, int color) {
+    gray[x][y] = color;
+
+    if (x + 1 < w) {
+        gray[x+1][y] = color;
+    }
+
+    if (x - 1 >= 0) {
+        gray[x-1][y] = color;
+    }
+
+    if (y + 1 < h) {
+        gray[x][y+1] = color;
+    }
+
+    if (y - 1 >= 0) {
+        gray[x][y-1] = color;
+    }
+
+    if (x + 1 < w && y + 1 < h) {
+        gray[x+1][y+1] = color;
+    }
+
+    if (x - 1 >= 0 && y + 1 < h) {
+        gray[x-1][y+1] = color;
+    }
+
+    if (x + 1 < w && y - 1 >= 0) {
+        gray[x+1][y-1] = color;
+    }
+
+    if (x - 1 >= 0 && y - 1 >= 0) {
+        gray[x-1][y-1] = color;
+    }
+}
+
 /*------------------------------------------------------------------------
  * Image manipulation functions
  *------------------------------------------------------------------------*/
@@ -2755,7 +2933,7 @@ gray_video gray_image::operator+(gray_video const vid){
                 #pragma omp parallel for
                 for (int i=0; i<8; i++) {
                     if (x_vals[i] >= 0 && x_vals[i] < w && y_vals[i] >= 0 && y_vals[i] < h) {
-                        gray[x_vals[i]][y_vals[i]] = color;
+                        color_pixel(x_vals[i], y_vals[i], color);
                     }
                 }
 
@@ -2812,7 +2990,7 @@ gray_video gray_image::operator+(gray_video const vid){
             for (int i=0; i<8; i++) {
                 if (x_vals[i] >= 0 && x_vals[i] < w && y_vals[i] >= 0 && y_vals[i] < h) {
                     if (in_range(start_angle, end_angle, x_vals[i] - cx, y_vals[i] - cy)) {
-                        gray[x_vals[i]][y_vals[i]] = color;
+                        color_pixel(x_vals[i], y_vals[i], color);
                     }
                 }
             }
@@ -2832,6 +3010,7 @@ gray_video gray_image::operator+(gray_video const vid){
         int start_y = params[1];
         int end_x = params[2];
         int end_y = params[3];
+        int color = params[4];
 
         int dx = abs(end_x - start_x);
         int dy = abs(end_y - start_y);
@@ -2842,7 +3021,7 @@ gray_video gray_image::operator+(gray_video const vid){
         int err = dx - dy;
 
         while (start_x < w-1 && start_y < h-1 && start_x >= 0 && start_y >= 0) {
-            gray[start_x][start_y] = 0;
+            color_pixel(start_x, start_y, color);
 
             if (start_x == end_x && start_y == end_y) {
                 break;
@@ -2896,12 +3075,12 @@ gray_image gray_image::blur(int k) {
         }
     }
     gray_image new_img = conv(*this, kernel, 1, (k-1)/2.0); // same padding => (k-1)/2
-    if (!made) {
-        new_img.made = 0;
-        new_img.FileBuffer = new char[buffer_size];
-        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
-        new_img.buffer_size = buffer_size;
-    }
+    // if (!made) {
+    //     new_img.made = 0;
+    //     new_img.FileBuffer = new char[buffer_size];
+    //     memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+    //     new_img.buffer_size = buffer_size;
+    // }
     return new_img;
 }
 
@@ -2918,12 +3097,12 @@ gray_image gray_image::sharpen(int k) {
 
     gray_image new_img = *this - blurred + *this;
 
-    if (!made) {
-        new_img.made = 0;
-        new_img.FileBuffer = new char[buffer_size];
-        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
-        new_img.buffer_size = buffer_size;
-    }
+    // if (!made) {
+    //     new_img.made = 0;
+    //     new_img.FileBuffer = new char[buffer_size];
+    //     memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+    //     new_img.buffer_size = buffer_size;
+    // }
 
     return new_img;
 }
@@ -2953,12 +3132,12 @@ gray_image gray_image::sobel() {
     // vec_x = new_img_x.to_vector(); vec_y = new_img_y.to_vector();
     // gray_image new_img = to_gray_image(vec_sqrt(vec_x*vec_x + vec_y*vec_y)); 
 
-    if (!made) {
-        new_img.made = 0;
-        new_img.FileBuffer = new char[buffer_size];
-        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
-        new_img.buffer_size = buffer_size;
-    }
+    // if (!made) {
+    //     new_img.made = 0;
+    //     new_img.FileBuffer = new char[buffer_size];
+    //     memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+    //     new_img.buffer_size = buffer_size;
+    // }
 
     return new_img;
 }
@@ -3007,12 +3186,12 @@ gray_image gray_image::pixelate(int k) {
         }
     }
 
-    if (!made) {
-        new_img.made = 0;
-        new_img.FileBuffer = new char[buffer_size];
-        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
-        new_img.buffer_size = buffer_size;
-    }
+    // if (!made) {
+    //     new_img.made = 0;
+    //     new_img.FileBuffer = new char[buffer_size];
+    //     memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+    //     new_img.buffer_size = buffer_size;
+    // }
 
     return new_img;
 }
@@ -3021,12 +3200,12 @@ gray_image gray_image::pixelate(int k) {
 gray_image gray_image::invert() {
     gray_image new_img(h, w, 255);
 
-    if (!made) {
-        new_img.made = 0;
-        new_img.FileBuffer = new char[buffer_size];
-        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
-        new_img.buffer_size = buffer_size;
-    }
+    // if (!made) {
+    //     new_img.made = 0;
+    //     new_img.FileBuffer = new char[buffer_size];
+    //     memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+    //     new_img.buffer_size = buffer_size;
+    // }
 
     return new_img - *this;
 }
@@ -3053,12 +3232,12 @@ gray_image gray_image::noise(float var) {
         }
     }
 
-    if (!made) {
-        new_img.made = 0;
-        new_img.FileBuffer = new char[buffer_size];
-        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
-        new_img.buffer_size = buffer_size;
-    }
+    // if (!made) {
+    //     new_img.made = 0;
+    //     new_img.FileBuffer = new char[buffer_size];
+    //     memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+    //     new_img.buffer_size = buffer_size;
+    // }
 
     return new_img;
 }
@@ -3083,12 +3262,12 @@ gray_image gray_image::bnw(int thr) {
         }
     }
 
-    if (!made) {
-        new_img.made = 0;
-        new_img.FileBuffer = new char[buffer_size];
-        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
-        new_img.buffer_size = buffer_size;
-    }
+    // if (!made) {
+    //     new_img.made = 0;
+    //     new_img.FileBuffer = new char[buffer_size];
+    //     memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+    //     new_img.buffer_size = buffer_size;
+    // }
 
     return new_img;
 }
@@ -3104,12 +3283,12 @@ gray_image gray_image::hflip() {
         }
     }
 
-    if (!made) {
-        new_img.made = 0;
-        new_img.FileBuffer = new char[buffer_size];
-        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
-        new_img.buffer_size = buffer_size;
-    }
+    // if (!made) {
+    //     new_img.made = 0;
+    //     new_img.FileBuffer = new char[buffer_size];
+    //     memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+    //     new_img.buffer_size = buffer_size;
+    // }
 
     return new_img;
 }
@@ -3125,12 +3304,12 @@ gray_image gray_image::vflip() {
         }
     }
 
-    if (!made) {
-        new_img.made = 0;
-        new_img.FileBuffer = new char[buffer_size];
-        memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
-        new_img.buffer_size = buffer_size;
-    }
+    // if (!made) {
+    //     new_img.made = 0;
+    //     new_img.FileBuffer = new char[buffer_size];
+    //     memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+    //     new_img.buffer_size = buffer_size;
+    // }
 
     return new_img;
 }
@@ -3188,12 +3367,12 @@ gray_image gray_image::crystallize(int k) {
         }
     }
 
-    if (!made) {
-    new_img.made = 0;
-    new_img.FileBuffer = new char[buffer_size];
-    memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
-    new_img.buffer_size = buffer_size;
-    }
+    // if (!made) {
+    // new_img.made = 0;
+    // new_img.FileBuffer = new char[buffer_size];
+    // memcpy(new_img.FileBuffer, FileBuffer, buffer_size);
+    // new_img.buffer_size = buffer_size;
+    // }
 
     return new_img;
 }

@@ -1,0 +1,26 @@
+# This program has no semantic errors
+
+ink draw_stick_figure()->img {
+    img i1 <100, 100, 0xffffff>
+
+    i1.draw('circle', 50, 80, 10, 0x000000, 0)
+    i1.draw('line', 50, 70, 50, 30)
+    i1.draw('line', 50, 50, 80, 70)
+    i1.draw('line', 50, 50, 20, 70)
+    i1.draw('line', 50, 30, 80, 10)
+    i1.draw('line', 50, 30, 20, 10)
+
+    return i1
+}
+
+ink main()->void {
+    img i1 <100, 100, 200320>
+    gray_img i2 <20, 30, 239>
+    # img i3 <'insert_correct_filepath'>
+    vid v1 <130, 124, 80>
+
+    i1 = draw_stick_figure()
+    i1.paint()
+
+    return void
+}

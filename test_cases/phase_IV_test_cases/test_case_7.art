@@ -4,17 +4,17 @@ ink findGCD(num a, num b) -> num {
     spool (b != 0) {
         num temp = b
         b = a - a / b
-        a = temp;
+        a = temp
     }
 
     return a
 }
 
-ink calculateAverage(real numbers[], real count) -> real {
+ink calculateAverage(real numbers, real count) -> real {
     real sum = 0.0
 
     spool (num i = 0; i < count; i++) {
-        sum += numbers[i]
+        sum = sum + numbers
     }
 
     return sum / count
@@ -22,11 +22,15 @@ ink calculateAverage(real numbers[], real count) -> real {
 
 ink main()->void {
     vid v1 <50, 50, 50>
+    img i1 <50, 50>
 
     num a, b, c
     real d, e, f
 
     v1 = a * b / c + d - e * f  # semantic error: cannot assign numeric values to a video
+    i1.blir() # semantic error: blir is not an inbuilt function
+
+
 
     v2 = v1 + v1    # semantic error: v2 is not defined
 

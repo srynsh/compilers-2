@@ -5,18 +5,18 @@ ink foo(num a, img i)->num {
 
     $ (a == 1) ->
     {
-        p <- a + 3
+        p = a + 3
 
-        spool (num q <- 0; q >= -5; q--)
+        spool (num q = 0; q >= -5; q--)
         {
-            num p <- q * q - q
-            a <- p
+            num p = q * q - q
+            a = p
         }
 
-        num q <- 7
+        num q = 7
     }
 
-    q <- 0
+    q = 0
 
     return p
 }
@@ -27,20 +27,20 @@ ink main()->void {
 
     img i1 <40, 40, 0x000000>
     img i2 <40, 40, 0xffffff>
-    gray_img i3 <'./inp_img.bmp'>
-    gray_img i4 <'./inp_img.bmp'>
+    gray_img i3 <40, 40>
+    gray_img i4 <40, 40>
 
-    spool (num a <- 1; a <= 100; a++)
+    spool (num a = 1; a <= 100; a++)
     {
         real c
-        c <- a * 8.3235
-        d <- b - c
+        c = a * 8.3235
+        d = b - c
     }
 
-    a <- 5
+    a = 5
     $ (a == 5) ->
     {
-        num a <- 6
+        num a = 6
         $ (a == 6) ->
         {
             i1.paint()

@@ -1,9 +1,10 @@
-ink draw_concentric_circls(img i)->img {
-    num a
+ink draw_concentric_circles(img i)->img {
+    num a = 1
 
-    spool(a = 1; a <= 10; a++)
+    spool(a < 49)
     {
-        i.draw('circle', 10, 10, a, 0x0000dd)
+        i.draw('circle', 50, 50, a, 0x0000dd, 0)
+        a = a + 20
     }
 
     i.frame('./out_img.bmp')
@@ -25,22 +26,21 @@ ink magic(img i1, img i2, img i3, gray_img i4)->img {
 } 
 
 ink main()->void {
-    img i1 <25, 25>
-    img i2 <25, 25>
-    img i3 <'./inp_img.bmp'>
-    gray_img i4 <25, 25, 80>
+    img i1 <100, 100>
+    img i2 <100, 100>
+    img i3 <100, 100, 0xFFFFFF>
+    gray_img i4 <100, 100, 80>
 
-    i1.draw('line', 0, 0, 5, 5, 0x223992)
-    i1.draw('triangle', 2, 2, 4, 3, 0, 6, 0xff9600)
+    i1.draw('line', 0, 0, 5, 5)
 
-    draw_concentric_circles(i2)
+    draw_concentric_circles(i2) # concentric circles saved in out_img.bmp
 
     img ret_i = magic(i1, i2, i3, i4)
 
-    i.paint(i1)
-    i.frame('./i2.bmp')
-    i.paint(i3)
-    i.paint('./i4.bmp')
+    i1.paint()
+    i2.frame('./i2.bmp')
+    i3.paint()
+    i4.frame('./i4.bmp')
 
     return void
 }

@@ -2,10 +2,12 @@
 
 ink da_vinci(img i1, img i2, img i3, num a, num b, real r) -> num
 {
+    num c
+    
     i1.sobel()
     i1.sharpen(10)
     i2.pixelate(2)
-    i3.bnw(20)
+    i3.blur(20)
 
     a = b * c / 4
 
@@ -18,8 +20,8 @@ ink main() -> void
     num b = 2
     num c
     real r = 0.8
-    img i1 <'./input/i1.bmp'>
-    img i2 <'./input/i1.bmp'>
+    img i1 <40, 40>
+    img i2 <40, 40>
 
     c = da_vinci(i1, i2, a, b, r)
 

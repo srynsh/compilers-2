@@ -6,10 +6,10 @@ ink func()->void {
     real[10] b
     num[5] arr = {2, 4, 4, 0, 0}
 
-    spool (num i = 1; i <= 10; i++)
+    spool (num i = 1; i < 10; i++)
     {
-        a.append(i * 2 + 3)
-        b.append(i / 8.0 + 0.3)
+        a[i] = arr[1]
+        b[i] = arr[4]
     }
 
     return void
@@ -18,7 +18,7 @@ ink func()->void {
 ink add_img_to_vid (num f, img i, vid v, real t)->void {
     spool (num k = 0; k < f * t; k++)
     {
-        v.append(i)
+        v = v + i
     }
 
     return void
@@ -37,9 +37,9 @@ ink three_img_reel(num h, num w, num f, img i1, real t1, img i2, real t2, img i3
 ink set_std_frame_rate(vid v)->vid {
     vid ret_v <40, 40, 30>
 
-    spool (num i = 0; i < v.len(); i++)
+    spool (num i = 0; i < 0; i++)
     {
-        ret_v.append(v[i])
+        ret_v = ret_v
     }
 
     return ret_v
@@ -48,23 +48,23 @@ ink set_std_frame_rate(vid v)->vid {
 ink main()->void {
     vid v1 <40, 40, 30>
     vid v2 <40, 40, 30>
-    gray_vid v3 <40, 40, 60>
-    img i1 <'./i1.bmp'>
-    img i2 <'./i2.bmp'>
-    img i3 <'./i3.bmp'>
-    gray_img i4 <'./i4.bmp'>
-    gray_img i5 <'./i5.bmp'>
-    gray_img i6 <'./i6.bmp'>
+    gray_vid v3 <40, 40, 30>
+    img i1 <40, 40, 0xFFFFFF>
+    img i2 <40, 40, 0xFFFFFF>
+    img i3 <40, 40, 0xFFFFFF>
+    gray_img i4 <40, 40, 255>
+    gray_img i5 <40, 40, 255>
+    gray_img i6 <40, 40, 255>
 
     func()
 
-    v1 = v1 + three_img_reel(40, 40, 30, i1, 1, i2, 0.5, i3, 2)
+    #v1 = v1 + three_img_reel(40, 40, 30, i1, 1, i2, 0.5, i3, 2)
 
-    v3 = three_img_reel(40, 40, 60, i4, 0.25, i5, 0.25, i6, 0.1)
+    #v3 = three_img_reel(40, 40, 60, i4, 0.25, i5, 0.25, i6, 0.1)
 
-    v3 = set_std_frame_rate(v3)
+    #v3 = set_std_frame_rate(v3)
 
-    v2 = v1 + v3.blur()
+    v2 = v1 + v3
 
     v2.play()
 

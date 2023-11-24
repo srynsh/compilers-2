@@ -613,7 +613,7 @@ struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, st
     std::vector<function_record*> func_list = SymbolTableFunction->get_function(func_name);
     if (func_list.empty())
     {
-        std::string err = "Function doesn't match any declaration";
+        std::string err = "Function"+ func_name + "doesn't match any declaration";
         yyerror(err.c_str());
         exit(1);
     }
@@ -621,7 +621,7 @@ struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, st
     if (!compare_par_list_arg_list(func_list, *arg_vec))
     {
         
-        std::string err = "Function Call Arguments doesn't match any function declaration";
+        std::string err = "Function Call Arguments for " + func_name  +" doesn't match any function declaration";
         yyerror(err.c_str());
         
     }
@@ -651,9 +651,18 @@ struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, st
 struct type_info* check_func_call(symbol_table_function* SymbolTableFunction, std::string func_name) { //Archit
     if ((SymbolTableFunction->get_function(func_name)).empty())
     {
-        std::string err = "Function doesn't match any declaration";
+        std::string err = "Function"+ func_name +"doesn't match any declaration";
         yyerror(err.c_str());
         exit(1);
+    }
+
+    std::vector<struct type_info*> *arg_vec = new std::vector<struct type_info*>;
+
+    if (!compare_par_list_arg_list((SymbolTableFunction->get_function(func_name)), *arg_vec))
+    {
+        std::string err = "Function Call Arguments for " + func_name  +" doesn't match any function declaration";
+        yyerror(err.c_str());
+        
     }
 
     struct type_info* t_return = new struct type_info;
@@ -682,7 +691,7 @@ struct type_info* check_sketch_call(symbol_table_sketch* SymbolTableSketch, std:
     std::vector<sketch_record*> sketch_list = SymbolTableSketch->get_sketch(func_name);
     if (sketch_list.empty())
     {
-        std::string err = "Sketch doesn't match any declaration";
+        std::string err = "Sketch"+ func_name +"doesn't match any declaration";
         yyerror(err.c_str());
         exit(1);
     }
@@ -690,7 +699,7 @@ struct type_info* check_sketch_call(symbol_table_sketch* SymbolTableSketch, std:
     if (!compare_par_list_arg_list(sketch_list, *arg_vec))
     {
         
-        std::string err = "Sketch Call Arguments doesn't match any sketch declaration";
+        std::string err = "Sketch Call Arguments for"+func_name +"doesn't match any sketch declaration";
         yyerror(err.c_str());
         
     }
@@ -707,7 +716,7 @@ struct type_info* check_sketch_call(symbol_table_sketch* SymbolTableSketch, std:
 struct type_info* check_sketch_call(symbol_table_sketch* SymbolTableSketch, std::string func_name) { 
     if ((SymbolTableSketch->get_sketch(func_name)).empty())
     {
-        std::string err = "Sketch doesn't match any declaration";
+        std::string err = "Sketch"+func_name +"doesn't match any declaration";
         yyerror(err.c_str());
         exit(1);
     }

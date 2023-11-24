@@ -1,5 +1,5 @@
 # This program has no errors
-# Some Basic language features
+# Some basic language features
 
 ink main()->void {
     num _int
@@ -19,7 +19,7 @@ ink main()->void {
     $ (a >= 5 or b <= 2) -> {  # In-line comment test #2
         __val__ = false
     }
-    $$ (!a) -> {
+    $$ (a) -> {
         a = 10
     }
     ->

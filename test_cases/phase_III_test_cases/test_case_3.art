@@ -25,7 +25,7 @@ ink operations(img i1, img i2, img i3, img i4)->img {
     i2.pixelate(6)
     i3.vflip()
     i4.sobel()
-    img i = i2.convolve(i3) * i1 ^ 14
+    i4 = i2 * i1 ^ 14
     
     return i1
 } 
@@ -33,24 +33,23 @@ ink operations(img i1, img i2, img i3, img i4)->img {
 ink main()->void {
     num a, b
     real f, g
-    img i1 <25, 25>
-    img i2 <25, 25>
-    img i3 <'./inp_img.bmp'>
-    gray_img i4 <25, 25, 80>
-    vid v1 <25, 25, 30>
-    vid v2 <25, 25, 60>
+    img i1 <50, 50, 0xFFFFFF>
+    img i2 <50, 50, 0xFFFFFF>
+    img i3 <50, 50, 0xFFFFFF>
+    img i4 <50, 50, 0xFFFFFF>
+    vid v1 <50, 50, 30>
+    vid v2 <50, 50, 60>
 
     a = bar(f, b, g)
 
-    i1.draw('line', 0, 0, 5, 5)
-    i1.draw('triangle', 2, 2, 4, 3, 0, 6, 0xff9600)
+    i1.draw('line', 1, 1, 45, 45)
 
     img ret_i = operations(i1, i2, i3, i4)
 
     i1.paint()
-    i2.paint()
-    i3.paint()
-    i4.paint()
+    i2.frame('./out_i2.bmp')
+    i3.frame('./out_i3.bmp')
+    i4.frame('./out_i4.bmp')
 
     return void
 }

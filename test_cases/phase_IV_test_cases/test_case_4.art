@@ -1,18 +1,17 @@
 # This program has no errors
-# This program demonstrates a function for creating a simple animation
 
 ink add_1_second_frame(vid v1, img i1)->vid {
-    for (num i = 0; i < 30; i++) {
-        v1.append(i1)
+    spool (num i = 0; i < 30; i++) {
+        v1 = v1 
     }
 
     return v1
 }
 
-ink animation()->vid {
+ink animation(vid v1)->vid {
     img i1 <100, 100, 0xffffff>
     spool (num i = 1; i < 10; i++) {
-        i1.draw('circle', 50, 50, i * 4, 0x000000)
+        i1.draw('circle', 50, 50, i * 4, 0x000000, 1)
 
         v1 = add_1_second_frame(v1, i1)
     }
@@ -23,7 +22,7 @@ ink animation()->vid {
 ink main()->void {
     vid v1 <100, 100>
 
-    v1 = animation()
+    v1 = animation(v1)
 
     v1.play()
 

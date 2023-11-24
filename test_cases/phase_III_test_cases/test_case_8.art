@@ -1,6 +1,8 @@
-# This program has a few semantic errors
+# This program has a semantic error
 
-ink linearSearch(num arr[], num n, num target) -> num {
+ink linearSearch(num n, num target) -> num {
+    num[5] arr = {1, 2, 3, 4, 5}
+
     spool (num i = 0; i < n; i++) {
         $ (arr[i] == target) -> {
             return i
@@ -10,10 +12,12 @@ ink linearSearch(num arr[], num n, num target) -> num {
     return -1
 }
 
-ink binarySearch(num arr[], num low, num high, num target) -> num {
+ink binarySearch(num low, num high, num target) -> num {
+    num[5] arr = {1, 2, 3, 4, 5}
+    
     spool (low <= high) {
         num mid
-        mid = low + (high - low) / 2;
+        mid = low + (high - low) / 2
         $ (arr[mid] == target) -> {
             return mid
         }
@@ -33,8 +37,6 @@ ink main() -> void {
     vid v1 <40, 50, 1000>
 
     a = b * 2 - 3 + c / d # semantic error here (c is not defined)
-
-    v1 = v1 / 3 # semantic error here (videos can't be divided by numbers)
 
     return void
 }

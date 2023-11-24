@@ -1,4 +1,5 @@
 #This program has a few syntax errors
+# Fix one error at a time and run the program to see the next error
 
 ink volume_cuboid (real height, real weight, real length) -> real {
     return height * weight * length
@@ -30,7 +31,6 @@ ink area_rectangle (real height, real weight) -> real {
 
 ink main()->void {
     img i1 <90, 90, 0x0000ff>;  # syntax error here (semicolon)
-    gray_img i2 <90, 90, 90 # syntax error here missing closing '>'
 
     num a = 10
     num b = 20

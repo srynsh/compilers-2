@@ -5,7 +5,7 @@ ink main()->void {
     real c, d
     img i1 <25, 25>
     img i2 <25, 25>
-    img i3 <'./inp_img.bmp'>
+    img i3 <25, 25>
     gray_img i4 <25, 25, 80>
     vid v1 <25, 25, 30>
     vid v2 <25, 25, 30>
@@ -23,7 +23,7 @@ ink main()->void {
     {
         a = 0.0
     }
-    $$ (!a and d) ->
+    $$ (a and d) ->
     {
         b = 3
     }
@@ -34,7 +34,7 @@ ink main()->void {
 
     i1 = i2 + i3
     i4 = i3 * i3
-    i2 = ~i3
+    i2 = i3
 
     v1 = v2 + v3
     v1 = v1 + i1

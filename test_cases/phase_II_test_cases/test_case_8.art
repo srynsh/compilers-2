@@ -1,14 +1,16 @@
 # This code has a syntax error
 
-ink bubbleSort(num arr[], num n)->void {
+ink bubbleSort(num n)->void {
     num temp
+
+    num[5] arr = {5, 1, 4, 2, 8}
 
     spool (num i = 0; i < n - 1; i++) {
         spool (num j = 0; j < n - i - 1; j++) {
-            $ (arr[j] > arr[j+1]) -> {
+            $ (j > j+1) -> {
                 temp = arr[j]
-                arr[j] = arr[j + 1]
-                arr[j + 1] = temp
+                arr[j] = arr[j]
+                arr[j] = temp
             }
         }
     }
@@ -17,9 +19,9 @@ ink bubbleSort(num arr[], num n)->void {
 }
 
 ink factorial(num n)->num {
-    if (n == 0 || n == 1) {
+    $ (n == 0 or n == 1) -> { 
         return 1
-    } else {
+    } -> {
         return n * factorial(n - 1)
     }
 }
