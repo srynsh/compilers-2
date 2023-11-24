@@ -86,16 +86,12 @@ ink expressor(gray_img i1, img i2, gray_img i3, img i4, img i5)->void {
     i3 = 45.11 - i1
     i3 = true - i1
 
-    i2 = sqrt(i2)
-    i1 = sqrt(i1)
-
     i4 = i2 ^ i4
     i4 = i2 ^ i1
     i4 = i1 ^ 12
     i3 = i1 ^ i3
 
     i1 = (i4 - i2) * (i3 + i1) / (i4 ^ i3) + (i2 - i1) * (i3 + i4) / (i2 ^ i1)
-    i2 = sqrt(i1 + i2 + i3 + i4 * 9)
     i3 = i1 - (i2 * (i2 + 7.03))
 
     return void
