@@ -1,0 +1,24 @@
+# This code has a syntax error
+
+ink func (num a, b, real c, real d, img i1, img i2)-> void {    # syntax error here
+    spool (num i = 0; i < 20; i++)
+    {
+        a = b * 7 + i - 9
+        c = d * d
+        i1 = i2.blur(i)
+    }
+
+    return void
+}
+
+ink main()->void {
+    img i1 <40, 40, 0x22cc55>
+    img i2 <'./inp_img.bmp'>
+
+    num a, b, c
+    real d, e, f
+
+    func(a, b, d, e, i1, i2)
+
+    return void
+}

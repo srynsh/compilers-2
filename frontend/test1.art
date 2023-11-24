@@ -1,96 +1,139 @@
-#* sketch dabadoo (num h, num w, num i, num r) {
-    go_to(h / 2, w / 2)
-    pendown()
+# This program doesn't have any errors
+# This program tests various features for images
 
-    spool(num j = 0; j < i; j++) {
-        arc(r, 5)
-    }
+# This function tests various in-built functions for images
+ink in_built_functions(img i1, gray_img i2, img i3, img i4)->img {
+    i1.blur(4)
+    i1.sharpen(2)
+    i3.sobel()
+    i4.T()
 
+    i1.vflip()
+    i3.hflip()
+    i4.pixelate(8)
+
+    i1.invert()
+    i3.noise(9)
+
+    i2.bnw(125)
+
+    i1.crystallize(5)
+
+    i4.get_pixel(12, 17, 2)
+    i1.set_pixel(14, 14, 1, 0x237ab3)
+
+    return i1
 }
 
+# This function tests various expressions involving images
+ink expressor(gray_img i1, img i2, gray_img i3, img i4, img i5)->void {
+    i4 = i2 + 8
+    i4 = i2 + 3.56
+    i4 = i2 + i4
+    i4 = i2 + i1
+    i4 = i2 + true
+
+    i4 = 8 + i2
+    i4 = 14.5 + i2
+    i4 = i1 + i2
+    i4 = false + i2
+
+    i4 = i2 - 23
+    i4 = i2 - 14.5
+    i4 = i2 - i4
+    i4 = i2 - i1
+    i4 = i2 - false
+
+    i4 = 23 - i2
+    i4 = 3.56 - i2
+    i4 = i1 - i2
+    i4 = true - i2
+
+    i4 = i2 * 23
+    i4 = i2 * 8.0
+    i4 = i2 * i4
+    i4 = i2 * i1
+    i4 = i2 * false
+
+    i4 = 8 * i2
+    i4 = 8.0 * i2
+    i4 = i1 * i2
+    i4 = true * i2
+
+    i4 = i2 / 23
+    i4 = i2 / 8.0
+    i4 = i2 / i4
+    i4 = i2 / i1
+    i4 = i2 / true
+
+    i4 = i1 / i2
+
+    i3 = i1 + 14
+    i3 = i1 + 45.11
+    i3 = i1 + i3
+    i3 = i1 + true
+
+    i3 = 14 + i1
+    i3 = 26.349 + i1
+    i3 = false + i1
+
+    i3 = i1 - 32
+    i3 = i1 - 45.11
+    i3 = i1 - i3
+    i3 = i1 - true
+
+    i3 = 32 - i1
+    i3 = 45.11 - i1
+    i3 = true - i1
+
+    i2 = sqrt(i2)
+    i1 = sqrt(i1)
+
+    i4 = i2 ^ i4
+    i4 = i2 ^ i1
+    i4 = i1 ^ 12
+    i3 = i1 ^ i3
+
+    i1 = (i4 - i2) * (i3 + i1) / (i4 ^ i3) + (i2 - i1) * (i3 + i4) / (i2 ^ i1)
+    i2 = sqrt(i1 + i2 + i3 + i4 * 9)
+    i3 = i1 - (i2 * (i2 + 7.03))
+
+    return void
+}
+
+# This function has various types of declarations of images and some basic in-built functions for images
 ink main()->void {
-    img a<200, 200, 0xFFFFFF>
-    vid b<200, 200>
-    spool (num i = 0; i < 73; i++) {
-        b.concat_frame(a << dabadoo(200, 200, i, 30))
-    }
-    b.play()
+    img i1 <32, 32>
+    gray_img i2 <32, 32>
+    img i3 <32, 32, 0x52be80>   # hex values
+    img i4 = <32, 32, 16101441> # numbers instead of hex values
+    gray_img i5 <32, 32, 100>
+    img i6 <'../../images/inputs/in.bmp'>
+    gray_img i7 <'./blackbuck.bmp'>
 
-    return void
-} *#
+    img i8 = i3 + i4    # initializations using expressions
+    gray_img i9 = i5 - i7
 
-# This program has no errors
-# Some array manipulations (including videos)
+    num h = i1.height(), w = i1.width() # multiple initializations
 
-ink func()->void {
-    num[10] a
-    real[10] b
-    num[5] arr = {2, 4, 4, 0, 0}
+    img i10 <h, w> # using variables in initializations
+    img i11 <i2.height(), i2.width()> # using expressions in initializations
 
-    spool (num i = 1; i <= 10; i++)
-    {
-        a[i] = i * 2 + 3
-        b[i] = i / 8.0 + 0.4
-    }
+    i1.draw('circle', 16, 16, 5, 0xffffff)
+    i1.draw('arc', 10, 10, 6, 0.9, 5.6, 0xcc1234)
+    i3.draw('rectangle', 10, 10, 5, 5, 0x23ab89)
+    i4.draw('triangle', 4, 4, 12, 15, 29, 24, 0x328acc)
+    i1.draw('ellipse', 16, 16, 10, 5, 0xccabef) # drawing an ellipse
 
-    return void
-}
+    i3.paint()
+    i5.paint()
 
-ink add_img_to_vid (num f, img i, vid v, real t)->void {
-    num[5] a
-    spool (num k = 0; k < f * t; k++)
-    {
-        a[k] = i
-    }
+    i4.frame('../../images/outputs/out_1.bmp')
+    i7.frame('./out_2.bmp')
 
-    return void
-}
+    i1 = i1 + in_built_functions(i1, i2, i3, i4)
 
-ink three_img_reel(num h, num w, num f, img i1, real t1, img i2, real t2, img i3, real t3)->vid {
-    vid v <40, 40, 30>
+    expressor(i5, i6, i7, i8, i9)   # passing gray image instead of image to a function
 
-    add_img_to_vid(30, i1, v, t1)
-    add_img_to_vid(30, i2, v, t2)
-    add_img_to_vid(30, i3, v, t3)
-
-    return v
-}
-
-ink set_std_frame_rate(vid v)->vid {
-    vid ret_v <40, 40, 30>
-
-   #* spool (num i = 0; i < v.len(); i++)
-    {
-        ret_v.append(v[i])
-    } *#
-
-    return ret_v
-}
-
-ink main()->void {
-    vid v1 <40, 40, 30>
-    vid v2 <40, 40, 30>
-    gray_vid v3 <40, 40, 30>
-    img i1 <'./i1.bmp'>
-    img i2 <'./i2.bmp'>
-    img i3 <'./i3.bmp'>
-    img i4 <'./i4.bmp'>
-    img i5 <'./i5.bmp'>
-    img i6 <'./i6.bmp'>
-
-    num[10] a
-
-    func()
-
-    v1 = v1 + three_img_reel(40, 40, 30, i1, 1.0, i2, 0.5, i3, 2.2)
-
-    v3 = three_img_reel(40, 40, 60, i4, 0.25, i5, 0.25, i6, 0.1)
-
-    # v3 = set_std_frame_rate(v3)
-
-    v2 = v1 + v3
-
-    v2.play()
-    i1.draw('arc', 20, 20, 10, 0xFF0000, 1, 2.3)
     return void
 }

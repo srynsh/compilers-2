@@ -28,12 +28,13 @@ if "$"|"$$"
 comments "#"|"#*"|"*#"
 punctuators [\{\}\[\]\(\)';,]
 operators "="|"+"|"-"|"*"|"/"|"^"|"~"|"++"|"--"|"<<"
-path \'([^'\\])*\'
+path \'([^'\\\n])*\'
 reserved "__i__"|"__t__"|"__tglobal__"
 
 %%
 
 {newline_token} {
+    // std::cout << "hello 11" << yytext << std::endl;
     if(strcmp(yytext, "\n") == 0) {
         if (inline_comment)
             inline_comment = 0;
@@ -44,6 +45,7 @@ reserved "__i__"|"__t__"|"__tglobal__"
 }
 
 {operators} {
+    // std::cout << "hello 10" << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"operator: %s\n", yytext);
@@ -90,10 +92,12 @@ reserved "__i__"|"__t__"|"__tglobal__"
 }
 
 {blanks} {
+    // std::cout << "hello 9" << yytext << std::endl;
     fprintf(fparser, "%s", yytext);
 }
 
 {access_operator} {
+    // std::cout << "hello 8" << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"access_operator: %s\n", yytext);
@@ -102,6 +106,7 @@ reserved "__i__"|"__t__"|"__tglobal__"
 }
 
 {logical_operator} {
+    // std::cout << "hello 7" << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"logical_operator: %s\n", yytext);
@@ -110,31 +115,41 @@ reserved "__i__"|"__t__"|"__tglobal__"
             yylval.opval = op_temp;
             return NEG_OP;
         }
-        return LOG_OP;
+        else if (strcmp(yytext,"and")==0) {
+            OPERATOR op_temp = OPERATOR::AND;
+            yylval.opval = op_temp;
+            return LOG_OP;
+        }
+        else if (strcmp(yytext,"or")==0) {
+            OPERATOR op_temp = OPERATOR::OR;
+            yylval.opval = op_temp;
+            return LOG_OP;
+        }
     }
 }
 
 {relational_operator} {
+    // std::cout << "hello 6" << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"relational_operator: %s\n", yytext);
         OPERATOR op_temp;
-        if (strcmp(yytext, "<")) {
+        if (strcmp(yytext, "<")==0) {
             op_temp = OPERATOR::LESSER;
         }
-        else if (strcmp(yytext, "<=")) {
+        else if (strcmp(yytext, "<=")==0) {
             op_temp = OPERATOR::LTEQ;
         }
-        else if (strcmp(yytext, ">")) {
+        else if (strcmp(yytext, ">")==0) {
             op_temp = OPERATOR::GREATER;
         }
-        else if (strcmp(yytext, ">=")) {
+        else if (strcmp(yytext, ">=")==0) {
             op_temp = OPERATOR::GTEQ;
         }
-        else if (strcmp(yytext, "==")) {
+        else if (strcmp(yytext, "==")==0) {
             op_temp = OPERATOR::EQUAL;
         }
-        else if (strcmp(yytext, "!=")) {
+        else if (strcmp(yytext, "!=")==0) {
             op_temp = OPERATOR::NEQ;
         }
         yylval.opval = op_temp;
@@ -145,6 +160,7 @@ reserved "__i__"|"__t__"|"__tglobal__"
 }
 
 {number} {
+    // std::cout << "hello 5" << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"constant: %s\n", yytext);
@@ -158,6 +174,7 @@ reserved "__i__"|"__t__"|"__tglobal__"
 }
 
 {real_number} {
+    // std::cout << "hello4 " << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"constant: %s\n", yytext);
@@ -167,6 +184,7 @@ reserved "__i__"|"__t__"|"__tglobal__"
 }
 
 {arrow} {
+    // std::cout << "hello3 " << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"operator: %s\n", yytext);
@@ -175,6 +193,7 @@ reserved "__i__"|"__t__"|"__tglobal__"
 }
 
 {path} {
+    // std::cout << "hello2 " << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"path: %s\n", yytext);
@@ -187,6 +206,7 @@ reserved "__i__"|"__t__"|"__tglobal__"
 }
 
 {reserved} {
+    // std::cout << "hello1 " << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"reserved: %s\n", yytext);
@@ -198,6 +218,7 @@ reserved "__i__"|"__t__"|"__tglobal__"
 }
 
 {keywords} {
+    // std::cout << "hello " << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"keyword: %s\n", yytext);
@@ -283,6 +304,7 @@ reserved "__i__"|"__t__"|"__tglobal__"
 }
 
 {identifiers} {
+    // std::cout << "hello 12" << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"ID: %s\n", yytext);
@@ -293,6 +315,7 @@ reserved "__i__"|"__t__"|"__tglobal__"
 }
 
 {comments} {
+    // std::cout << "hello 13" << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         if (strcmp(yytext,"#*")==0) block_comment = 1;
         else if (strcmp(yytext,"#")==0) inline_comment = 1;

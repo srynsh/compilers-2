@@ -144,6 +144,28 @@ void print_type(TYPE type) {
     }
 }
 
+/*
+enum class OPERATOR {
+    ADD,
+    SUB,
+    MUL,
+    DIV,
+    XOR,
+    POST_INCR,
+    POST_DECR,
+    INV,
+    NOT,
+    NEQ,
+    GTEQ,
+    LTEQ,
+    GREATER,
+    LESSER,
+    EQUAL,
+    LSHIFT,
+    AND,
+    OR,
+};
+*/
 void print_operator(OPERATOR op) {
     switch (op) {
         case OPERATOR::ADD:
@@ -170,6 +192,37 @@ void print_operator(OPERATOR op) {
         case OPERATOR::INV:
             std::cout << "INV";
             break;
+        case OPERATOR::NOT:
+            std::cout << "NOT";
+            break;
+        case OPERATOR::NEQ:
+            std::cout << "NEQ";
+            break;
+        case OPERATOR::GTEQ:
+            std::cout << "GTEQ";
+            break;
+        case OPERATOR::LTEQ:
+            std::cout << "LTEQ";
+            break;
+        case OPERATOR::GREATER:
+            std::cout << "GREATER";
+            break;
+        case OPERATOR::LESSER:
+            std::cout << "LESSER";
+            break;
+        case OPERATOR::EQUAL:
+            std::cout << "EQUAL";
+            break;
+        case OPERATOR::LSHIFT:
+            std::cout << "LSHIFT";
+            break;
+        case OPERATOR::AND:
+            std::cout << "AND";
+            break;
+        case OPERATOR::OR:
+            std::cout << "OR";
+            break;
+        
         default:
             std::cout << "unknown";
             break;

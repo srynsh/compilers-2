@@ -410,11 +410,11 @@ static const YY_CHAR yy_ec[256] =
 
 static const YY_CHAR yy_meta[48] =
     {   0,
-        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    2,    2,    1,    1,    1,    2,
-        3,    3,    4,    1,    3,    2,    2,    2,    2,    2,
-        2,    3,    3,    3,    3,    3,    3,    3,    3,    3,
-        3,    3,    3,    3,    3,    3,    1
+        1,    1,    2,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    3,    3,    1,    1,    1,    3,
+        4,    4,    2,    1,    4,    3,    3,    3,    3,    3,
+        3,    4,    4,    4,    4,    4,    4,    4,    4,    4,
+        4,    4,    4,    4,    4,    4,    1
     } ;
 
 static const flex_int16_t yy_base[114] =
@@ -428,10 +428,10 @@ static const flex_int16_t yy_base[114] =
        50,  102,   92,   86,  100,   94,   62,  114,  101,   54,
        89,   98,   80,   80,   75,    0,   84,   75,   75,   78,
        86,   86,   89,   88,   76,   76,   76,   79,   83,   66,
-       78,   69,    0,   65,   65,   46,   64,   68,   73,   55,
+       78,   69,    0,   65,   65,   46,   64,   68,   73,   51,
 
        55,   56,   63,   58,   55,   56,   48,   58,   56,  163,
-       93,   95,   48
+       93,   95,   47
     } ;
 
 static const flex_int16_t yy_def[114] =
@@ -462,7 +462,7 @@ static const flex_int16_t yy_nxt[211] =
        53,   57,   58,   65,   63,   67,   67,   46,   66,   48,
        48,   46,   69,   48,   48,   77,   67,   67,   84,  101,
        93,   70,  109,  108,   76,   85,   76,   76,  107,  106,
-      102,  105,   78,   41,   41,   41,   49,   49,  104,  103,
+      102,  105,   78,   41,  104,   41,   41,   49,   49,  103,
 
        76,   76,  100,   99,   76,   98,   97,   96,   76,   95,
        76,   94,   93,   93,   76,   76,   92,   91,   90,   76,
@@ -489,7 +489,7 @@ static const flex_int16_t yy_chk[211] =
        26,   30,   30,   36,   34,   46,   46,   44,   36,   44,
        44,   48,   50,   48,   48,   61,   67,   67,   70,   96,
       109,   50,  108,  107,  106,   70,  105,  104,  103,  102,
-       96,  101,   61,  111,  111,  111,  112,  112,  100,   99,
+       96,  101,   61,  111,  100,  111,  111,  112,  112,   99,
 
        98,   97,   95,   94,   92,   91,   90,   89,   88,   87,
        86,   85,   84,   83,   82,   81,   80,   79,   78,   77,
@@ -816,6 +816,7 @@ case 1:
 YY_RULE_SETUP
 #line 36 "lex.l"
 {
+    // std::cout << "hello 11" << yytext << std::endl;
     if(strcmp(yytext, "\n") == 0) {
         if (inline_comment)
             inline_comment = 0;
@@ -827,8 +828,9 @@ YY_RULE_SETUP
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 46 "lex.l"
+#line 47 "lex.l"
 {
+    // std::cout << "hello 10" << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"operator: %s\n", yytext);
@@ -876,15 +878,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 92 "lex.l"
+#line 94 "lex.l"
 {
+    // std::cout << "hello 9" << yytext << std::endl;
     fprintf(fparser, "%s", yytext);
 }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 96 "lex.l"
+#line 99 "lex.l"
 {
+    // std::cout << "hello 8" << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"access_operator: %s\n", yytext);
@@ -894,8 +898,9 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 104 "lex.l"
+#line 108 "lex.l"
 {
+    // std::cout << "hello 7" << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"logical_operator: %s\n", yytext);
@@ -904,34 +909,44 @@ YY_RULE_SETUP
             yylval.opval = op_temp;
             return NEG_OP;
         }
-        return LOG_OP;
+        else if (strcmp(yytext,"and")==0) {
+            OPERATOR op_temp = OPERATOR::AND;
+            yylval.opval = op_temp;
+            return LOG_OP;
+        }
+        else if (strcmp(yytext,"or")==0) {
+            OPERATOR op_temp = OPERATOR::OR;
+            yylval.opval = op_temp;
+            return LOG_OP;
+        }
     }
 }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 117 "lex.l"
+#line 131 "lex.l"
 {
+    // std::cout << "hello 6" << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"relational_operator: %s\n", yytext);
         OPERATOR op_temp;
-        if (strcmp(yytext, "<")) {
+        if (strcmp(yytext, "<")==0) {
             op_temp = OPERATOR::LESSER;
         }
-        else if (strcmp(yytext, "<=")) {
+        else if (strcmp(yytext, "<=")==0) {
             op_temp = OPERATOR::LTEQ;
         }
-        else if (strcmp(yytext, ">")) {
+        else if (strcmp(yytext, ">")==0) {
             op_temp = OPERATOR::GREATER;
         }
-        else if (strcmp(yytext, ">=")) {
+        else if (strcmp(yytext, ">=")==0) {
             op_temp = OPERATOR::GTEQ;
         }
-        else if (strcmp(yytext, "==")) {
+        else if (strcmp(yytext, "==")==0) {
             op_temp = OPERATOR::EQUAL;
         }
-        else if (strcmp(yytext, "!=")) {
+        else if (strcmp(yytext, "!=")==0) {
             op_temp = OPERATOR::NEQ;
         }
         yylval.opval = op_temp;
@@ -943,8 +958,9 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 147 "lex.l"
+#line 162 "lex.l"
 {
+    // std::cout << "hello 5" << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"constant: %s\n", yytext);
@@ -959,8 +975,9 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 160 "lex.l"
+#line 176 "lex.l"
 {
+    // std::cout << "hello4 " << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"constant: %s\n", yytext);
@@ -971,8 +988,9 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 169 "lex.l"
+#line 186 "lex.l"
 {
+    // std::cout << "hello3 " << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"operator: %s\n", yytext);
@@ -981,10 +999,10 @@ YY_RULE_SETUP
 }
 	YY_BREAK
 case 10:
-/* rule 10 can match eol */
 YY_RULE_SETUP
-#line 177 "lex.l"
+#line 195 "lex.l"
 {
+    // std::cout << "hello2 " << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"path: %s\n", yytext);
@@ -998,8 +1016,9 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 189 "lex.l"
+#line 208 "lex.l"
 {
+    // std::cout << "hello1 " << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"reserved: %s\n", yytext);
@@ -1012,8 +1031,9 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 200 "lex.l"
+#line 220 "lex.l"
 {
+    // std::cout << "hello " << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"keyword: %s\n", yytext);
@@ -1091,7 +1111,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 276 "lex.l"
+#line 297 "lex.l"
 {
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
@@ -1103,8 +1123,9 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 285 "lex.l"
+#line 306 "lex.l"
 {
+    // std::cout << "hello 12" << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
         fprintf(ftoken,"ID: %s\n", yytext);
@@ -1116,8 +1137,9 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 295 "lex.l"
+#line 317 "lex.l"
 {
+    // std::cout << "hello 13" << yytext << std::endl;
     if (!inline_comment && !block_comment) {
         if (strcmp(yytext,"#*")==0) block_comment = 1;
         else if (strcmp(yytext,"#")==0) inline_comment = 1;
@@ -1134,7 +1156,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 310 "lex.l"
+#line 333 "lex.l"
 {
     if (!inline_comment && !block_comment) {
         fprintf(ftoken, "punctuation: %s\n", yytext);
@@ -1145,7 +1167,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 318 "lex.l"
+#line 341 "lex.l"
 {
     if (!inline_comment && !block_comment) {
         fprintf(fparser,"%s", yytext);
@@ -1158,10 +1180,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 328 "lex.l"
+#line 351 "lex.l"
 ECHO;
 	YY_BREAK
-#line 1164 "lex.yy.c"
+#line 1186 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2166,5 +2188,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 328 "lex.l"
+#line 351 "lex.l"
 

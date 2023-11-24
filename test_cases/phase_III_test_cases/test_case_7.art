@@ -1,0 +1,27 @@
+# This program has a semantic error
+# It has 2 identical declarations for a function with different function bodies
+
+ink func(num a, real b)-> num {
+    img i1 <70, 34, 0x00bbc2>
+
+    spool (num i = 0; i < 10; i++) {
+        i1.blur(i)
+        a = b * 734.38 - a
+    }
+    
+    return 3
+}
+
+ink func(num a, real b)-> num {
+    gray_img i1 <20, 40, 200>
+    vid v <30, 30>
+
+    return a
+}
+
+ink main()->void {
+    num a, b, c
+    real d, e, f
+
+    return void
+}

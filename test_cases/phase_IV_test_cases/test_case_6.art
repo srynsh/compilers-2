@@ -1,0 +1,44 @@
+#This program has a few syntax errors
+
+ink volume_cuboid (real height, real weight, real length) -> real {
+    return height * weight * length
+}
+
+ink volume_cone (real radius, real height) -> real {
+    return 1.0 / 3 * 3.14 * radius * radius * height
+}
+
+ink volume_sphere (real radius) -> real {
+    return 4/3 * 3.14 * radius * radius * radius
+}
+
+ink volume_cylinder (real radius, real height) -> real {
+    return 3.14 * radius * radius * height
+}
+
+ink area_ellipse (real radius1, real radius2) -> real {
+    return 3.14 * radius1 * radius2
+}
+
+ink area_circle (real radius) -> real {
+    return 3.14 * radius * radius
+}
+
+ink area_rectangle (real height, real weight) -> real {
+    return height * weight
+}
+
+ink main()->void {
+    img i1 <90, 90, 0x0000ff>;  # syntax error here (semicolon)
+    gray_img i2 <90, 90, 90 # syntax error here missing closing '>'
+
+    num a = 10
+    num b = 20
+    real c, d
+
+    c = d ** a  # syntax error here ('**' is not a valid operator)
+
+    d = (a + b) / ((a - b) * (a + b)    # syntax error here (missing closing parenthesis)
+    
+    return void
+}

@@ -1,0 +1,34 @@
+# This program has a few semantic errors
+
+ink findGCD(num a, num b) -> num {
+    spool (b != 0) {
+        num temp = b
+        b = a - a / b
+        a = temp;
+    }
+
+    return a
+}
+
+ink calculateAverage(real numbers[], real count) -> real {
+    real sum = 0.0
+
+    spool (num i = 0; i < count; i++) {
+        sum += numbers[i]
+    }
+
+    return sum / count
+}
+
+ink main()->void {
+    vid v1 <50, 50, 50>
+
+    num a, b, c
+    real d, e, f
+
+    v1 = a * b / c + d - e * f  # semantic error: cannot assign numeric values to a video
+
+    v2 = v1 + v1    # semantic error: v2 is not defined
+
+    return void
+}

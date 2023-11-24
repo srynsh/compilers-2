@@ -1,0 +1,32 @@
+# This program has a few lexical errors
+
+ink twice(real x) -> real {
+    return 2 * x
+}
+
+ink cube(real x) -> real {
+    return x * x * x
+}
+
+ink square(real x) -> real {
+    return x * x
+}
+
+ink power(real base, num exponent) -> real {
+    real result = 1.0
+
+    for (num i = 0; i < exponent; i++) {
+        result *= base
+    }
+
+    return result;
+}
+
+ink main()-> void {
+    num a, real # lexical error here
+    num c, 4_d  # lexical error here
+
+    img ink <20, 20, 0xffddcc>  # lexical error here
+
+    return void
+}

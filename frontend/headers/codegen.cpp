@@ -1,8 +1,44 @@
 #include <bits/stdc++.h>
 #include <string>
+#include <vector>
 #include "codegen.hpp"
 #include "semantic.hpp"
 #include "sym_tab.hpp"
+#include "utils.hpp"
+
+
+// for string delimiter (https://stackoverflow.com/questions/14265581/parse-split-a-string-in-c-using-string-delimiter-standard-c)
+std::vector<std::string> split(std::string s, std::string delimiter) {
+    size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+    std::string token;
+    std::vector<std::string> res;
+
+    while ((pos_end = s.find(delimiter, pos_start)) != std::string::npos) {
+        token = s.substr (pos_start, pos_end - pos_start);
+        pos_start = pos_end + delim_len;
+        res.push_back (token);
+    }
+
+    res.push_back (s.substr (pos_start));
+    return res;
+}
+
+/// @brief Converts a, b, c to (a, vector<dtype> (b, vector<dtype> (c)))
+//   vector<vector<vector<float>>> arr5(10, vector<vector<float>>(10, vector<float>(10)));
+std::string vec_decl_helper(std::vector<std::string> vec, ELETYPE dtype) {
+    int dimlen = vec.size();
+    std::string code = "";
+    code += "(" + vec[0];
+    for (int i = 1; i < dimlen; i++) {
+        struct type_info* t = new struct type_info();
+        t->type = TYPE::ARRAY; t->eleType = dtype; t->dim_list = new std::vector<int>(dimlen-i, 0);
+        code += ", " + type_to_string(t) + "(" + vec[i];
+    }
+    for (int i = 0; i < dimlen; i++) {
+        code += ")";
+    }
+    return code;
+}
 
 
 /// @brief Generates the headers for the output C++ code
@@ -18,7 +54,7 @@ std::string codegen_headers() {
     code += "turtle __tglobal__;\n\n";
 
     return code;
-}
+}   
 
 
 /// @brief Converts simple types to corresponding type in C++
@@ -111,6 +147,10 @@ std::string codegen_operator(OPERATOR op) {
         code += "<";
     else if (op == OPERATOR::EQUAL)
         code += "==";
+    else if (op == OPERATOR::AND)
+        code += "&&";
+    else if (op == OPERATOR::OR)
+        code += "||";
     else
         code += "unknown_operator";
     return code;
@@ -149,6 +189,10 @@ std::string codegen_operator(OPERATOR op, std::string op1, std::string op2) {
         code = op1 + " < " + op2;
     else if (op == OPERATOR::EQUAL)
         code = op1 + " == " + op2;
+    else if (op == OPERATOR::AND)
+        code = op1 + " && " + op2;
+    else if (op == OPERATOR::OR)
+        code = op1 + " || " + op2;
     else
         code = "unknown_operator";
 
@@ -229,25 +273,47 @@ std::string codegen_decl_numeric(
 ) {
     std::string code = "";
     
-    if (expr == "") {
+    if (mode == 0) {
+        if (expr == "") {
+            code += type_to_string(t) + " ";
+            if (id_list != NULL) {
+                for (auto id : *id_list) {
+                    code += id + ", ";
+                }
+                // Remove the last comma and space if parameters are present
+                code.pop_back(); 
+                code.pop_back();
+            }
+            else {
+                code += name;
+            }
+        }
+        else {
+            code += type_to_string(t) + " " + name + " = " + expr; 
+        }
+
+        return code;
+    }
+    // Vector declarations of the form arr x, y, z...
+    // expr is of the form [x][y][z]
+    else {
         code += type_to_string(t) + " ";
+        expr = expr.substr(1, expr.size()-2);
+        std::vector<std::string> expr_vec = split(expr, "][");
         if (id_list != NULL) {
-            for (auto id : *id_list) {
-                code += id + ", ";
+            for (int i = 0; i < id_list->size(); i++) {
+                code += (*id_list)[i] + vec_decl_helper(expr_vec, t->eleType) + ", ";
             }
             // Remove the last comma and space if parameters are present
             code.pop_back(); 
             code.pop_back();
         }
         else {
-            code += name;
+            code += name + vec_decl_helper(expr_vec, t->eleType);
         }
-    }
-    else {
-        code += type_to_string(t) + " " + name + " = " + expr; 
-    }
 
-    return code;
+        return code;
+    }
 }
 
 /// @brief Generates the code in C++ for numeric declarations partially 

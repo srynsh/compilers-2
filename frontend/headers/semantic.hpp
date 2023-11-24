@@ -3,6 +3,7 @@
 
 #include "sym_tab.hpp"
 #include <bits/stdc++.h>
+#include <cstdlib>
 
 struct type_info{
     TYPE type;
@@ -46,6 +47,8 @@ enum class OPERATOR {
     LESSER,
     EQUAL,
     LSHIFT,
+    AND,
+    OR,
 };
 
 ELETYPE get_type(ELETYPE t1, ELETYPE t2);

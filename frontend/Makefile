@@ -1,4 +1,4 @@
-##@ Frontend
+
 
 C_COMPILER = g++
 C_FLAGS = -g -std=c++17
@@ -8,7 +8,7 @@ YACC_FLAGS = -vd
 
 LEX = flex
 
-TEST = test1.art
+TEST_FILE := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 
 BINARY_PATH = ./bin
 HEADER_PATH = ./headers
@@ -20,7 +20,9 @@ OBJ := $(patsubst $(HEADER_PATH)/%.cpp,$(BINARY_PATH)/%.o,$(SOURCES))
 
 EXECUTABLE = $(BINARY_PATH)/output
 
-all: yacc.tab.c lex.yy.c $(EXECUTABLE) ## compiles everything
+##@ Frontend
+
+all: lex.yy.c yacc.tab.c $(EXECUTABLE) ## compiles everything
 
 $(EXECUTABLE): $(OBJ) yacc.output ## makes final executable
 	@echo "------------------------------------"
@@ -43,6 +45,13 @@ yacc.output: yacc.tab.c ## compiles yacc.tab.c
 	@echo "\033[32mDone!\033[0m"
 
 
+test: $(EXECUTABLE) ## runs the compiler on .art file
+	@echo "------------------------------------"
+	@echo "\033[36mRunning $<...\033[0m"
+	$(EXECUTABLE) < $(TEST_FILE)
+	@echo "\033[32mDone!\033[0m"
+	@echo "------------------------------------"
+
 ##@ Helpers
 
 .PHONY: help
@@ -62,7 +71,7 @@ yacc.tab.c: yacc.y ## Generate yacc.tab.c and yacc.tab.h
 lex.yy.c: lex.l ## Generate lex.yy.c
 	@echo "------------------------------------"
 	@echo "\033[36mCompiling $<...\033[0m"
-	$(LEX) $(LEX_FLAGS) lex.l
+	$(LEX) lex.l
 	@echo "\033[32mDone!\033[0m"
 
 .PHONY: clean

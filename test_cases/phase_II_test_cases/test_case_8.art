@@ -1,0 +1,37 @@
+# This code has a syntax error
+
+ink bubbleSort(num arr[], num n)->void {
+    num temp
+
+    spool (num i = 0; i < n - 1; i++) {
+        spool (num j = 0; j < n - i - 1; j++) {
+            $ (arr[j] > arr[j+1]) -> {
+                temp = arr[j]
+                arr[j] = arr[j + 1]
+                arr[j + 1] = temp
+            }
+        }
+    }
+
+    return void
+}
+
+ink factorial(num n)->num {
+    if (n == 0 || n == 1) {
+        return 1
+    } else {
+        return n * factorial(n - 1)
+    }
+}
+
+ink main()->void {
+    num a, #syntax error here
+
+    real b, c
+
+    a = factorial(9) * 7 - 10
+
+    b = a * 0.33
+
+    return void
+}

@@ -436,13 +436,14 @@ num_array_decl :
             t->type = TYPE::ARRAY;
             t->dim_list = new std::vector<int>;
             std::vector<int> temp_dim_list = *($2.vector_int);
+            std::vector<std::string> *p = new std::vector<std::string>;
             for (int i = 0; i < temp_dim_list.size(); i++) {
                 t->dim_list->push_back(temp_dim_list[i]);
             }
 
             SymbolTableVariable->add_variable(*$3, t->type, t->eleType, *($2.vector_int), current_scope);
             // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $3).c_str());
-            $$ = new std::string(codegen_decl_numeric(t, "", "", $3));
+            $$ = new std::string(codegen_decl_numeric(t, "", *($2.str), $3, 1));
         }
     | NUM array_element ID '=' ID 
         {
@@ -495,8 +496,9 @@ real_array_decl :
             }
 
             SymbolTableVariable->add_variable(*$3, t->type, t->eleType, *($2.vector_int), current_scope);  
-            // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $3).c_str());  
-            $$ = new std::string(codegen_decl_numeric(t, "", "", $3));
+            // if (error_counter == 0) fprintf(foutput, "%s", codegen_decl_numeric(t, "", "", $3).c_str());
+            std::string *temp_str = $2.str;  
+            $$ = new std::string(codegen_decl_numeric(t, "", *(temp_str), $3, 1));
         }
     | REAL array_element ID '=' ID 
         {
@@ -688,7 +690,7 @@ if_block : IF optional_new_lines '(' expr_pred ')' optional_new_lines ARROW opti
             if (!cast_bool($4.ti)) {
                 yyerror("experssion cannot to evaluated to a boolean");
             } else {
-                $$ = new std::string("if (" + *($4.str) + ") {\n" + *($9) + "}\n");
+                $$ = new std::string("if (" + *($4.str) + ") \n" + *($9) + "\n");
             }
         }
         ;
@@ -698,7 +700,7 @@ else_if_block_list : else_if_block_list optional_new_lines ELSE_IF '(' expr_pred
             if (!cast_bool($5.ti)) {
                 yyerror("experssion cannot to evaluated to a boolean");
             } else {
-                $$ = new std::string(*($1) + "else if (" + *($5.str) + ") {\n" + *($10) + "}\n");
+                $$ = new std::string(*($1) + "else if (" + *($5.str) + ") \n" + *($10) + "\n");
             }
         }
         | ELSE_IF '(' expr_pred ')' optional_new_lines ARROW optional_new_lines func_body
@@ -706,14 +708,14 @@ else_if_block_list : else_if_block_list optional_new_lines ELSE_IF '(' expr_pred
             if (!cast_bool($3.ti)) {
                 yyerror("experssion cannot to evaluated to a boolean");
             } else {
-                $$ = new std::string("else if (" + *($3.str) + ") {\n" + *($8) + "}\n");
+                $$ = new std::string("else if (" + *($3.str) + ") \n" + *($8) + "\n");
             }
         } 
         ;
         
 else : ARROW optional_new_lines func_body
         {
-            $$ = new std::string("else {\n" + *($3) + "}\n");
+            $$ = new std::string("else \n" + *($3) + "\n");
         }
         ;
 
@@ -1247,9 +1249,9 @@ return_stmt : RETURN expr_pred new_lines
             ELETYPE last_ret_type = SymbolTableFunction->get_current_return_type();
             struct type_info* t = $2.ti;
             if (last_ret_type != t->eleType) {
-                print_eleType(last_ret_type);
-                print_eleType(t->eleType);
-                yyerror("return type must be same as function definition");
+                if (!is_primitive(last_ret_type) || !is_primitive(t->eleType)){
+                    yyerror("return type must be same as function definition");
+                }
             }
             // if (error_counter == 0) fprintf(foutput, "return %s;\n", *($2.str)); 
             $$ = new std::string("return " + *($2.str) + ";\n");

@@ -1,6 +1,6 @@
 add turtle
 
-
+allow expressions/ids in image decl (I(SRYNSH) THINK THIS IS VERY IMPORTANT)
 
 codegen
     call stmt (DONE)

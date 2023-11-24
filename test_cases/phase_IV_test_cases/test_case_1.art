@@ -15,10 +15,13 @@ ink declarator() -> void
     num[10] arr1
     real[4] arr2 = {1.5, 2.5, 3.5, 4.5}
 
-    num[32][32] arr3
-    num[3][3] arr4 = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}
+    num[32, 32] arr3
+    num[3, 3] arr4 = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}
 
-    real[10][10][10] arr5
+
+    num[10] abcd
+    num[10, 10] asadsda
+    real[10, 10, 10] arr5
 
     return void
 }
@@ -73,7 +76,7 @@ ink conditioner() -> bool {
 ink looper(num a,   real b, bool c) -> num {
     num i = 0
 
-    spool(i = 0; i < 10; i++) ->
+    spool(i = 0; i < 10; i++)
     {
         a = a + 1
 
@@ -92,7 +95,7 @@ ink looper(num a,   real b, bool c) -> num {
     spool (i = 0; i < 10; i++) {
         num j
 
-        if (i == 5) {
+        $ (i == 5) -> {
             continue
         }
 
@@ -131,15 +134,13 @@ ink array_operations() -> void {
     num[100] a
     real[20] b
 
-    num[10][10] c
+    num[10,10] c
 
     spool (num i = 1; i < 10; i++)
     {
         a[i] = i * 2 + 3
         b[i] = i / 8.0 + 0.3 + a[i]
-        c[i][i] = a[i] * b[i] + c[i - 1][i - 1]
-        a.append(i / 4 - 7)
-        b.append(8.0)
+        c[i, i] = a[i] * b[i] + c[i, i]
     }
 
     return void
