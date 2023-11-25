@@ -1,7 +1,7 @@
 
 
 C_COMPILER = g++
-C_FLAGS = -g -std=c++17
+C_FLAGS = -g
 
 YACC = bison
 YACC_FLAGS = -vd

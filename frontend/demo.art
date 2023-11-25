@@ -1,0 +1,25 @@
+sketch flower (num h, num w, num r, num i, num j) {
+    go_to(w/2, h/2)
+    pendown()
+    set_pen_color(0xFF0000)
+    spool(num k = 0; k < i; k++) {
+        spool (num l = 0; l < j;l++) {
+            arc(r, 15)
+        }
+        rotate(-45)
+    }
+}
+
+ink main () -> void {
+    img temp<300, 300, 0xFFFFFF>
+    vid v<300, 300, 1>
+
+    spool (num i = 0; i < 8; i++) {
+        spool (num j = 0; j < 24; j++) {
+            v.concat_frame(temp << flower(300, 300, 50, i, j))
+        }
+    }
+
+    v.play()
+    return void
+}

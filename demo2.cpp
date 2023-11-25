@@ -19,7 +19,7 @@ image i6 = i.vflip();
 image i7 = i.hflip();
 image i8 = i.invert();
 image i9 = i.noise(10);
-image i10 = i.bnw();
+image i10 = i.bnw(200);
 i1.frame("./demo2/1.bmp");
 i2.frame("./demo2/2.bmp");
 i3.frame("./demo2/3.bmp");
