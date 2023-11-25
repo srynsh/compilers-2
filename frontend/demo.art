@@ -12,10 +12,10 @@ sketch flower (num h, num w, num r, num i, num j) {
 
 ink main () -> void {
     img temp<300, 300, 0xFFFFFF>
-    vid v<300, 300, 1>
+    vid v<300, 300, 2>
 
-    spool (num i = 0; i < 8; i++) {
-        spool (num j = 0; j < 24; j++) {
+    spool (num i = 8; i <= 8; i++) {
+        spool (num j = 1; j <= 24; j++) {
             v.concat_frame(temp << flower(300, 300, 50, i, j))
         }
     }

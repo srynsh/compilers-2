@@ -1,0 +1,23 @@
+sketch circ(num c) {
+    circle(c+20)
+}
+
+ink main() -> void {
+    img i1 <300, 300, 0xffffff>
+
+    #*
+    vid v1<300, 300, 1>
+    num c = 0
+    spool(c < 100) {
+        v1.concat_frame(i1 << circ(c))
+    }
+    v1.play()
+    *#
+
+    i1 = i1 << circ(10)
+
+    i1.draw('circle', 150, 150, 50, 0, 0)
+    i1.paint()
+
+    return void
+}

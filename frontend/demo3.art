@@ -1,0 +1,8 @@
+ink main() -> void {
+    img i1<200, 200, 0xFF0000>
+    img i2<200, 200, 0x0000FF>
+    img i3 = (i1 + i2) / 2
+    i3.paint()
+
+    return void
+}
