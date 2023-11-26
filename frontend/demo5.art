@@ -1,0 +1,51 @@
+sketch flower (num h, num w, num r, num i, num j) {
+    go_to(w/2, h/2)
+    pendown()
+    set_pen_color(0xFF0000)
+    spool(num k = 1; k < i; k++) {
+        spool (num l = 1; l <= 24;l++) {
+            arc(r, 15)
+        }
+        rotate(315)
+    }
+    spool (num l = 0; l < j;l++) {
+        arc(r, 15)
+    }
+}
+
+sketch flower_bs (num h, num w, num r, num i, num j) {
+    go_to(w/2, h/2)
+    pendown()
+    set_pen_color(0xFF0000)
+    spool(num k = 0; k < i; k++) {
+        spool (num l = 1; l <= j;l++) {
+            arc(r, 15)
+        }
+        rotate(-45)
+    }
+}
+
+
+
+ink main () -> void {
+    img temp<300, 300, 0xFFFFFF>
+    vid v<300, 300, 10>
+    vid v2<300, 300, 10>
+    spool (num i = 1; i <= 8; i++) {
+        spool (num j = 1; j <= 24; j++) {
+            v.concat_frame(temp << flower(300, 300, 50, i, j))
+        }
+    }
+
+    spool (num i = 8; i <= 8; i++) {
+        spool (num j = 1; j <= 24; j++) {
+            v2.concat_frame(temp << flower_bs(300, 300, 50, i, j))
+        }
+    }
+
+    vid v3<300, 300, 10>
+    v3 = v + v2
+    v3.play()
+
+    return void
+}
