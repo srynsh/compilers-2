@@ -1,8 +1,19 @@
-ink main() -> void {
-    img i1<200, 200, 0xFF0000>
-    img i2<200, 200, 0x0000FF>
-    img i3 = (i1 + i2) / 2
-    i3.paint()
+sketch circ (num h, num w, num r, num i) {
+    go_to(w/2, h/2)
+    pendown()
+    spool(num k = 0; k < i; k++) {
+        arc(r, 15)
+    }
+}
 
+ink main () -> void {
+    img temp<300, 300, 0xFFFFFF>
+    vid v<300, 300, 2>
+
+    spool (num i = 1; i <= 24; i++) {
+            v.concat_frame(temp << circ(300, 300, 50, i))
+    }
+
+    v.play()
     return void
 }
